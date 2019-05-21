@@ -5,6 +5,8 @@ import os
 import tornado.ioloop
 import tornado.web
 
+import chat
+
 WEB_ROOT = os.path.join(os.path.dirname(__file__), 'frontend', 'dist')
 
 
@@ -17,10 +19,11 @@ class MainHandler(tornado.web.StaticFileHandler):
 
 def main():
     app = tornado.web.Application([
+        (r'/chat', chat.ChatHandler),
         (r'/((css|img|js)/.*)', tornado.web.StaticFileHandler, {'path': WEB_ROOT}),
         (r'/(favicon\.ico)', tornado.web.StaticFileHandler, {'path': WEB_ROOT}),
         (r'/.*', MainHandler, {'path': WEB_ROOT})
-    ])
+    ], websocket_ping_interval=30)
     app.listen(80, '127.0.0.1')
     tornado.ioloop.IOLoop.current().start()
 
