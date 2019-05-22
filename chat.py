@@ -6,6 +6,7 @@ import json
 import logging
 from typing import *
 
+import aiohttp
 import tornado.websocket
 
 import blivedm.blivedm as blivedm
@@ -20,11 +21,33 @@ class Command(enum.IntEnum):
     ADD_VIP = 3
 
 
+http_session = aiohttp.ClientSession()
+_avatar_url_cache: Dict[int, str] = {}
+
+
+async def get_avatar_url(user_id):
+    if user_id in _avatar_url_cache:
+        return _avatar_url_cache[user_id]
+    async with http_session.get('https://api.bilibili.com/x/space/acc/info',
+                                params={'mid': user_id}) as r:
+        data = await r.json()
+    url = data['data']['face']
+    if not url.endswith('noface.gif'):
+        url += '@24w_24h.webp'
+    _avatar_url_cache[user_id] = url
+
+    if len(_avatar_url_cache) > 10000:
+        for _, key in zip(range(100), _avatar_url_cache):
+            del _avatar_url_cache[key]
+
+    return url
+
+
 class Room(blivedm.BLiveClient):
     _COMMAND_HANDLERS = blivedm.BLiveClient._COMMAND_HANDLERS.copy()
 
     def __init__(self, room_id):
-        super().__init__(room_id)
+        super().__init__(room_id, session=http_session)
         self.future = None
         self.clients: List['ChatHandler'] = []
 
@@ -42,17 +65,19 @@ class Room(blivedm.BLiveClient):
             client.write_message(body)
 
     async def __my_on_get_danmaku(self, command):
-        user_id = command['info'][2][0]
-        # TODO 获取头像
         data = {
-            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@24w_24h.webp',
+            'avatarUrl': await get_avatar_url(command['info'][2][0]),
             'timestamp': command['info'][0][4],
             'content': command['info'][1],
             'authorName': command['info'][2][1]
         }
         self.send_message(Command.ADD_TEXT, data)
 
-    _COMMAND_HANDLERS['SEND_GIFT'] = __my_on_get_danmaku
+    _COMMAND_HANDLERS['DANMU_MSG'] = __my_on_get_danmaku
+
+    # 新舰长 {'cmd': 'GUARD_BUY', 'data': {'uid': 1822222, 'username': 'MRSKING', 'guard_level': 3,
+    # 'num': 1, 'price': 198000, 'gift_id': 10003, 'gift_name': '舰长', 'start_time': 1558506165,
+    # 'end_time': 1558506165}}
 
 
 class RoomManager:

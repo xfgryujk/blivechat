@@ -60,17 +60,21 @@ export default {
       switch(body.cmd) {
         case 1: // ADD_TEXT
           this.messages.push(message)
+          if (this.messages.length > 50)
+            this.messages.shift()
           break;
         case 2: // ADD_GIFT
           break;
         case 3: // ADD_VIP
           break;
       }
-      window.scrollTo(0, document.body.scrollHeight)
     }
   },
   beforeDestroy() {
     this.websocket.close()
+  },
+  updated() {
+      window.scrollTo(0, document.body.scrollHeight)
   }
 }
 </script>
@@ -288,8 +292,10 @@ yt-live-chat-ticker-paid-message-item-renderer #fake-avatar {
 
 /* 以下为自动生成：https://chatv2.septapus.com/ */
 
-@import url("https://fonts.googleapis.com/css?family=Changa One");
-@import url("https://fonts.googleapis.com/css?family=Imprima");
+/* @import url("https://fonts.googleapis.com/css?family=Changa One"); */
+/* @import url("https://fonts.googleapis.com/css?family=Imprima"); */
+@import url("https://fonts.lug.ustc.edu.cn/css?family=Changa One");
+@import url("https://fonts.lug.ustc.edu.cn/css?family=Imprima");
 
 /* Background colors*/
 body {
@@ -373,6 +379,7 @@ yt-live-chat-legacy-paid-message-renderer #author-photo {
   height: 24px !important;
   border-radius: 24px !important;
   margin-right: 6px !important;
+  background-size: cover;
 }
 
 /* Hide badges. */
