@@ -17,7 +17,8 @@
     <yt-live-chat-item-list-renderer>
       <template v-for="message in messages">
         <text-message :key="message.id" v-if="message.type == 0"
-          :avatarUrl="message.avatarUrl" :time="message.time" :authorName="message.authorName" :content="message.content"
+          :avatarUrl="message.avatarUrl" :time="message.time" :authorName="message.authorName"
+          :authorType="message.authorType" :content="message.content"
         ></text-message>
         <legacy-paid-message :key="message.id" v-else-if="message.type == 1"
           :avatarUrl="message.avatarUrl" :title="message.title" :content="message.content"
@@ -73,6 +74,7 @@ export default {
             avatarUrl: body.data.avatarUrl,
             time: `${time.getHours()}:${time.getMinutes()}`,
             authorName: body.data.authorName,
+            authorType: body.data.authorType,
             content: body.data.content
           }
           break;

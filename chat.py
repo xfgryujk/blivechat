@@ -51,6 +51,7 @@ class Room(blivedm.BLiveClient):
         super().__init__(room_id, session=http_session)
         self.future = None
         self.clients: List['ChatHandler'] = []
+        self.owner_id = None
 
     def start(self):
         self.future = self.run()
@@ -60,16 +61,40 @@ class Room(blivedm.BLiveClient):
             self.future.cancel()
         asyncio.ensure_future(self.close())
 
+    async def _get_room_id(self):
+        """重载用来获取主播UID"""
+        async with self._session.get(blivedm.ROOM_INIT_URL,
+                                     params={'id': self._short_id},
+                                     ssl=self._ssl) as res:
+            if res.status == 200:
+                data = await res.json()
+                if data['code'] == 0:
+                    self._room_id = data['data']['room_id']
+                    self.owner_id = data['data']['uid']
+                else:
+                    raise ConnectionAbortedError('获取房间ID失败：' + data['msg'])
+            else:
+                raise ConnectionAbortedError('获取房间ID失败：' + res.reason)
+
     def send_message(self, cmd, data):
         body = json.dumps({'cmd': cmd, 'data': data})
         for client in self.clients:
             client.write_message(body)
 
     async def __my_on_get_danmaku(self, command):
+        if command['info'][2][0] == self.owner_id:
+            author_type = 3  # 主播
+        elif command['info'][2][2] != 0:
+            author_type = 2  # 房管
+        elif command['info'][7] != 0:  # 1总督，2提督，3舰长
+            author_type = 1  # 舰队
+        else:
+            author_type = 0
         self.send_message(Command.ADD_TEXT, {
             'avatarUrl': await get_avatar_url(command['info'][2][0]),
             'timestamp': command['info'][0][4],
             'authorName': command['info'][2][1],
+            'authorType': author_type,
             'content': command['info'][1]
         })
 
@@ -134,12 +159,14 @@ class RoomManager:
             'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@24w_24h.webp',
             'timestamp': time.time(),
             'authorName': 'xfgryujk',
+            'authorType': 0,
             'content': '我能吞下玻璃而不伤身体'
         })
         room.send_message(Command.ADD_TEXT, {
             'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@24w_24h.webp',
             'timestamp': time.time(),
-            'authorName': 'xfgryujk',
+            'authorName': '主播',
+            'authorType': 3,
             'content': "I can eat glass, it doesn't hurt me."
         })
         room.send_message(Command.ADD_VIP, {
