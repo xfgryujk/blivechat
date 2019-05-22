@@ -15,9 +15,11 @@
       </yt-live-chat-ticker-paid-message-item-renderer>
     </yt-live-chat-ticker-renderer> -->
     <yt-live-chat-item-list-renderer>
-      <text-message v-for="message in messages" :key="message.id"
-        :avatarUrl="message.avatarUrl" :time="message.time" :authorName="message.authorName" :content="message.content"
-      ></text-message>
+      <template v-for="message in messages">
+        <text-message :key="message.id"
+          :avatarUrl="message.avatarUrl" :time="message.time" :authorName="message.authorName" :content="message.content"
+        ></text-message>
+      </template>
     </yt-live-chat-item-list-renderer>
   </yt-live-chat-renderer>
 </template>
@@ -42,25 +44,29 @@ export default {
     // 测试用
     this.websocket = new WebSocket('ws://localhost/chat')
     this.websocket.onopen = () => this.websocket.send(JSON.stringify({
-      cmd: 0,
+      cmd: 0, // JOIN_ROOM
       data: {
         roomId: parseInt(this.$route.params.roomId)
       }
     }))
     this.websocket.onmessage = (event) => {
       let body = JSON.parse(event.data)
+      let time = new Date(body.data.timestamp * 1000)
+      let message = {
+        id: this.nextId++,
+        time: `${time.getHours()}:${time.getMinutes()}`,
+        ...body.data
+      }
       switch(body.cmd) {
         case 1: // ADD_TEXT
-          this.messages.push({
-            id: this.nextId++,
-            avatarUrl: '',
-            time: '12:00',
-            authorName: body.data.authorName,
-            content: body.data.content
-          })
-          window.scrollTo(0, document.body.scrollHeight)
+          this.messages.push(message)
+          break;
+        case 2: // ADD_GIFT
+          break;
+        case 3: // ADD_VIP
           break;
       }
+      window.scrollTo(0, document.body.scrollHeight)
     }
   },
   beforeDestroy() {

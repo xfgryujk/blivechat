@@ -1,8 +1,6 @@
 <template>
   <yt-live-chat-text-message-renderer>
-    <div id="author-photo">
-      <img id="img" height="24" width="24" :src="avatarUrl" />
-    </div>
+    <div id="author-photo" :style="`background-image: url(${avatarUrl})`"></div>
     <div id="content">
       <span id="timestamp">{{time}}</span>
       <span id="author-name">{{authorName}}</span>
