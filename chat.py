@@ -4,6 +4,7 @@ import asyncio
 import enum
 import json
 import logging
+import time
 from typing import *
 
 import aiohttp
@@ -65,19 +66,38 @@ class Room(blivedm.BLiveClient):
             client.write_message(body)
 
     async def __my_on_get_danmaku(self, command):
-        data = {
+        self.send_message(Command.ADD_TEXT, {
             'avatarUrl': await get_avatar_url(command['info'][2][0]),
             'timestamp': command['info'][0][4],
-            'content': command['info'][1],
-            'authorName': command['info'][2][1]
-        }
-        self.send_message(Command.ADD_TEXT, data)
+            'authorName': command['info'][2][1],
+            'content': command['info'][1]
+        })
 
     _COMMAND_HANDLERS['DANMU_MSG'] = __my_on_get_danmaku
 
-    # 新舰长 {'cmd': 'GUARD_BUY', 'data': {'uid': 1822222, 'username': 'MRSKING', 'guard_level': 3,
-    # 'num': 1, 'price': 198000, 'gift_id': 10003, 'gift_name': '舰长', 'start_time': 1558506165,
-    # 'end_time': 1558506165}}
+    async def __my_on_gift(self, command):
+        if command['data']['coin_type'] != 'gold':  # 丢人
+            return
+        self.send_message(Command.ADD_GIFT, {
+            'avatarUrl': await get_avatar_url(command['data']['uid']),
+            'authorName': command['data']['uname'],
+            'giftName': command['data']['giftName'],
+            'giftNum': command['data']['num'],
+            'totalCoin': command['data']['total_coin']
+        })
+
+    _COMMAND_HANDLERS['SEND_GIFT'] = __my_on_gift
+
+    async def __on_new_member(self, command):
+        # 新舰长 {'cmd': 'GUARD_BUY', 'data': {'uid': 1822222, 'username': 'MRSKING', 'guard_level': 3,
+        # 'num': 1, 'price': 198000, 'gift_id': 10003, 'gift_name': '舰长', 'start_time': 1558506165,
+        # 'end_time': 1558506165}}
+        self.send_message(Command.ADD_VIP, {
+            'avatarUrl':  await get_avatar_url(command['data']['uid']),
+            'authorName': command['data']['username'],
+        })
+
+    _COMMAND_HANDLERS['GUARD_BUY'] = __on_new_member
 
 
 class RoomManager:
@@ -94,6 +114,9 @@ class RoomManager:
             room.start()
         room.clients.append(client)
 
+        # 测试用
+        # self.__send_test_message(room)
+
     def del_client(self, room_id, client: 'ChatHandler'):
         if room_id not in self._rooms:
             return
@@ -103,6 +126,54 @@ class RoomManager:
             logger.info('移除房间%d', room_id)
             room.stop()
             del self._rooms[room_id]
+
+    # 测试用
+    @staticmethod
+    def __send_test_message(room):
+        room.send_message(Command.ADD_TEXT, {
+            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@24w_24h.webp',
+            'timestamp': time.time(),
+            'authorName': 'xfgryujk',
+            'content': '我能吞下玻璃而不伤身体'
+        })
+        room.send_message(Command.ADD_TEXT, {
+            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@24w_24h.webp',
+            'timestamp': time.time(),
+            'authorName': 'xfgryujk',
+            'content': "I can eat glass, it doesn't hurt me."
+        })
+        room.send_message(Command.ADD_VIP, {
+            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@24w_24h.webp',
+            'authorName': 'xfgryujk',
+        })
+        room.send_message(Command.ADD_GIFT, {
+            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@24w_24h.webp',
+            'authorName': 'xfgryujk',
+            'giftName': '礼花',
+            'giftNum': 1,
+            'totalCoin': 28000
+        })
+        room.send_message(Command.ADD_GIFT, {
+            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@24w_24h.webp',
+            'authorName': 'xfgryujk',
+            'giftName': '节奏风暴',
+            'giftNum': 1,
+            'totalCoin': 100000
+        })
+        room.send_message(Command.ADD_GIFT, {
+            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@24w_24h.webp',
+            'authorName': 'xfgryujk',
+            'giftName': '摩天大楼',
+            'giftNum': 1,
+            'totalCoin': 450000
+        })
+        room.send_message(Command.ADD_GIFT, {
+            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@24w_24h.webp',
+            'authorName': 'xfgryujk',
+            'giftName': '小电视飞船',
+            'giftNum': 1,
+            'totalCoin': 1245000
+        })
 
 
 room_manager = RoomManager()
@@ -134,5 +205,5 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
             room_manager.del_client(self.room_id, self)
 
     # 测试用
-    def check_origin(self, origin):
-        return True
+    # def check_origin(self, origin):
+    #     return True

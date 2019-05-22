@@ -16,9 +16,16 @@
     </yt-live-chat-ticker-renderer> -->
     <yt-live-chat-item-list-renderer>
       <template v-for="message in messages">
-        <text-message :key="message.id"
+        <text-message :key="message.id" v-if="message.type == 0"
           :avatarUrl="message.avatarUrl" :time="message.time" :authorName="message.authorName" :content="message.content"
         ></text-message>
+        <legacy-paid-message :key="message.id" v-else-if="message.type == 1"
+          :avatarUrl="message.avatarUrl" :title="message.title" :content="message.content"
+        ></legacy-paid-message>
+        <paid-message :key="message.id" v-else
+          :level="message.level" :avatarUrl="message.avatarUrl" :authorName="message.authorName"
+          :title="message.title" :content="message.content"
+        ></paid-message>
       </template>
     </yt-live-chat-item-list-renderer>
   </yt-live-chat-renderer>
@@ -26,11 +33,15 @@
 
 <script>
 import TextMessage from './TextMessage.vue'
+import LegacyPaidMessage from './LegacyPaidMessage.vue'
+import PaidMessage from './PaidMessage.vue'
 
 export default {
   name: 'Room',
   components: {
-    TextMessage
+    TextMessage,
+    LegacyPaidMessage,
+    PaidMessage
   },
   data() {
     return {
@@ -40,9 +51,9 @@ export default {
     }
   },
   created() {
-    // this.websocket = new WebSocket(`ws://${window.location.host}/chat`)
+    this.websocket = new WebSocket(`ws://${window.location.host}/chat`)
     // 测试用
-    this.websocket = new WebSocket('ws://localhost/chat')
+    // this.websocket = new WebSocket('ws://localhost/chat')
     this.websocket.onopen = () => this.websocket.send(JSON.stringify({
       cmd: 0, // JOIN_ROOM
       data: {
@@ -51,22 +62,56 @@ export default {
     }))
     this.websocket.onmessage = (event) => {
       let body = JSON.parse(event.data)
-      let time = new Date(body.data.timestamp * 1000)
-      let message = {
-        id: this.nextId++,
-        time: `${time.getHours()}:${time.getMinutes()}`,
-        ...body.data
-      }
+      let message = null
+      let time, price, level
       switch(body.cmd) {
         case 1: // ADD_TEXT
-          this.messages.push(message)
-          if (this.messages.length > 50)
-            this.messages.shift()
+          time = new Date(body.data.timestamp * 1000)
+          message = {
+            id: this.nextId++,
+            type: 0, // TextMessage
+            avatarUrl: body.data.avatarUrl,
+            time: `${time.getHours()}:${time.getMinutes()}`,
+            authorName: body.data.authorName,
+            content: body.data.content
+          }
           break;
         case 2: // ADD_GIFT
+          price = body.data.totalCoin / 1000
+          if (price < 9.9) // 丢人
+            break
+          else if (price < 100) // B坷垃~打call
+            level = 0
+          else if (price < 300) // 节奏风暴、天空之翼
+            level = 1
+          else if (price < 500) // 摩天大楼
+            level = 2
+          else // 小电视飞船
+            level = 3
+          message = {
+            id: this.nextId++,
+            type: 2, // PaidMessage
+            level: level,
+            avatarUrl: body.data.avatarUrl,
+            authorName: body.data.authorName,
+            title: `CNY${price}`,
+            content: `Sent ${body.data.giftName}x${body.data.giftNum}`
+          }
           break;
         case 3: // ADD_VIP
+          message = {
+            id: this.nextId++,
+            type: 1, // LegacyPaidMessage
+            avatarUrl: body.data.avatarUrl,
+            title: `NEW MEMBER!`,
+            content: `Welcome ${body.data.authorName}`
+          }
           break;
+      }
+      if (message) {
+        this.messages.push(message)
+        if (this.messages.length > 50)
+          this.messages.shift()
       }
     }
   },
