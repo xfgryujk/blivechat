@@ -15,7 +15,7 @@
    ```sh
    cd frontend
    npm i
-   npm build
+   npm run build
    ```
 2. 运行服务器：
    ```sh
