@@ -24,8 +24,8 @@
           :avatarUrl="message.avatarUrl" :title="message.title" :content="message.content"
         ></legacy-paid-message>
         <paid-message :key="message.id" v-else
-          :level="message.level" :avatarUrl="message.avatarUrl" :authorName="message.authorName"
-          :title="message.title" :content="message.content"
+          :price="message.price" :avatarUrl="message.avatarUrl" :authorName="message.authorName"
+          :content="message.content"
         ></paid-message>
       </template>
     </yt-live-chat-item-list-renderer>
@@ -36,6 +36,11 @@
 import TextMessage from './TextMessage.vue'
 import LegacyPaidMessage from './LegacyPaidMessage.vue'
 import PaidMessage from './PaidMessage.vue'
+
+const COMMAND_JOIN_ROOM = 0
+const COMMAND_ADD_TEXT = 1
+const COMMAND_ADD_GIFT = 2
+const COMMAND_ADD_VIP = 3
 
 export default {
   name: 'Room',
@@ -56,7 +61,7 @@ export default {
     // 测试用
     // this.websocket = new WebSocket('ws://localhost/chat')
     this.websocket.onopen = () => this.websocket.send(JSON.stringify({
-      cmd: 0, // JOIN_ROOM
+      cmd: COMMAND_JOIN_ROOM,
       data: {
         roomId: parseInt(this.$route.params.roomId)
       }
@@ -64,51 +69,39 @@ export default {
     this.websocket.onmessage = (event) => {
       let body = JSON.parse(event.data)
       let message = null
-      let time, price, level
+      let time
       switch(body.cmd) {
-        case 1: // ADD_TEXT
-          time = new Date(body.data.timestamp * 1000)
-          message = {
-            id: this.nextId++,
-            type: 0, // TextMessage
-            avatarUrl: body.data.avatarUrl,
-            time: `${time.getHours()}:${time.getMinutes()}`,
-            authorName: body.data.authorName,
-            authorType: body.data.authorType,
-            content: body.data.content
-          }
-          break;
-        case 2: // ADD_GIFT
-          price = body.data.totalCoin / 1000
-          if (price < 9.9) // 丢人
-            break
-          else if (price < 100) // B坷垃~打call
-            level = 0
-          else if (price < 300) // 节奏风暴、天空之翼
-            level = 1
-          else if (price < 500) // 摩天大楼
-            level = 2
-          else // 小电视飞船
-            level = 3
-          message = {
-            id: this.nextId++,
-            type: 2, // PaidMessage
-            level: level,
-            avatarUrl: body.data.avatarUrl,
-            authorName: body.data.authorName,
-            title: `CNY${price}`,
-            content: `Sent ${body.data.giftName}x${body.data.giftNum}`
-          }
-          break;
-        case 3: // ADD_VIP
-          message = {
-            id: this.nextId++,
-            type: 1, // LegacyPaidMessage
-            avatarUrl: body.data.avatarUrl,
-            title: `NEW MEMBER!`,
-            content: `Welcome ${body.data.authorName}`
-          }
-          break;
+      case COMMAND_ADD_TEXT:
+        time = new Date(body.data.timestamp * 1000)
+        message = {
+          id: this.nextId++,
+          type: 0, // TextMessage
+          avatarUrl: body.data.avatarUrl,
+          time: `${time.getHours()}:${time.getMinutes()}`,
+          authorName: body.data.authorName,
+          authorType: body.data.authorType,
+          content: body.data.content
+        }
+        break;
+      case COMMAND_ADD_GIFT:
+        message = {
+          id: this.nextId++,
+          type: 2, // PaidMessage
+          price: body.data.totalCoin / 1000,
+          avatarUrl: body.data.avatarUrl,
+          authorName: body.data.authorName,
+          content: `Sent ${body.data.giftName}x${body.data.giftNum}`
+        }
+        break;
+      case COMMAND_ADD_VIP:
+        message = {
+          id: this.nextId++,
+          type: 1, // LegacyPaidMessage
+          avatarUrl: body.data.avatarUrl,
+          title: 'NEW MEMBER!',
+          content: `Welcome ${body.data.authorName}`
+        }
+        break;
       }
       if (message) {
         this.messages.push(message)

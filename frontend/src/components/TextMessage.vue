@@ -10,7 +10,7 @@
 </template>
 
 <script>
-let AUTHOR_TYPE_TO_TEXT = [
+const AUTHOR_TYPE_TO_TEXT = [
   '',
   'member', // 舰队
   'moderator', // 房管
