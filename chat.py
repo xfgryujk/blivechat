@@ -22,15 +22,15 @@ class Command(enum.IntEnum):
     ADD_VIP = 3
 
 
-http_session = aiohttp.ClientSession()
+_http_session = aiohttp.ClientSession()
 _avatar_url_cache: Dict[int, str] = {}
 
 
 async def get_avatar_url(user_id):
     if user_id in _avatar_url_cache:
         return _avatar_url_cache[user_id]
-    async with http_session.get('https://api.bilibili.com/x/space/acc/info',
-                                params={'mid': user_id}) as r:
+    async with _http_session.get('https://api.bilibili.com/x/space/acc/info',
+                                 params={'mid': user_id}) as r:
         data = await r.json()
     url = data['data']['face']
     if not url.endswith('noface.gif'):
@@ -48,7 +48,7 @@ class Room(blivedm.BLiveClient):
     _COMMAND_HANDLERS = blivedm.BLiveClient._COMMAND_HANDLERS.copy()
 
     def __init__(self, room_id):
-        super().__init__(room_id, session=http_session)
+        super().__init__(room_id, session=_http_session)
         self.future = None
         self.clients: List['ChatHandler'] = []
         self.owner_id = None
@@ -139,8 +139,8 @@ class RoomManager:
             room.start()
         room.clients.append(client)
 
-        # 测试用
-        # self.__send_test_message(room)
+        if client.application.settings['debug']:
+            self.__send_test_message(room)
 
     def del_client(self, room_id, client: 'ChatHandler'):
         if room_id not in self._rooms:
@@ -231,6 +231,8 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
         if self.room_id is not None:
             room_manager.del_client(self.room_id, self)
 
-    # 测试用
-    # def check_origin(self, origin):
-    #     return True
+    # 跨域测试用
+    def check_origin(self, origin):
+        if self.application.settings['debug']:
+            return True
+        return super().check_origin(origin)

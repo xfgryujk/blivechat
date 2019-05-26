@@ -21,6 +21,10 @@
    ```sh
    python3 main.py
    ```
+   或者可以指定host和端口号：
+   ```sh
+   python3 main.py --host 127.0.0.1 --port 80
+   ```
 3. 用浏览器打开[http://localhost](http://localhost)，输入房间号，进入，复制房间URL（其实就是http://localhost/room/<房间ID>）
 4. （可选）在[https://chatv2.septapus.com/](https://chatv2.septapus.com/)生成样式，复制CSS
 5. 在OBS中添加浏览器源，输入URL和自定义CSS
