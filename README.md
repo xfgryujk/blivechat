@@ -11,6 +11,17 @@
 * 高亮舰队、房管、主播的用户名
 
 ## 使用方法
+### 发布版
+1. 下载[发布版](https://github.com/xfgryujk/blivechat/releases)（仅提供Windows）
+2. 双击`blivechat.exe`运行服务器，或者用命令行可以指定host和端口号：
+   ```bat
+   blivechat.exe --host 127.0.0.1 --port 80
+   ```
+3. 用浏览器打开[http://localhost](http://localhost)，输入房间号，进入，复制房间URL（其实就是http://localhost/room/<房间ID>）
+4. （可选）在[https://chatv2.septapus.com/](https://chatv2.septapus.com/)生成样式，复制CSS
+5. 在OBS中添加浏览器源，输入URL和自定义CSS
+
+### 源代码版
 1. 编译前端（需要安装NPM）：
    ```sh
    cd frontend
