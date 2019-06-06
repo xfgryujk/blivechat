@@ -49,87 +49,57 @@ class Room(blivedm.BLiveClient):
 
     def __init__(self, room_id):
         super().__init__(room_id, session=_http_session)
-        self.future = None
         self.clients: List['ChatHandler'] = []
-        self.owner_id = None
 
-    def start(self):
-        self.future = self.run()
-
-    def stop(self):
-        if self.future is not None:
-            self.future.cancel()
-        asyncio.ensure_future(self.close())
-
-    async def _get_room_id(self):
-        """重载用来获取主播UID"""
-        async with self._session.get(blivedm.ROOM_INIT_URL,
-                                     params={'id': self._short_id},
-                                     ssl=self._ssl) as res:
-            if res.status == 200:
-                data = await res.json()
-                if data['code'] == 0:
-                    self._room_id = data['data']['room_id']
-                    self.owner_id = data['data']['uid']
-                else:
-                    raise ConnectionAbortedError('获取房间ID失败：' + data['msg'])
-            else:
-                raise ConnectionAbortedError('获取房间ID失败：' + res.reason)
+    def stop_and_close(self):
+        future = self.stop()
+        future.add_done_callback(lambda _future: asyncio.ensure_future(self.close()))
 
     def send_message(self, cmd, data):
         body = json.dumps({'cmd': cmd, 'data': data})
         for client in self.clients:
             client.write_message(body)
 
-    async def __my_on_get_danmaku(self, command):
-        if command['info'][2][0] == self.owner_id:
+    async def _on_receive_danmaku(self, danmaku: blivedm.DanmakuMessage):
+        if danmaku.uid == self.room_owner_uid:
             author_type = 3  # 主播
-        elif command['info'][2][2] != 0:
+        elif danmaku.admin:
             author_type = 2  # 房管
-        elif command['info'][7] != 0:  # 1总督，2提督，3舰长
+        elif danmaku.privilege_type != 0:  # 1总督，2提督，3舰长
             author_type = 1  # 舰队
         else:
             author_type = 0
         self.send_message(Command.ADD_TEXT, {
-            'avatarUrl': await get_avatar_url(command['info'][2][0]),
-            'timestamp': command['info'][0][4],
-            'authorName': command['info'][2][1],
+            'avatarUrl': await get_avatar_url(danmaku.uid),
+            'timestamp': danmaku.timestamp,
+            'authorName': danmaku.uname,
             'authorType': author_type,
-            'content': command['info'][1]
+            'content': danmaku.msg
         })
 
-    _COMMAND_HANDLERS['DANMU_MSG'] = __my_on_get_danmaku
-
-    async def __my_on_gift(self, command):
-        if command['data']['coin_type'] != 'gold':  # 丢人
+    async def _on_receive_gift(self, gift: blivedm.GiftMessage):
+        if gift.coin_type != 'gold':  # 丢人
             return
         self.send_message(Command.ADD_GIFT, {
-            'avatarUrl': await get_avatar_url(command['data']['uid']),
-            'authorName': command['data']['uname'],
-            'giftName': command['data']['giftName'],
-            'giftNum': command['data']['num'],
-            'totalCoin': command['data']['total_coin']
+            'avatarUrl': await get_avatar_url(gift.uid),
+            'authorName': gift.uname,
+            'giftName': gift.gift_name,
+            'giftNum': gift.num,
+            'totalCoin': gift.total_coin
         })
 
-    _COMMAND_HANDLERS['SEND_GIFT'] = __my_on_gift
-
-    async def __on_new_member(self, command):
-        # 新舰长 {'cmd': 'GUARD_BUY', 'data': {'uid': 1822222, 'username': 'MRSKING', 'guard_level': 3,
-        # 'num': 1, 'price': 198000, 'gift_id': 10003, 'gift_name': '舰长', 'start_time': 1558506165,
-        # 'end_time': 1558506165}}
+    async def _on_buy_guard(self, message: blivedm.GuardBuyMessage):
         self.send_message(Command.ADD_VIP, {
-            'avatarUrl':  await get_avatar_url(command['data']['uid']),
-            'authorName': command['data']['username'],
+            'avatarUrl':  await get_avatar_url(message.uid),
+            'authorName': message.username
         })
-
-    _COMMAND_HANDLERS['GUARD_BUY'] = __on_new_member
 
 
 class RoomManager:
     def __init__(self):
         self._rooms: Dict[int, Room] = {}
 
-    def add_client(self, room_id, client):
+    def add_client(self, room_id, client: 'ChatHandler'):
         if room_id in self._rooms:
             room = self._rooms[room_id]
         else:
@@ -149,7 +119,7 @@ class RoomManager:
         room.clients.remove(client)
         if not room.clients:
             logger.info('移除房间%d', room_id)
-            room.stop()
+            room.stop_and_close()
             del self._rooms[room_id]
 
     # 测试用
@@ -227,7 +197,7 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
             logger.warning('未知的命令: %s data: %s', body['cmd'], body['data'])
 
     def on_close(self):
-        logger.info('Websocket断开 %s room: %s', self.request.remote_ip, self.room_id)
+        logger.info('Websocket断开 %s room: %d', self.request.remote_ip, self.room_id)
         if self.room_id is not None:
             room_manager.del_client(self.room_id, self)
 
