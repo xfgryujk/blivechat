@@ -2,11 +2,15 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 
 import App from './App.vue'
-import Home from './components/Home.vue'
-import Room from './components/Room.vue'
-import NotFound from './components/NotFound.vue'
+import Home from './views/Home.vue'
+import Room from './views/Room'
+import NotFound from './views/NotFound.vue'
 
 Vue.use(VueRouter)
+
+Vue.config.ignoredElements = [
+  /^yt-/
+]
 
 const router = new VueRouter({
   mode: 'history',

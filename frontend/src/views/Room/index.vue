@@ -57,9 +57,9 @@ export default {
     }
   },
   created() {
-    this.websocket = new WebSocket(`ws://${window.location.host}/chat`)
-    // 测试用
-    // this.websocket = new WebSocket('ws://localhost/chat')
+    // 开发时使用localhost:80
+    const url = process.env.NODE_ENV === 'development' ? 'ws://localhost/chat' : `ws://${window.location.host}/chat`
+    this.websocket = new WebSocket(url)
     this.websocket.onopen = () => this.websocket.send(JSON.stringify({
       cmd: COMMAND_JOIN_ROOM,
       data: {
@@ -122,4 +122,4 @@ export default {
 }
 </script>
 
-<style src="../assets/room.css"></style>
+<style src="../../assets/room.css"></style>
