@@ -8,7 +8,9 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "axios": "^0.19.0",
     "core-js": "^2.6.5",
+    "element-ui": "^2.9.1",
     "vue": "^2.6.10",
     "vue-router": "^3.0.6"
   },

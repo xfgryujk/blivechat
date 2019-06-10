@@ -45,8 +45,6 @@ async def get_avatar_url(user_id):
 
 
 class Room(blivedm.BLiveClient):
-    _COMMAND_HANDLERS = blivedm.BLiveClient._COMMAND_HANDLERS.copy()
-
     def __init__(self, room_id):
         super().__init__(room_id, session=_http_session)
         self.clients: List['ChatHandler'] = []
