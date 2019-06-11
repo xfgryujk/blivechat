@@ -10,6 +10,9 @@
       <el-menu-item index="/">
         <i class="el-icon-s-home"></i>首页
       </el-menu-item>
+      <el-menu-item :index="$router.resolve({name: 'stylegen'}).href">
+        <i class="el-icon-brush"></i>样式生成器
+      </el-menu-item>
       <a href="https://github.com/xfgryujk/blivechat" target="_blank">
         <el-menu-item>
           <i class="el-icon-share"></i>项目地址

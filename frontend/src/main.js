@@ -6,6 +6,7 @@ import 'element-ui/lib/theme-chalk/index.css'
 import App from './App.vue'
 import Layout from './layout'
 import Home from './views/Home.vue'
+import StyleGenerator from './views/StyleGenerator.vue'
 import Room from './views/Room'
 import NotFound from './views/NotFound.vue'
 
@@ -23,7 +24,8 @@ const router = new VueRouter({
       path: '/',
       component: Layout,
       children: [
-        {path: '', component: Home}
+        {path: '', component: Home},
+        {path: 'stylegen', name: 'stylegen', component: StyleGenerator}
       ]
     },
     {path: '/room/:roomId', name: 'room', component: Room},
