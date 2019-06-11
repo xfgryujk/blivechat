@@ -122,4 +122,4 @@ export default {
 }
 </script>
 
-<style src="../../assets/room.css"></style>
+<style src="@/assets/css/room.css"></style>
