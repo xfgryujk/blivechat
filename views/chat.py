@@ -34,7 +34,7 @@ async def get_avatar_url(user_id):
         data = await r.json()
     url = data['data']['face']
     if not url.endswith('noface.gif'):
-        url += '@24w_24h.webp'
+        url += '@24w_24h'
     _avatar_url_cache[user_id] = url
 
     if len(_avatar_url_cache) > 10000:
