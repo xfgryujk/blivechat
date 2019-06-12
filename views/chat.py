@@ -31,6 +31,9 @@ async def get_avatar_url(user_id):
         return _avatar_url_cache[user_id]
     async with _http_session.get('https://api.bilibili.com/x/space/acc/info',
                                  params={'mid': user_id}) as r:
+        if r.status != 200:  # 可能会被B站ban
+            logger.error('获取头像失败：status=%d %s uid=%d', r.status, r.reason, user_id)
+            return 'https://static.hdslb.com/images/member/noface.gif'
         data = await r.json()
     url = data['data']['face']
     if not url.endswith('noface.gif'):
