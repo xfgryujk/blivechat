@@ -7,18 +7,13 @@ import os
 import tornado.ioloop
 import tornado.web
 
-import chat
+import views.chat
+import views.config
+import views.main
 
 logger = logging.getLogger(__name__)
 
 WEB_ROOT = os.path.join(os.path.dirname(__file__), 'frontend', 'dist')
-
-
-# noinspection PyAbstractClass
-class MainHandler(tornado.web.StaticFileHandler):
-    """为了使用Vue Router的history模式，把所有请求转发到index.html"""
-    async def get(self, *args, **kwargs):
-        await super().get('index.html', *args, **kwargs)
 
 
 def main():
@@ -37,10 +32,13 @@ def main():
 
     app = tornado.web.Application(
         [
-            (r'/chat', chat.ChatHandler),
+            (r'/chat', views.chat.ChatHandler),
+            (r'/config', views.config.ConfigsHandler),
+            (r'/config/(.+)', views.config.ConfigHandler),
+
             (r'/((css|img|js)/.*)', tornado.web.StaticFileHandler, {'path': WEB_ROOT}),
             (r'/(favicon\.ico)', tornado.web.StaticFileHandler, {'path': WEB_ROOT}),
-            (r'/.*', MainHandler, {'path': WEB_ROOT})
+            (r'/.*', views.main.MainHandler, {'path': WEB_ROOT})
         ],
         websocket_ping_interval=30,
         debug=args.debug,

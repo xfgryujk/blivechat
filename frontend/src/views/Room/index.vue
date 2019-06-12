@@ -33,6 +33,7 @@
 </template>
 
 <script>
+import config from '@/api/config'
 import TextMessage from './TextMessage.vue'
 import LegacyPaidMessage from './LegacyPaidMessage.vue'
 import PaidMessage from './PaidMessage.vue'
@@ -50,13 +51,18 @@ export default {
     PaidMessage
   },
   data() {
+    let styleElement = document.createElement('style')
+    styleElement.innerText = config.DEFAULT_CONFIG.css
+    document.head.appendChild(styleElement)
     return {
+      config: config.DEFAULT_CONFIG,
+      styleElement,
       websocket: null,
       messages: [],
       nextId: 0
     }
   },
-  created() {
+  async created() {
     // 开发时使用localhost:80
     const url = process.env.NODE_ENV === 'development' ? 'ws://localhost/chat' : `ws://${window.location.host}/chat`
     this.websocket = new WebSocket(url)
@@ -85,7 +91,7 @@ export default {
         break
       case COMMAND_ADD_GIFT:
         price = body.data.totalCoin / 1000
-        if (price < 6.911) // 丢人
+        if (price < this.config.minGiftPrice) // 丢人
           break
         message = {
           id: this.nextId++,
@@ -112,8 +118,18 @@ export default {
           this.messages.shift()
       }
     }
+
+    if (this.$route.query.config_id) {
+      try {
+        this.config = await config.getRemoteConfig(this.$route.query.config_id)
+        this.styleElement.innerText = this.config.css
+      } catch (e) {
+        this.$message.error('获取配置失败：' + e)
+      }
+    }
   },
   beforeDestroy() {
+    document.head.removeChild(this.styleElement)
     this.websocket.close()
   },
   updated() {

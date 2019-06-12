@@ -43,52 +43,68 @@
         </el-form-item>
       </el-tab-pane>
     </el-tabs>
+    <el-divider></el-divider>
+    <el-form-item label="房间URL" v-show="roomUrl">
+      <el-input ref="roomUrlInput" readonly :value="roomUrl" style="width: calc(100% - 6em); margin-right: 1em;"></el-input>
+      <el-button type="primary" @click="copyUrl">复制</el-button>
+    </el-form-item>
     <el-form-item>
-      <el-button type="primary" @click="enterRoom">进入房间</el-button>
-      <el-button type="primary" @click="popupRoom">弹出房间</el-button>
+      <el-button type="primary" @click="saveConfig()">保存配置</el-button>
+      <el-button type="primary" :disabled="!roomUrl" @click="enterRoom">进入房间</el-button>
     </el-form-item>
   </el-form>
 </template>
 
 <script>
+import config from '@/api/config'
+
 export default {
   name: 'Home',
   data() {
     return {
       form: {
         roomId: parseInt(window.localStorage.roomId || '1'),
-        minGiftPrice: 6.911, // $1
-        mergeSimilarDanmaku: true,
-
-        blockGiftDanmaku: true,
-        blockLevel: 0,
-        blockNewbie: true,
-        blockNotMobileVerified: true,
-        blockKeywords: '',
-        blockUsers: '',
-
-        css: ''
-      }
+        ...config.getLocalConfig()
+      },
+      roomUrl: ''
     }
   },
   methods: {
-    saveConfig(callback) {
-      this.$refs.form.validate(valid => {
+    saveConfig() {
+      this.$refs.form.validate(async valid => {
         if (!valid) {
           return
         }
         window.localStorage.roomId = this.form.roomId
-        callback()
+        config.setLocalConfig(this.form)
+
+        try {
+          if (window.localStorage.configId) {
+            try {
+              await config.setRemoteConfig(window.localStorage.configId, this.form)
+            } catch (e) { // 404
+              window.localStorage.configId = (await config.createRemoteConfig(this.form)).id
+            }
+          } else {
+            window.localStorage.configId = (await config.createRemoteConfig(this.form)).id
+          }
+        } catch (e) {
+          this.$message.error('保存失败：' + e)
+          return
+        }
+        this.$message({message: '保存成功', type: 'success'})
+
+        let resolved = this.$router.resolve({name: 'room', params: {roomId: this.form.roomId},
+          query: {config_id: window.localStorage.configId}})
+        this.roomUrl = `http://${window.location.host}${resolved.href}`
       })
     },
     enterRoom() {
-      this.saveConfig(() => this.$router.push({name: 'room', params: {roomId: this.form.roomId}}))
+      window.open(this.roomUrl, `room ${this.form.roomId}`, 'menubar=0,location=0,scrollbars=0,toolbar=0,width=600,height=600')
     },
-    popupRoom() {
-      this.saveConfig(() => {
-        let resolved = this.$router.resolve({name: 'room', params: {roomId: this.form.roomId}})
-        window.open(resolved.href, `room ${this.form.roomId}`, 'menubar=0,location=0,scrollbars=0,toolbar=0,width=600,height=600')
-      })
+    copyUrl() {
+      this.$refs.roomUrlInput.select()
+      document.execCommand('Copy')
     }
   }
 }
