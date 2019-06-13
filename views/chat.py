@@ -37,7 +37,7 @@ async def get_avatar_url(user_id):
         data = await r.json()
     url = data['data']['face']
     if not url.endswith('noface.gif'):
-        url += '@24w_24h'
+        url += '@48w_48h'
     _avatar_url_cache[user_id] = url
 
     if len(_avatar_url_cache) > 10000:
@@ -134,7 +134,7 @@ class RoomManager:
     @staticmethod
     def __send_test_message(room):
         room.send_message(Command.ADD_TEXT, {
-            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@24w_24h.webp',
+            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@48w_48h',
             'timestamp': time.time(),
             'authorName': 'xfgryujk',
             'authorType': 0,
@@ -146,7 +146,7 @@ class RoomManager:
             'isMobileVerified': True
         })
         room.send_message(Command.ADD_TEXT, {
-            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@24w_24h.webp',
+            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@48w_48h',
             'timestamp': time.time(),
             'authorName': '主播',
             'authorType': 3,
@@ -158,32 +158,37 @@ class RoomManager:
             'isMobileVerified': True
         })
         room.send_message(Command.ADD_VIP, {
-            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@24w_24h.webp',
+            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@48w_48h',
+            'timestamp': time.time(),
             'authorName': 'xfgryujk',
         })
         room.send_message(Command.ADD_GIFT, {
-            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@24w_24h.webp',
+            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@48w_48h',
+            'timestamp': time.time(),
             'authorName': 'xfgryujk',
             'giftName': '礼花',
             'giftNum': 1,
             'totalCoin': 28000
         })
         room.send_message(Command.ADD_GIFT, {
-            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@24w_24h.webp',
+            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@48w_48h',
+            'timestamp': time.time(),
             'authorName': 'xfgryujk',
             'giftName': '节奏风暴',
             'giftNum': 1,
             'totalCoin': 100000
         })
         room.send_message(Command.ADD_GIFT, {
-            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@24w_24h.webp',
+            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@48w_48h',
+            'timestamp': time.time(),
             'authorName': 'xfgryujk',
             'giftName': '摩天大楼',
             'giftNum': 1,
             'totalCoin': 450000
         })
         room.send_message(Command.ADD_GIFT, {
-            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@24w_24h.webp',
+            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@48w_48h',
+            'timestamp': time.time(),
             'authorName': 'xfgryujk',
             'giftName': '小电视飞船',
             'giftNum': 1,
