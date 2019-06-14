@@ -1,11 +1,11 @@
 <template>
   <yt-live-chat-paid-message-renderer class="style-scope yt-live-chat-item-list-renderer" allow-animations :style="{
-      '--yt-live-chat-paid-message-primary-color': getColor('contentBg'),
-      '--yt-live-chat-paid-message-secondary-color': getColor('headerBg'),
-      '--yt-live-chat-paid-message-header-color': getColor('header'),
-      '--yt-live-chat-paid-message-author-name-color': getColor('authorName'),
-      '--yt-live-chat-paid-message-timestamp-color': getColor('time'),
-      '--yt-live-chat-paid-message-color': getColor('content'),
+      '--yt-live-chat-paid-message-primary-color': color.contentBg,
+      '--yt-live-chat-paid-message-secondary-color': color.headerBg,
+      '--yt-live-chat-paid-message-header-color': color.header,
+      '--yt-live-chat-paid-message-author-name-color': color.authorName,
+      '--yt-live-chat-paid-message-timestamp-color': color.time,
+      '--yt-live-chat-paid-message-color': color.content
     }"
   >
     <div id="card" class="style-scope yt-live-chat-paid-message-renderer">
@@ -102,13 +102,14 @@ export default {
     time: String,
     content: String
   },
-  methods: {
-    getColor(name) {
+  computed: {
+    color() {
       for (const color of COLORS) {
-        if (this.price >= color.price)
-          return color[name]
+        if (this.price >= color.price) {
+          return color
+        }
       }
-      return COLORS[0][name]
+      return COLORS[COLORS.length - 1]
     }
   }
 }

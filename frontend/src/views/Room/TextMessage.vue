@@ -29,8 +29,8 @@ const AUTHOR_TYPE_TO_TEXT = [
   'moderator', // 房管
   'owner' // 主播
 ]
-const REPEATED_MARK_COLOR_START = [0x21, 0x96, 0xF3]
-const REPEATED_MARK_COLOR_END = [0xFF, 0x57, 0x22]
+const REPEATED_MARK_COLOR_START = [64, 158, 255]
+const REPEATED_MARK_COLOR_END = [245, 108, 108]
 
 export default {
   name: 'TextMessage',
@@ -67,7 +67,7 @@ export default {
 
 <style>
 yt-live-chat-text-message-renderer>#content>.el-badge {
-  margin-left: 0.5em;
+  margin-left: 10px;
 }
 
 yt-live-chat-text-message-renderer>#content>.el-badge .el-badge__content {

@@ -14,24 +14,30 @@
         </div>
       </yt-live-chat-ticker-paid-message-item-renderer>
     </yt-live-chat-ticker-renderer> -->
-    <yt-live-chat-item-list-renderer ref="list" class="style-scope yt-live-chat-renderer">
-      <template v-for="message in messages">
-        <text-message :key="message.id" v-if="message.type == 0"
-          class="style-scope yt-live-chat-item-list-renderer"
-          :avatarUrl="message.avatarUrl" :time="message.time" :authorName="message.authorName"
-          :authorType="message.authorType" :content="message.content" :repeated="message.repeated"
-        ></text-message>
-        <legacy-paid-message :key="message.id" v-else-if="message.type == 1"
-          class="style-scope yt-live-chat-item-list-renderer"
-          :avatarUrl="message.avatarUrl" :title="message.title" :content="message.content"
-          :time="message.time"
-        ></legacy-paid-message>
-        <paid-message :key="message.id" v-else
-          class="style-scope yt-live-chat-item-list-renderer"
-          :price="message.price" :avatarUrl="message.avatarUrl" :authorName="message.authorName"
-          :time="message.time" :content="message.content"
-        ></paid-message>
-      </template>
+    <yt-live-chat-item-list-renderer class="style-scope yt-live-chat-renderer" allow-scroll>
+      <div id="item-scroller" ref="scroller" class="style-scope yt-live-chat-item-list-renderer animated">
+        <div id="item-offset" class="style-scope yt-live-chat-item-list-renderer" style="height: 1800px;">
+          <div id="items" class="style-scope yt-live-chat-item-list-renderer" style="overflow: hidden; transform: translateY(0px);">
+            <template v-for="message in messages">
+              <text-message :key="message.id" v-if="message.type == 0"
+                class="style-scope yt-live-chat-item-list-renderer"
+                :avatarUrl="message.avatarUrl" :time="message.time" :authorName="message.authorName"
+                :authorType="message.authorType" :content="message.content" :repeated="message.repeated"
+              ></text-message>
+              <legacy-paid-message :key="message.id" v-else-if="message.type == 1"
+                class="style-scope yt-live-chat-item-list-renderer"
+                :avatarUrl="message.avatarUrl" :title="message.title" :content="message.content"
+                :time="message.time"
+              ></legacy-paid-message>
+              <paid-message :key="message.id" v-else
+                class="style-scope yt-live-chat-item-list-renderer"
+                :price="message.price" :avatarUrl="message.avatarUrl" :authorName="message.authorName"
+                :time="message.time" :content="message.content"
+              ></paid-message>
+            </template>
+          </div>
+        </div>
+      </div>
     </yt-live-chat-item-list-renderer>
   </yt-live-chat-renderer>
 </template>
@@ -93,7 +99,7 @@ export default {
     this.websocket.close()
   },
   updated() {
-    this.$refs.list.scrollTo(0, this.$refs.list.scrollHeight)
+    this.$refs.scroller.scrollTo(0, this.$refs.scroller.scrollHeight)
   },
   methods: {
     onWsOpen() {
@@ -105,51 +111,49 @@ export default {
       }))
     },
     onWsMessage(event) {
-      let body = JSON.parse(event.data)
+      let {cmd, data} = JSON.parse(event.data)
       let message = null
-      let time, price
-      switch(body.cmd) {
+      let time = data.timestamp ? new Date(data.timestamp * 1000) : new Date()
+      switch(cmd) {
       case COMMAND_ADD_TEXT:
-        if (!this.filterTextMessage(body.data) || this.mergeSimilar(body.data.content)) {
+        if (!this.filterTextMessage(data) || this.mergeSimilar(data.content)) {
           break
         }
-        time = new Date(body.data.timestamp * 1000)
         message = {
           id: this.nextId++,
           type: 0, // TextMessage
-          avatarUrl: body.data.avatarUrl,
+          avatarUrl: data.avatarUrl,
           time: `${time.getMinutes()}:${time.getSeconds()}`,
-          authorName: body.data.authorName,
-          authorType: body.data.authorType,
-          content: body.data.content,
+          authorName: data.authorName,
+          authorType: data.authorType,
+          content: data.content,
           repeated: 1
         }
         break
-      case COMMAND_ADD_GIFT:
-        price = body.data.totalCoin / 1000
+      case COMMAND_ADD_GIFT: {
+        let price = data.totalCoin / 1000
         if (price < this.config.minGiftPrice) // 丢人
           break
-        time = new Date(body.data.timestamp * 1000)
         message = {
           id: this.nextId++,
           type: 2, // PaidMessage
-          avatarUrl: body.data.avatarUrl,
-          authorName: body.data.authorName,
+          avatarUrl: data.avatarUrl,
+          authorName: data.authorName,
           price: price,
           time: `${time.getMinutes()}:${time.getSeconds()}`,
-          content: `Sent ${body.data.giftName}x${body.data.giftNum}`
+          content: `Sent ${data.giftName}x${data.giftNum}`
         }
         break
+      }
       case COMMAND_ADD_VIP:
-        time = new Date(body.data.timestamp * 1000)
         message = {
           id: this.nextId++,
           type: 1, // LegacyPaidMessage
-          avatarUrl: body.data.avatarUrl,
+          avatarUrl: data.avatarUrl,
           time: `${time.getMinutes()}:${time.getSeconds()}`,
-          authorName: body.data.authorName,
+          authorName: data.authorName,
           title: 'NEW MEMBER!',
-          content: `Welcome ${body.data.authorName}`
+          content: `Welcome ${data.authorName}`
         }
         break
       }
@@ -203,12 +207,22 @@ export default {
 </script>
 
 <style>
-yt-live-chat-renderer {
+yt-live-chat-renderer, yt-live-chat-item-list-renderer #item-scroller {
   height: 100%;
 }
 
-yt-live-chat-item-list-renderer {
-  overflow-y: scroll !important;
+yt-live-chat-renderer ::-webkit-scrollbar {
+  content: '';
+}
+
+yt-live-chat-renderer ::-webkit-scrollbar-thumb {
+  background-color: hsla(0, 0%, 53.3%, .2);
+  border: 2px solid #fcfcfc;
+  min-height: 30px;
+}
+
+yt-live-chat-renderer ::-webkit-scrollbar-track {
+  background-color: #fcfcfc;
 }
 </style>
 

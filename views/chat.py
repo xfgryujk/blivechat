@@ -133,10 +133,13 @@ class RoomManager:
     # 测试用
     @staticmethod
     def __send_test_message(room):
-        room.send_message(Command.ADD_TEXT, {
-            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@48w_48h',
-            'timestamp': time.time(),
+        base_data = {
+            'avatarUrl':  'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@48w_48h',
+            'timestamp':  time.time(),
             'authorName': 'xfgryujk',
+        }
+        text_data = {
+            **base_data,
             'authorType': 0,
             'content': '我能吞下玻璃而不伤身体',
             'privilegeType': 0,
@@ -144,56 +147,30 @@ class RoomManager:
             'authorLevel': 20,
             'isNewbie': False,
             'isMobileVerified': True
-        })
-        room.send_message(Command.ADD_TEXT, {
-            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@48w_48h',
-            'timestamp': time.time(),
-            'authorName': '主播',
-            'authorType': 3,
-            'content': "I can eat glass, it doesn't hurt me.",
-            'privilegeType': 0,
-            'isGiftDanmaku': False,
-            'authorLevel': 20,
-            'isNewbie': False,
-            'isMobileVerified': True
-        })
-        room.send_message(Command.ADD_VIP, {
-            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@48w_48h',
-            'timestamp': time.time(),
-            'authorName': 'xfgryujk',
-        })
-        room.send_message(Command.ADD_GIFT, {
-            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@48w_48h',
-            'timestamp': time.time(),
-            'authorName': 'xfgryujk',
+        }
+        vip_data = base_data
+        gift_data = {
+            **base_data,
             'giftName': '礼花',
             'giftNum': 1,
             'totalCoin': 28000
-        })
-        room.send_message(Command.ADD_GIFT, {
-            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@48w_48h',
-            'timestamp': time.time(),
-            'authorName': 'xfgryujk',
-            'giftName': '节奏风暴',
-            'giftNum': 1,
-            'totalCoin': 100000
-        })
-        room.send_message(Command.ADD_GIFT, {
-            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@48w_48h',
-            'timestamp': time.time(),
-            'authorName': 'xfgryujk',
-            'giftName': '摩天大楼',
-            'giftNum': 1,
-            'totalCoin': 450000
-        })
-        room.send_message(Command.ADD_GIFT, {
-            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@48w_48h',
-            'timestamp': time.time(),
-            'authorName': 'xfgryujk',
-            'giftName': '小电视飞船',
-            'giftNum': 1,
-            'totalCoin': 1245000
-        })
+        }
+        room.send_message(Command.ADD_TEXT, text_data)
+        text_data['authorName'] = '主播'
+        text_data['authorType'] = 3
+        text_data['content'] = "I can eat glass, it doesn't hurt me."
+        room.send_message(Command.ADD_TEXT, text_data)
+        room.send_message(Command.ADD_VIP, vip_data)
+        room.send_message(Command.ADD_GIFT, gift_data)
+        gift_data['giftName'] = '节奏风暴'
+        gift_data['totalCoin'] = 100000
+        room.send_message(Command.ADD_GIFT, gift_data)
+        gift_data['giftName'] = '摩天大楼'
+        gift_data['totalCoin'] = 450000
+        room.send_message(Command.ADD_GIFT, gift_data)
+        gift_data['giftName'] = '小电视飞船'
+        gift_data['totalCoin'] = 1245000
+        room.send_message(Command.ADD_GIFT, gift_data)
 
 
 room_manager = RoomManager()
