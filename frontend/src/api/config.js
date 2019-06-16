@@ -1,5 +1,7 @@
 import axios from 'axios'
 
+import {mergeConfig} from '@/utils'
+
 const DEFAULT_CSS = `@import url("https://fonts.googleapis.com/css?family=Changa%20One");
 @import url("https://fonts.googleapis.com/css?family=Imprima");
 /* @import url("https://fonts.lug.ustc.edu.cn/css?family=Changa%20One"); */
@@ -230,16 +232,8 @@ export const DEFAULT_CONFIG = {
   css: DEFAULT_CSS
 }
 
-function mergeConfig (config) {
-  let res = {}
-  for (let i in DEFAULT_CONFIG) {
-    res[i] = i in config ? config[i] : DEFAULT_CONFIG[i]
-  }
-  return res
-}
-
 export function setLocalConfig (config) {
-  config = mergeConfig(config)
+  config = mergeConfig(config, DEFAULT_CONFIG)
   window.localStorage.config = JSON.stringify(config)
 }
 
@@ -247,22 +241,22 @@ export function getLocalConfig () {
   if (!window.localStorage.config) {
     return DEFAULT_CONFIG
   }
-  return mergeConfig(JSON.parse(window.localStorage.config))
+  return mergeConfig(JSON.parse(window.localStorage.config), DEFAULT_CONFIG)
 }
 
 export async function createRemoteConfig (config) {
-  config = mergeConfig(config)
+  config = mergeConfig(config, DEFAULT_CONFIG)
   return (await axios.post('/config', config)).data
 }
 
 export async function setRemoteConfig (id, config) {
-  config = mergeConfig(config)
+  config = mergeConfig(config, DEFAULT_CONFIG)
   return (await axios.put(`/config/${id}`, config)).data
 }
 
 export async function getRemoteConfig (id) {
   let config = (await axios.get(`/config/${id}`)).data
-  return mergeConfig(config)
+  return mergeConfig(config, DEFAULT_CONFIG)
 }
 
 export default {

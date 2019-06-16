@@ -17,6 +17,7 @@
           <el-switch v-model="form.mergeSimilarDanmaku"></el-switch>
         </el-form-item>
       </el-tab-pane>
+
       <el-tab-pane label="屏蔽">
         <el-form-item label="礼物弹幕" prop="blockGiftDanmaku">
           <el-switch v-model="form.blockGiftDanmaku"></el-switch>
@@ -37,19 +38,21 @@
           <el-input v-model="form.blockUsers" type="textarea" :rows="5" placeholder="一行一个"></el-input>
         </el-form-item>
       </el-tab-pane>
+
       <el-tab-pane label="样式">
         <el-form-item label="CSS" prop="css">
           <el-input v-model="form.css" type="textarea" :rows="20"></el-input>
         </el-form-item>
       </el-tab-pane>
     </el-tabs>
+    
     <el-divider></el-divider>
     <el-form-item label="房间URL" v-show="roomUrl">
       <el-input ref="roomUrlInput" readonly :value="roomUrl" style="width: calc(100% - 6em); margin-right: 1em;"></el-input>
       <el-button type="primary" @click="copyUrl">复制</el-button>
     </el-form-item>
     <el-form-item>
-      <el-button type="primary" @click="saveConfig()">保存配置</el-button>
+      <el-button type="primary" @click="saveConfig">保存配置</el-button>
       <el-button type="primary" :disabled="!roomUrl" @click="enterRoom">进入房间</el-button>
     </el-form-item>
   </el-form>

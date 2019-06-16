@@ -7,7 +7,7 @@ import axios from 'axios'
 import App from './App.vue'
 import Layout from './layout'
 import Home from './views/Home.vue'
-import StyleGenerator from './views/StyleGenerator.vue'
+import StyleGenerator from './views/StyleGenerator'
 import Room from './views/Room'
 import NotFound from './views/NotFound.vue'
 
