@@ -1,5 +1,5 @@
 <template>
-  <el-row>
+  <el-row :gutter="20">
     <el-col :span="12">
       <el-form label-width="150px" size="mini">
         <h3>描边</h3>
@@ -132,13 +132,13 @@
         <el-form-item label="SuperChat内容字体">
           <el-autocomplete v-model="form.scContentFont" :fetch-suggestions="getFontSuggestions"></el-autocomplete>
         </el-form-item>
-        <el-form-item label="SuperChat字体尺寸">
+        <el-form-item label="SuperChat内容字体尺寸">
           <el-input v-model.number="form.scContentFontSize" type="number" min="0"></el-input>
         </el-form-item>
-        <el-form-item label="SuperChat行高（0为默认）">
+        <el-form-item label="SuperChat内容行高（0为默认）">
           <el-input v-model.number="form.scContentLineHeight" type="number" min="0"></el-input>
         </el-form-item>
-        <el-form-item label="SuperChat颜色">
+        <el-form-item label="SuperChat内容颜色">
           <el-color-picker v-model="form.scContentColor"></el-color-picker>
         </el-form-item>
         <el-form-item label="显示新舰长背景">
@@ -173,6 +173,9 @@
         <el-form-item label="反向滑动">
           <el-switch v-model="form.reverseSlide"></el-switch>
         </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="playAnimation">播放动画</el-button>
+        </el-form-item>
 
         <h3>结果</h3>
         <el-form-item label="CSS">
@@ -185,7 +188,11 @@
       </el-form>
     </el-col>
     <el-col :span="12">
-      预览
+      <div id="example-container">
+        <div id="fakebody">
+          <chat-renderer :messages="messages" :css="exampleCss"></chat-renderer>
+        </div>
+      </div>
     </el-col>
   </el-row>
 </template>
@@ -195,15 +202,98 @@ import _ from 'lodash'
 
 import stylegen from './stylegen'
 import fonts from './fonts'
+import ChatRenderer from '@/components/ChatRenderer'
+
+let time = new Date()
+let textMessageTemplate = {
+  id: 0,
+  type: 0, // TextMessage
+  avatarUrl: 'https://static.hdslb.com/images/member/noface.gif',
+  time: `${time.getMinutes()}:${time.getSeconds()}`,
+  authorName: '',
+  authorType: 0,
+  content: '',
+  repeated: 1
+}
+let legacyPaidMessageTemplate = {
+  id: 0,
+  type: 1, // LegacyPaidMessage
+  avatarUrl: 'https://static.hdslb.com/images/member/noface.gif',
+  time: `${time.getMinutes()}:${time.getSeconds()}`,
+  authorName: '',
+  title: 'NEW MEMBER!',
+  content: ''
+}
+let paidMessageTemplate = {
+  id: 0,
+  type: 2, // PaidMessage
+  avatarUrl: 'https://static.hdslb.com/images/member/noface.gif',
+  authorName: '',
+  price: 0,
+  time: `${time.getMinutes()}:${time.getSeconds()}`,
+  content: ''
+}
+let nextId = 0
+const EXAMPLE_MESSAGES = [
+  {
+    ...textMessageTemplate,
+    id: nextId++,
+    authorName: 'mob路人',
+    content: '8888888888',
+    repeated: 12
+  }, {
+    ...textMessageTemplate,
+    id: nextId++,
+    authorName: 'member舰长',
+    authorType: 1,
+    content: '草',
+    repeated: 3
+  }, {
+    ...textMessageTemplate,
+    id: nextId++,
+    authorName: 'admin房管',
+    authorType: 2,
+    content: 'kksk'
+  }, {
+    ...legacyPaidMessageTemplate,
+    id: nextId++,
+    authorName: 'Paryi',
+    content: 'Welcome Paryi'
+  }, {
+    ...paidMessageTemplate,
+    id: nextId++,
+    authorName: '石油佬',
+    price: 1245,
+    content: 'Sent 小电视飞船x1'
+  }, {
+    ...textMessageTemplate,
+    id: nextId++,
+    authorName: 'streamer主播',
+    authorType: 3,
+    content: '感谢石油佬送的小电视'
+  }, {
+    ...paidMessageTemplate,
+    id: nextId++,
+    authorName: '臭DD',
+    price: 28,
+    content: 'Sent 礼花x1'
+  }
+]
 
 export default {
   name: 'StyleGenerator',
+  components: {
+    ChatRenderer
+  },
   data() {
     let config = stylegen.getLocalConfig()
+    let result = stylegen.getStyle(config)
     return {
       FONTS: [...fonts.LOCAL_FONTS, ...fonts.NETWORK_FONTS],
       form: {...config},
-      result: stylegen.getStyle(config)
+      result,
+      exampleCss: result.replace(/^body\b/gm, '#fakebody'),
+      messages: EXAMPLE_MESSAGES
     }
   },
   computed: {
@@ -222,6 +312,10 @@ export default {
       }
       callback(res)
     },
+    playAnimation() {
+      this.messages = []
+      this.$nextTick(() => this.messages = EXAMPLE_MESSAGES)
+    },
     copyResult() {
       this.$refs.result.select()
       document.execCommand('Copy')
@@ -231,10 +325,13 @@ export default {
     }
   },
   watch: {
-    computedResult: _.debounce(function (result) {
-      this.result = result
+    computedResult: _.debounce(function (val) {
+      this.result = val
       stylegen.setLocalConfig(this.form)
-    }, 500)
+    }, 500),
+    result (val) {
+      this.exampleCss = val.replace(/^body\b/gm, '#fakebody')
+    }
   }
 }
 </script>
@@ -242,5 +339,38 @@ export default {
 <style scoped>
 .el-form {
   max-width: 800px;
+}
+
+#example-container {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  width: 400px;
+  height: calc(100vh - 110px);
+
+  background-color: #444;
+  background-image:
+    -moz-linear-gradient(45deg, #333 25%, transparent 25%),
+    -moz-linear-gradient(-45deg, #333 25%, transparent 25%),
+    -moz-linear-gradient(45deg, transparent 75%, #333 75%),
+    -moz-linear-gradient(-45deg, transparent 75%, #333 75%);
+  background-image:
+    -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.25, #333), color-stop(.25, transparent)),
+    -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.25, #333), color-stop(.25, transparent)),
+    -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.75, transparent), color-stop(.75, #333)),
+    -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.75, transparent), color-stop(.75, #333));
+
+  -moz-background-size:32px 32px;
+  background-size:32px 32px;
+  -webkit-background-size:32px 32px;
+
+  background-position:0 0, 16px 0, 16px -16px, 0px 16px;
+
+  padding: 25px;
+}
+
+#fakebody {
+  outline: 1px #999 dashed;
+  height: 100%;
 }
 </style>

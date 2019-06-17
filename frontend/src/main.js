@@ -8,7 +8,7 @@ import App from './App.vue'
 import Layout from './layout'
 import Home from './views/Home.vue'
 import StyleGenerator from './views/StyleGenerator'
-import Room from './views/Room'
+import Room from './views/Room.vue'
 import NotFound from './views/NotFound.vue'
 
 if (process.env.NODE_ENV === 'development') {

@@ -31,12 +31,12 @@ export const DEFAULT_CONFIG = {
   timeLineHeight: 0,
   timeColor: '#999999',
 
-  bgColor: '#000000',
+  bgColor: 'rgba(0, 0, 0, 0)',
   useBarsInsteadOfBg: false,
-  messageBgColor: '#cccccc',
-  ownerMessageBgColor: '#ffd600',
-  moderatorMessageBgColor: '#5e84f1',
-  memberMessageBgColor: '#0f9d58',
+  messageBgColor: 'rgba(204, 204, 204, 0)',
+  ownerMessageBgColor: 'rgba(255, 214, 0, 0)',
+  moderatorMessageBgColor: 'rgba(94, 132, 241, 0)',
+  memberMessageBgColor: 'rgba(15, 157, 88, 0)',
 
   firstLineFont: 'Changa One',
   firstLineFontSize: 20,
@@ -47,7 +47,7 @@ export const DEFAULT_CONFIG = {
   secondLineLineHeight: 0,
   secondLineColor: '#ffffff',
   scContentFont: 'Imprima',
-  scContentFontSize: 28,
+  scContentFontSize: 18,
   scContentLineHeight: 0,
   scContentColor: '#ffffff',
   showNewMemberBg: true,
@@ -142,8 +142,11 @@ yt-live-chat-paid-message-renderer #header {
 
 /* Avatars. */
 yt-live-chat-text-message-renderer #author-photo,
+yt-live-chat-text-message-renderer #author-photo img,
 yt-live-chat-paid-message-renderer #author-photo,
-yt-live-chat-legacy-paid-message-renderer #author-photo {
+yt-live-chat-paid-message-renderer #author-photo img,
+yt-live-chat-legacy-paid-message-renderer #author-photo,
+yt-live-chat-legacy-paid-message-renderer #author-photo img {
   ${config.showAvatars ? '' : 'display: none !important;'}
   width: ${config.avatarSize}px !important;
   height: ${config.avatarSize}px !important;
@@ -159,7 +162,7 @@ yt-live-chat-text-message-renderer #author-badges {
 
 /* Timestamps. */
 yt-live-chat-text-message-renderer #timestamp {
-  ${config.showTime ? '' : 'display: none !important;'}
+  display: ${config.showTime ? 'inline' : 'none'} !important;
   ${config.timeColor ? `color: ${config.timeColor} !important;` : ''}
   font-family: "${config.timeFont}", sans-serif;
   font-size: ${config.timeFontSize}px !important;

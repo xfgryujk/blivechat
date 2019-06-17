@@ -71,6 +71,8 @@ yt-live-chat-text-message-renderer>#content>.el-badge {
 }
 
 yt-live-chat-text-message-renderer>#content>.el-badge .el-badge__content {
+  font-size: 12px !important;
+  line-height: 18px !important;
   text-shadow: none !important;
   font-family: sans-serif !important;
   background-color: var(--repeated-mark-color) !important;
