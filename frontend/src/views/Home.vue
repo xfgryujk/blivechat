@@ -10,37 +10,46 @@
         <el-form-item label="房间ID" required prop="roomId">
           <el-input v-model.number="form.roomId" type="number" min="1"></el-input>
         </el-form-item>
-        <el-form-item label="最低显示礼物价格（元）" prop="minGiftPrice">
+        <el-form-item label="显示弹幕">
+          <el-switch v-model="form.showDanmaku"></el-switch>
+        </el-form-item>
+        <el-form-item label="显示礼物和新舰长">
+          <el-switch v-model="form.showGift"></el-switch>
+        </el-form-item>
+        <el-form-item label="合并相似弹幕">
+          <el-switch v-model="form.mergeSimilarDanmaku"></el-switch>
+        </el-form-item>
+        <el-form-item label="最低显示礼物价格（元）">
           <el-input v-model.number="form.minGiftPrice" type="number" min="0"></el-input>
         </el-form-item>
-        <el-form-item label="合并相似弹幕" prop="mergeSimilarDanmaku">
-          <el-switch v-model="form.mergeSimilarDanmaku"></el-switch>
+        <el-form-item label="弹幕最大速度（条/秒，0为无限制）">
+          <el-input v-model.number="form.maxSpeed" type="number" min="0"></el-input>
         </el-form-item>
       </el-tab-pane>
 
       <el-tab-pane label="屏蔽">
-        <el-form-item label="礼物弹幕" prop="blockGiftDanmaku">
+        <el-form-item label="礼物弹幕">
           <el-switch v-model="form.blockGiftDanmaku"></el-switch>
         </el-form-item>
-        <el-form-item label="用户等级低于" prop="blockLevel">
+        <el-form-item label="用户等级低于">
           <el-slider v-model="form.blockLevel" show-input :min="0" :max="60"></el-slider>
         </el-form-item>
-        <el-form-item label="非正式会员" prop="blockNewbie">
+        <el-form-item label="非正式会员">
           <el-switch v-model="form.blockNewbie"></el-switch>
         </el-form-item>
-        <el-form-item label="未绑定手机用户" prop="blockNotMobileVerified">
+        <el-form-item label="未绑定手机用户">
           <el-switch v-model="form.blockNotMobileVerified"></el-switch>
         </el-form-item>
-        <el-form-item label="屏蔽关键词" prop="blockKeywords">
+        <el-form-item label="屏蔽关键词">
           <el-input v-model="form.blockKeywords" type="textarea" :rows="5" placeholder="一行一个"></el-input>
         </el-form-item>
-        <el-form-item label="屏蔽用户" prop="blockUsers">
+        <el-form-item label="屏蔽用户">
           <el-input v-model="form.blockUsers" type="textarea" :rows="5" placeholder="一行一个"></el-input>
         </el-form-item>
       </el-tab-pane>
 
       <el-tab-pane label="样式">
-        <el-form-item label="CSS" prop="css">
+        <el-form-item label="CSS">
           <el-input v-model="form.css" type="textarea" :rows="20"></el-input>
         </el-form-item>
       </el-tab-pane>

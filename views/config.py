@@ -8,9 +8,9 @@ from typing import *
 configs: Dict[str, dict] = {}
 
 ALLOWED_FIELDS = (
-    'minGiftPrice', 'mergeSimilarDanmaku', 'blockGiftDanmaku', 'blockLevel',
-    'blockNewbie', 'blockNotMobileVerified', 'blockKeywords', 'blockUsers',
-    'css'
+    'showDanmaku', 'showGift', 'mergeSimilarDanmaku', 'minGiftPrice', 'maxSpeed',
+    'blockGiftDanmaku', 'blockLevel', 'blockNewbie', 'blockNotMobileVerified',
+    'blockKeywords', 'blockUsers', 'css'
 )
 
 

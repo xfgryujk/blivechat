@@ -15,7 +15,7 @@
       </yt-live-chat-ticker-paid-message-item-renderer>
     </yt-live-chat-ticker-renderer> -->
     <yt-live-chat-item-list-renderer class="style-scope yt-live-chat-renderer" allow-scroll>
-      <div id="item-scroller" ref="scroller" class="style-scope yt-live-chat-item-list-renderer animated">
+      <div id="item-scroller" ref="scroller" class="style-scope yt-live-chat-item-list-renderer animated" @scroll="onScroll">
         <div id="item-offset" class="style-scope yt-live-chat-item-list-renderer" style="height: 1800px;">
           <div id="items" class="style-scope yt-live-chat-item-list-renderer" style="overflow: hidden; transform: translateY(0px);">
             <template v-for="message in messages">
@@ -47,6 +47,7 @@
 import TextMessage from './TextMessage.vue'
 import LegacyPaidMessage from './LegacyPaidMessage.vue'
 import PaidMessage from './PaidMessage.vue'
+import { METHODS } from 'http';
 
 export default {
   name: 'ChatRenderer',
@@ -63,22 +64,34 @@ export default {
     let styleElement = document.createElement('style')
     document.head.appendChild(styleElement)
     return {
-      styleElement
+      styleElement,
+      canAutoScroll: true
     }
   },
   mounted() {
     this.styleElement.innerText = this.css
-    this.$refs.scroller.scrollTo(0, this.$refs.scroller.scrollHeight)
+    this.scrollToBottom()
   },
   beforeDestroy() {
     document.head.removeChild(this.styleElement)
   },
   updated() {
-    this.$refs.scroller.scrollTo(0, this.$refs.scroller.scrollHeight)
+    if (this.canAutoScroll) {
+      this.scrollToBottom()
+    }
   },
   watch: {
     css(val) {
       this.styleElement.innerText = val
+    }
+  },
+  methods: {
+    scrollToBottom() {
+      this.$refs.scroller.scrollTop = this.$refs.scroller.scrollHeight
+    },
+    onScroll() {
+      this.canAutoScroll = Math.abs(this.$refs.scroller.scrollHeight - this.$refs.scroller.scrollTop
+                                    - this.$refs.scroller.clientHeight) < 2
     }
   }
 }

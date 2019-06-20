@@ -20,11 +20,14 @@ export default {
     let cfg = {...config.DEFAULT_CONFIG}
     cfg.blockKeywords = cfg.blockKeywords.split('\n').filter(val => val)
     cfg.blockUsers = cfg.blockUsers.split('\n').filter(val => val)
+    cfg.maxSpeed = 0
     return {
       config: cfg,
       websocket: null,
-      messages: [],
-      nextId: 0
+      messagesBufferTimerId: null,
+      nextId: 0,
+      messagesBuffer: [], // 暂时不显示的消息，可能会丢弃
+      messages: [] // 正在显示的消息
     }
   },
   async created() {
@@ -46,7 +49,21 @@ export default {
     }
   },
   beforeDestroy() {
+    if (this.messagesBufferTimerId) {
+      window.clearInterval(this.messagesBufferTimerId)
+    }
     this.websocket.close()
+  },
+  watch: {
+    config(val) {
+      if (this.messagesBufferTimerId) {
+        window.clearInterval(this.messagesBufferTimerId)
+        this.messagesBufferTimerId = null
+      }
+      if (val.maxSpeed > 0) {
+        this.messagesBufferTimerId = window.setInterval(this.handleMessagesBuffer.bind(this), 1000 / val.maxSpeed)
+      }
+    }
   },
   methods: {
     onWsOpen() {
@@ -63,11 +80,10 @@ export default {
       let time = data.timestamp ? new Date(data.timestamp * 1000) : new Date()
       switch(cmd) {
       case COMMAND_ADD_TEXT:
-        if (!this.filterTextMessage(data) || this.mergeSimilar(data.content)) {
+        if (!this.config.showDanmaku || !this.filterTextMessage(data) || this.mergeSimilar(data.content)) {
           break
         }
         message = {
-          id: this.nextId++,
           type: 0, // TextMessage
           avatarUrl: data.avatarUrl,
           time: `${time.getMinutes()}:${time.getSeconds()}`,
@@ -79,11 +95,13 @@ export default {
         }
         break
       case COMMAND_ADD_GIFT: {
+        if (!this.config.showGift) {
+          break
+        }
         let price = data.totalCoin / 1000
         if (price < this.config.minGiftPrice) // 丢人
           break
         message = {
-          id: this.nextId++,
           type: 2, // PaidMessage
           avatarUrl: data.avatarUrl,
           authorName: data.authorName,
@@ -94,8 +112,10 @@ export default {
         break
       }
       case COMMAND_ADD_MEMBER:
+        if (!this.config.showGift) {
+          break
+        }
         message = {
-          id: this.nextId++,
           type: 1, // LegacyPaidMessage
           avatarUrl: data.avatarUrl,
           time: `${time.getMinutes()}:${time.getSeconds()}`,
@@ -106,10 +126,7 @@ export default {
         break
       }
       if (message) {
-        this.messages.push(message)
-        if (this.messages.length > 50) {
-          this.messages.splice(0, this.messages.length - 50)
-        }
+        this.addMessageBuffer(message)
       }
     },
     filterTextMessage(data) {
@@ -149,6 +166,33 @@ export default {
         }
       }
       return false
+    },
+    addMessageBuffer(message) {
+      if (this.config.maxSpeed > 0 && message.type === 0) {
+        message.addTime = new Date()
+        this.messagesBuffer.push(message)
+      } else {
+        // 无速度限制或者是礼物
+        this.addMessageShow(message)
+      }
+    },
+    addMessageShow(message) {
+      message.id = this.nextId++
+      this.messages.push(message)
+      if (this.messages.length > 50) {
+        this.messages.splice(0, this.messages.length - 50)
+      }
+    },
+    handleMessagesBuffer() {
+      // 3秒内未发出则丢弃
+      let curTime = new Date()
+      while (this.messagesBuffer.length > 0 && curTime - this.messagesBuffer[0].addTime > 3 * 1000) {
+        this.messagesBuffer.shift()
+      }
+      if (this.messagesBuffer.length <= 0) {
+        return
+      }
+      this.addMessageShow(this.messagesBuffer.shift())
     }
   }
 }

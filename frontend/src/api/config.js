@@ -6,6 +6,9 @@ import stylegen from '@/views/StyleGenerator/stylegen'
 export const DEFAULT_CONFIG = {
   minGiftPrice: 6.911, // $1
   mergeSimilarDanmaku: true,
+  showDanmaku: true,
+  showGift: true,
+  maxSpeed: 4,
 
   blockGiftDanmaku: true,
   blockLevel: 0,
