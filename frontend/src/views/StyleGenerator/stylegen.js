@@ -155,7 +155,7 @@ yt-live-chat-legacy-paid-message-renderer #author-photo img {
 }
 
 /* Hide badges. */
-yt-live-chat-text-message-renderer #author-badges {
+yt-live-chat-text-message-renderer #chat-badges {
   ${config.showBadges ? '' : 'display: none !important;'}
   vertical-align: text-top !important;
 }

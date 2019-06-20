@@ -1,18 +1,21 @@
 <template>
   <yt-live-chat-text-message-renderer :author-type="authorTypeText">
-    <yt-img-shadow id="author-photo" class="no-transition style-scope yt-live-chat-text-message-renderer" height="24"
-      width="24" style="background-color: transparent;" loaded
-    >
-      <img id="img" class="style-scope yt-img-shadow" alt="" height="24" width="24" :src="avatarUrl">
-    </yt-img-shadow>
+    <img-shadow id="author-photo" height="24" width="24" class="style-scope yt-live-chat-text-message-renderer"
+      :imgUrl="avatarUrl"
+    ></img-shadow>
     <div id="content" class="style-scope yt-live-chat-text-message-renderer">
       <span id="timestamp" class="style-scope yt-live-chat-text-message-renderer">{{time}}</span>
       <yt-live-chat-author-chip class="style-scope yt-live-chat-text-message-renderer">
         <span id="author-name" dir="auto" class="style-scope yt-live-chat-author-chip" :type="authorTypeText">
           {{authorName}}
+          <!-- 这里是已验证勋章 -->
           <span id="chip-badges" class="style-scope yt-live-chat-author-chip"></span>
         </span>
-        <span id="chat-badges" class="style-scope yt-live-chat-author-chip"></span>
+        <span id="chat-badges" class="style-scope yt-live-chat-author-chip">
+          <author-badge class="style-scope yt-live-chat-author-chip"
+            :isAdmin="authorType === 2" :privilegeType="privilegeType"
+          ></author-badge>
+        </span>
       </yt-live-chat-author-chip>
       <span id="message" class="style-scope yt-live-chat-text-message-renderer">{{content}}</span>
       <el-badge :value="repeated" :max="99" v-show="repeated > 1" class="style-scope yt-live-chat-text-message-renderer"
@@ -23,28 +26,31 @@
 </template>
 
 <script>
-const AUTHOR_TYPE_TO_TEXT = [
-  '',
-  'member', // 舰队
-  'moderator', // 房管
-  'owner' // 主播
-]
+import ImgShadow from './ImgShadow.vue'
+import AuthorBadge from './AuthorBadge.vue'
+import * as constants from './constants'
+
 const REPEATED_MARK_COLOR_START = [64, 158, 255]
 const REPEATED_MARK_COLOR_END = [245, 108, 108]
 
 export default {
   name: 'TextMessage',
+  components: {
+    ImgShadow,
+    AuthorBadge
+  },
   props: {
     avatarUrl: String,
     time: String,
     authorName: String,
     authorType: Number,
     content: String,
+    privilegeType: Number,
     repeated: Number
   },
   computed: {
     authorTypeText() {
-      return AUTHOR_TYPE_TO_TEXT[this.authorType]
+      return constants.AUTHOR_TYPE_TO_TEXT[this.authorType]
     },
     repeatedMarkColor() {
       let color
@@ -310,78 +316,6 @@ yt-live-chat-text-message-renderer[is-dimmed] #message.yt-live-chat-text-message
 
 yt-live-chat-text-message-renderer[is-dimmed]::before {
   background: var(--yt-live-chat-error-message-color, #f44336);
-}
-</style>
-
-<!-- yt-img-shadow -->
-<style>
-canvas.yt-img-shadow, caption.yt-img-shadow, center.yt-img-shadow, cite.yt-img-shadow, code.yt-img-shadow, dd.yt-img-shadow, del.yt-img-shadow, dfn.yt-img-shadow, div.yt-img-shadow, dl.yt-img-shadow, dt.yt-img-shadow, em.yt-img-shadow, embed.yt-img-shadow, fieldset.yt-img-shadow, font.yt-img-shadow, form.yt-img-shadow, h1.yt-img-shadow, h2.yt-img-shadow, h3.yt-img-shadow, h4.yt-img-shadow, h5.yt-img-shadow, h6.yt-img-shadow, hr.yt-img-shadow, i.yt-img-shadow, iframe.yt-img-shadow, img.yt-img-shadow, ins.yt-img-shadow, kbd.yt-img-shadow, label.yt-img-shadow, legend.yt-img-shadow, li.yt-img-shadow, menu.yt-img-shadow, object.yt-img-shadow, ol.yt-img-shadow, p.yt-img-shadow, pre.yt-img-shadow, q.yt-img-shadow, s.yt-img-shadow, samp.yt-img-shadow, small.yt-img-shadow, span.yt-img-shadow, strike.yt-img-shadow, strong.yt-img-shadow, sub.yt-img-shadow, sup.yt-img-shadow, table.yt-img-shadow, tbody.yt-img-shadow, td.yt-img-shadow, tfoot.yt-img-shadow, th.yt-img-shadow, thead.yt-img-shadow, tr.yt-img-shadow, tt.yt-img-shadow, u.yt-img-shadow, ul.yt-img-shadow, var.yt-img-shadow {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-}
-
-.yt-img-shadow[hidden] {
-  display: none !important;
-}
-
-yt-img-shadow {
-  display: inline-block;
-  opacity: 0;
-  transition: opacity 0.2s;
-  -ms-flex: none;
-  -webkit-flex: none;
-  flex: none;
-}
-
-yt-img-shadow.no-transition {
-  opacity: 1;
-  transition: none;
-}
-
-yt-img-shadow.with-placeholder {
-  background-color: transparent;
-  min-height: unset;
-  min-width: unset;
-}
-
-yt-img-shadow[loaded] {
-  opacity: 1;
-}
-
-yt-img-shadow.empty img.yt-img-shadow {
-  visibility: hidden;
-}
-
-yt-img-shadow[object-fit="FILL"] img.yt-img-shadow, yt-img-shadow[fit] img.yt-img-shadow {
-  width: 100%;
-  height: 100%;
-}
-
-yt-img-shadow[object-fit="COVER"] img.yt-img-shadow {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-yt-img-shadow[object-fit="CONTAIN"] img.yt-img-shadow {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-yt-img-shadow[object-position="LEFT"] img.yt-img-shadow {
-  object-position: left;
-}
-
-img.yt-img-shadow {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  max-height: none;
-  max-width: 100%;
-  border-radius: none;
 }
 </style>
 

@@ -9,7 +9,7 @@ import ChatRenderer from '@/components/ChatRenderer'
 const COMMAND_JOIN_ROOM = 0
 const COMMAND_ADD_TEXT = 1
 const COMMAND_ADD_GIFT = 2
-const COMMAND_ADD_VIP = 3
+const COMMAND_ADD_MEMBER = 3
 
 export default {
   name: 'Room',
@@ -74,6 +74,7 @@ export default {
           authorName: data.authorName,
           authorType: data.authorType,
           content: data.content,
+          privilegeType: data.privilegeType,
           repeated: 1
         }
         break
@@ -92,7 +93,7 @@ export default {
         }
         break
       }
-      case COMMAND_ADD_VIP:
+      case COMMAND_ADD_MEMBER:
         message = {
           id: this.nextId++,
           type: 1, // LegacyPaidMessage

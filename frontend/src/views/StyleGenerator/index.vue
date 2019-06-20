@@ -179,7 +179,7 @@
 
         <h3>结果</h3>
         <el-form-item label="CSS">
-          <el-input v-model="result" ref="result" type="textarea" :rows="10"></el-input>
+          <el-input v-model="result" ref="result" type="textarea" :rows="20"></el-input>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="copyResult">复制</el-button>
@@ -203,6 +203,7 @@ import _ from 'lodash'
 import stylegen from './stylegen'
 import fonts from './fonts'
 import ChatRenderer from '@/components/ChatRenderer'
+import * as constants from '@/components/ChatRenderer/constants'
 
 let time = new Date()
 let textMessageTemplate = {
@@ -213,6 +214,7 @@ let textMessageTemplate = {
   authorName: '',
   authorType: 0,
   content: '',
+  privilegeType: 0,
   repeated: 1
 }
 let legacyPaidMessageTemplate = {
@@ -245,14 +247,15 @@ const EXAMPLE_MESSAGES = [
     ...textMessageTemplate,
     id: nextId++,
     authorName: 'member舰长',
-    authorType: 1,
+    authorType:  constants.AUTHRO_TYPE_MEMBER,
     content: '草',
+    privilegeType: 3,
     repeated: 3
   }, {
     ...textMessageTemplate,
     id: nextId++,
     authorName: 'admin房管',
-    authorType: 2,
+    authorType: constants.AUTHRO_TYPE_ADMIN,
     content: 'kksk'
   }, {
     ...legacyPaidMessageTemplate,
@@ -269,7 +272,7 @@ const EXAMPLE_MESSAGES = [
     ...textMessageTemplate,
     id: nextId++,
     authorName: 'streamer主播',
-    authorType: 3,
+    authorType: constants.AUTHRO_TYPE_OWNER,
     content: '感谢石油佬送的小电视'
   }, {
     ...paidMessageTemplate,
@@ -325,11 +328,11 @@ export default {
     }
   },
   watch: {
-    computedResult: _.debounce(function (val) {
+    computedResult: _.debounce(function(val) {
       this.result = val
       stylegen.setLocalConfig(this.form)
     }, 500),
-    result (val) {
+    result(val) {
       this.exampleCss = val.replace(/^body\b/gm, '#fakebody')
     }
   }

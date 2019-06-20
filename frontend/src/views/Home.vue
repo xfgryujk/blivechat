@@ -10,7 +10,7 @@
         <el-form-item label="房间ID" required prop="roomId">
           <el-input v-model.number="form.roomId" type="number" min="1"></el-input>
         </el-form-item>
-        <el-form-item label="最低显示礼物价格" prop="minGiftPrice">
+        <el-form-item label="最低显示礼物价格（元）" prop="minGiftPrice">
           <el-input v-model.number="form.minGiftPrice" type="number" min="0"></el-input>
         </el-form-item>
         <el-form-item label="合并相似弹幕" prop="mergeSimilarDanmaku">

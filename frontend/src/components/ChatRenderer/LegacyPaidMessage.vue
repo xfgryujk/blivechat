@@ -1,11 +1,9 @@
 <template>
   <yt-live-chat-legacy-paid-message-renderer class="style-scope yt-live-chat-item-list-renderer">
     <div id="card" class="style-scope yt-live-chat-legacy-paid-message-renderer">
-      <yt-img-shadow id="author-photo" class="style-scope yt-live-chat-legacy-paid-message-renderer no-transition"
-        height="40" width="40" style="background-color: transparent;" loaded
-      >
-        <img id="img" class="style-scope yt-img-shadow" alt="" height="40" width="40" :src="avatarUrl">
-      </yt-img-shadow>
+      <img-shadow id="author-photo" height="40" width="40" class="style-scope yt-live-chat-legacy-paid-message-renderer"
+        :imgUrl="avatarUrl"
+      ></img-shadow>
       <div id="content" class="style-scope yt-live-chat-legacy-paid-message-renderer">
         <div id="content-primary-column" class="style-scope yt-live-chat-legacy-paid-message-renderer">
           <div id="author-name" class="style-scope yt-live-chat-legacy-paid-message-renderer">{{authorName}}</div>
@@ -22,8 +20,13 @@
 </template>
 
 <script>
+import ImgShadow from './ImgShadow.vue'
+
 export default {
   name: 'LegacyPaidMessage',
+  components: {
+    ImgShadow
+  },
   props: {
     avatarUrl: String,
     authorName: String,

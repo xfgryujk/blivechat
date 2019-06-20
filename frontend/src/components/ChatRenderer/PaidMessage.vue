@@ -10,11 +10,9 @@
   >
     <div id="card" class="style-scope yt-live-chat-paid-message-renderer">
       <div id="header" class="style-scope yt-live-chat-paid-message-renderer">
-        <yt-img-shadow id="author-photo" class="style-scope yt-live-chat-legacy-paid-message-renderer no-transition"
-          height="40" width="40" style="background-color: transparent;" loaded
-        >
-          <img id="img" class="style-scope yt-img-shadow" alt="" height="40" width="40" :src="avatarUrl">
-        </yt-img-shadow>
+        <img-shadow id="author-photo" height="40" width="40" class="style-scope yt-live-chat-paid-message-renderer"
+          :imgUrl="avatarUrl"
+        ></img-shadow>
         <div id="header-content" class="style-scope yt-live-chat-paid-message-renderer">
           <div id="header-content-primary-column" class="style-scope yt-live-chat-paid-message-renderer">
             <div id="author-name" class="style-scope yt-live-chat-paid-message-renderer">{{authorName}}</div>
@@ -33,6 +31,8 @@
 </template>
 
 <script>
+import ImgShadow from './ImgShadow.vue'
+
 const COLORS = [
   { // $100红
     price: 1245, // >= 1245，小电视飞船
@@ -95,6 +95,9 @@ const COLORS = [
 
 export default {
   name: 'PaidMessage',
+  components: {
+    ImgShadow
+  },
   props: {
     avatarUrl: String,
     authorName: String,

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
+import datetime
 import enum
 import json
 import logging
@@ -19,20 +20,31 @@ class Command(enum.IntEnum):
     JOIN_ROOM = 0
     ADD_TEXT = 1
     ADD_GIFT = 2
-    ADD_VIP = 3
+    ADD_MEMBER = 3
 
 
 _http_session = aiohttp.ClientSession()
 _avatar_url_cache: Dict[int, str] = {}
+_last_avatar_failed_time = None
 
 
 async def get_avatar_url(user_id):
     if user_id in _avatar_url_cache:
         return _avatar_url_cache[user_id]
+
+    global _last_avatar_failed_time
+    if _last_avatar_failed_time is not None:
+        if (datetime.datetime.now() - _last_avatar_failed_time).seconds < 5 * 60:
+            # 5分钟以内被ban
+            return 'https://static.hdslb.com/images/member/noface.gif'
+        else:
+            _last_avatar_failed_time = None
+
     async with _http_session.get('https://api.bilibili.com/x/space/acc/info',
                                  params={'mid': user_id}) as r:
         if r.status != 200:  # 可能会被B站ban
-            logger.error('获取头像失败：status=%d %s uid=%d', r.status, r.reason, user_id)
+            logger.warning('获取头像失败：status=%d %s uid=%d', r.status, r.reason, user_id)
+            _last_avatar_failed_time = datetime.datetime.now()
             return 'https://static.hdslb.com/images/member/noface.gif'
         data = await r.json()
     url = data['data']['face']
@@ -40,7 +52,7 @@ async def get_avatar_url(user_id):
         url += '@48w_48h'
     _avatar_url_cache[user_id] = url
 
-    if len(_avatar_url_cache) > 10000:
+    if len(_avatar_url_cache) > 50000:
         for _, key in zip(range(100), _avatar_url_cache):
             del _avatar_url_cache[key]
 
@@ -96,7 +108,7 @@ class Room(blivedm.BLiveClient):
         })
 
     async def _on_buy_guard(self, message: blivedm.GuardBuyMessage):
-        self.send_message(Command.ADD_VIP, {
+        self.send_message(Command.ADD_MEMBER, {
             'avatarUrl':  await get_avatar_url(message.uid),
             'timestamp': message.start_time,
             'authorName': message.username
@@ -160,7 +172,7 @@ class RoomManager:
         text_data['authorType'] = 3
         text_data['content'] = "I can eat glass, it doesn't hurt me."
         room.send_message(Command.ADD_TEXT, text_data)
-        room.send_message(Command.ADD_VIP, vip_data)
+        room.send_message(Command.ADD_MEMBER, vip_data)
         room.send_message(Command.ADD_GIFT, gift_data)
         gift_data['giftName'] = '节奏风暴'
         gift_data['totalCoin'] = 100000
