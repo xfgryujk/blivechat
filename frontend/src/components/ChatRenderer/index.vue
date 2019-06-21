@@ -47,7 +47,6 @@
 import TextMessage from './TextMessage.vue'
 import LegacyPaidMessage from './LegacyPaidMessage.vue'
 import PaidMessage from './PaidMessage.vue'
-import { METHODS } from 'http';
 
 export default {
   name: 'ChatRenderer',

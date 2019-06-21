@@ -179,9 +179,12 @@ export default {
     addMessageShow(message) {
       message.id = this.nextId++
       this.messages.push(message)
-      if (this.messages.length > 50) {
-        this.messages.splice(0, this.messages.length - 50)
-      }
+      // 防止同时添加和删除项目时所有的项目重新渲染 https://github.com/vuejs/vue/issues/6857
+      this.$nextTick(() => {
+        if (this.messages.length > 50) {
+          this.messages.splice(0, this.messages.length - 50)
+        }
+      })
     },
     handleMessagesBuffer() {
       // 3秒内未发出则丢弃
