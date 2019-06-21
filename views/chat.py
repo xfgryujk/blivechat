@@ -65,8 +65,11 @@ class Room(blivedm.BLiveClient):
         self.clients: List['ChatHandler'] = []
 
     def stop_and_close(self):
-        future = self.stop()
-        future.add_done_callback(lambda _future: asyncio.ensure_future(self.close()))
+        if self.is_running:
+            future = self.stop()
+            future.add_done_callback(lambda _future: asyncio.ensure_future(self.close()))
+        else:
+            asyncio.ensure_future(self.close())
 
     def send_message(self, cmd, data):
         body = json.dumps({'cmd': cmd, 'data': data})
@@ -92,7 +95,8 @@ class Room(blivedm.BLiveClient):
             'isGiftDanmaku': bool(danmaku.msg_type),
             'authorLevel': danmaku.user_level,
             'isNewbie': danmaku.urank < 10000,
-            'isMobileVerified': bool(danmaku.mobile_verify)
+            'isMobileVerified': bool(danmaku.mobile_verify),
+            'medalLevel': 0 if danmaku.room_id != self.room_id else danmaku.medal_level
         })
 
     async def _on_receive_gift(self, gift: blivedm.GiftMessage):

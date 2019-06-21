@@ -16,6 +16,7 @@ export const DEFAULT_CONFIG = {
   blockNotMobileVerified: true,
   blockKeywords: '',
   blockUsers: '',
+  blockMedalLevel: 0,
 
   css: stylegen.getStyle(stylegen.DEFAULT_CONFIG)
 }

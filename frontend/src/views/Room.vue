@@ -138,6 +138,8 @@ export default {
         return false
       } else if (this.config.blockNotMobileVerified && !data.isMobileVerified) {
         return false
+      } else if (this.config.blockMedalLevel > 0 && data.medalLevel < this.config.blockMedalLevel) {
+        return false
       }
       for (let keyword of this.config.blockKeywords) {
         if (data.content.indexOf(keyword) !== -1) {

@@ -46,6 +46,9 @@
         <el-form-item label="屏蔽用户">
           <el-input v-model="form.blockUsers" type="textarea" :rows="5" placeholder="一行一个"></el-input>
         </el-form-item>
+        <el-form-item label="当前直播间勋章等级低于">
+          <el-slider v-model="form.blockMedalLevel" show-input :min="0" :max="20"></el-slider>
+        </el-form-item>
       </el-tab-pane>
 
       <el-tab-pane label="样式">
