@@ -2,25 +2,27 @@
   <yt-live-chat-ticker-renderer>
     <div id="container" dir="ltr" class="style-scope yt-live-chat-ticker-renderer">
       <div id="items" class="style-scope yt-live-chat-ticker-renderer">
-        <yt-live-chat-ticker-paid-message-item-renderer v-for="message in messages" :key="message.id"
-          tabindex="0" class="style-scope yt-live-chat-ticker-renderer" style="overflow: hidden;"
-          @click="onItemClick(message)"
-        >
-          <div id="container" dir="ltr" class="style-scope yt-live-chat-ticker-paid-message-item-renderer"
-            :style="{
-              background: getBgColor(message),
-            }"
+        <template v-for="message in messages">
+          <yt-live-chat-ticker-paid-message-item-renderer :key="message.id" v-if="needToShow(message)"
+            tabindex="0" class="style-scope yt-live-chat-ticker-renderer" style="overflow: hidden;"
+            @click="onItemClick(message)"
           >
-            <div id="content" class="style-scope yt-live-chat-ticker-paid-message-item-renderer" :style="{
-              color: getColor(message)
-            }">
-              <img-shadow id="author-photo" height="24" width="24" class="style-scope yt-live-chat-ticker-paid-message-item-renderer"
-                :imgUrl="message.avatarUrl"
-              ></img-shadow>
-              <span id="text" dir="ltr" class="style-scope yt-live-chat-ticker-paid-message-item-renderer">{{getText(message)}}</span>
+            <div id="container" dir="ltr" class="style-scope yt-live-chat-ticker-paid-message-item-renderer"
+              :style="{
+                background: getBgColor(message),
+              }"
+            >
+              <div id="content" class="style-scope yt-live-chat-ticker-paid-message-item-renderer" :style="{
+                color: getColor(message)
+              }">
+                <img-shadow id="author-photo" height="24" width="24" class="style-scope yt-live-chat-ticker-paid-message-item-renderer"
+                  :imgUrl="message.avatarUrl"
+                ></img-shadow>
+                <span id="text" dir="ltr" class="style-scope yt-live-chat-ticker-paid-message-item-renderer">{{getText(message)}}</span>
+              </div>
             </div>
-          </div>
-        </yt-live-chat-ticker-paid-message-item-renderer>
+          </yt-live-chat-ticker-paid-message-item-renderer>
+        </template>
       </div>
     </div>
     <template v-if="pinnedMessage">
@@ -66,6 +68,16 @@ export default {
     window.clearInterval(this.updateTimerId)
   },
   methods: {
+    needToShow(message) {
+      let pinTime
+      if (message.type === constants.MESSAGE_TYPE_MEMBER) {
+        pinTime = 2
+      } else {
+        let config = constants.getPriceConfig(message.price)
+        pinTime = config.pinTime
+      }
+      return (new Date() - message.addTime) / (60 * 1000) < pinTime
+    },
     getBgColor(message) {
       let color1, color2, pinTime
       if (message.type === constants.MESSAGE_TYPE_MEMBER) {
@@ -105,7 +117,7 @@ export default {
         if (this.messages[i].type === constants.MESSAGE_TYPE_MEMBER) {
           pinTime = 2
         } else {
-          let config = constants.getPriceConfig(this.messages[i].type === constants.MESSAGE_TYPE_MEMBER ? 28 : this.messages[i].price)
+          let config = constants.getPriceConfig(this.messages[i].price)
           pinTime = config.pinTime
         }
         if ((curTime - this.messages[i].addTime) / (60 * 1000) >= pinTime) {
