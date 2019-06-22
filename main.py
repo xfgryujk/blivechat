@@ -37,7 +37,7 @@ def main():
             (r'/config', views.config.ConfigsHandler),
             (r'/config/(.+)', views.config.ConfigHandler),
 
-            (r'/((css|fonts|img|js)/.*)', tornado.web.StaticFileHandler, {'path': WEB_ROOT}),
+            (r'/((css|fonts|img|js|static)/.*)', tornado.web.StaticFileHandler, {'path': WEB_ROOT}),
             (r'/(favicon\.ico)', tornado.web.StaticFileHandler, {'path': WEB_ROOT}),
             (r'/.*', views.main.MainHandler, {'path': WEB_ROOT})
         ],
