@@ -4,6 +4,7 @@
       <div id="items" class="style-scope yt-live-chat-ticker-renderer">
         <yt-live-chat-ticker-paid-message-item-renderer v-for="message in messages" :key="message.id"
           tabindex="0" class="style-scope yt-live-chat-ticker-renderer" style="overflow: hidden;"
+          @click="onItemClick(message)"
         >
           <div id="container" dir="ltr" class="style-scope yt-live-chat-ticker-paid-message-item-renderer"
             :style="{
@@ -22,24 +23,43 @@
         </yt-live-chat-ticker-paid-message-item-renderer>
       </div>
     </div>
+    <template v-if="pinnedMessage">
+      <legacy-paid-message :key="pinnedMessage.id" v-if="pinnedMessage.type === MESSAGE_TYPE_MEMBER"
+        class="style-scope yt-live-chat-ticker-renderer"
+        :avatarUrl="pinnedMessage.avatarUrl" :title="pinnedMessage.title" :content="pinnedMessage.content"
+        :time="pinnedMessage.time"
+      ></legacy-paid-message>
+      <paid-message :key="pinnedMessage.id" v-else
+        class="style-scope yt-live-chat-ticker-renderer"
+        :price="pinnedMessage.price" :avatarUrl="pinnedMessage.avatarUrl" :authorName="pinnedMessage.authorName"
+        :time="pinnedMessage.time" :content="pinnedMessage.content"
+      ></paid-message>
+    </template>
   </yt-live-chat-ticker-renderer>
 </template>
 
 <script>
 import ImgShadow from './ImgShadow.vue'
+import LegacyPaidMessage from './LegacyPaidMessage.vue'
+import PaidMessage from './PaidMessage.vue'
 import * as constants from './constants'
 
 export default {
   name: 'Ticker',
   components: {
     ImgShadow,
+    LegacyPaidMessage,
+    PaidMessage
   },
   props: {
     messages: Array
   },
   data() {
     return {
-      updateTimerId: window.setInterval(this.updateProgress.bind(this), 1000)
+      MESSAGE_TYPE_MEMBER: constants.MESSAGE_TYPE_MEMBER,
+
+      updateTimerId: window.setInterval(this.updateProgress.bind(this), 1000),
+      pinnedMessage: null
     }
   },
   beforeDestroy() {
@@ -47,10 +67,18 @@ export default {
   },
   methods: {
     getBgColor(message) {
-      let config = constants.getPriceConfig(message.type === constants.MESSAGE_TYPE_MEMBER ? 28 : message.price)
-      let color1 = config.colors.contentBg
-      let color2 = config.colors.headerBg
-      let progress = (1 - (new Date() - message.addTime) / (60 * 1000) / config.pinTime) * 100
+      let color1, color2, pinTime
+      if (message.type === constants.MESSAGE_TYPE_MEMBER) {
+        color1 = 'rgba(15,157,88,1)'
+        color2 = 'rgba(11,128,67,1)'
+        pinTime = 2
+      } else {
+        let config = constants.getPriceConfig(message.type === constants.MESSAGE_TYPE_MEMBER ? 28 : message.price)
+        color1 = config.colors.contentBg
+        color2 = config.colors.headerBg
+        pinTime = config.pinTime
+      }
+      let progress = (1 - (new Date() - message.addTime) / (60 * 1000) / pinTime) * 100
       if (progress < 0) {
         progress = 0
       } else if (progress > 100) {
@@ -60,7 +88,7 @@ export default {
     },
     getColor(message) {
       if (message.type === constants.MESSAGE_TYPE_MEMBER) {
-        return 'rgb(0, 0, 0)'
+        return 'rgb(255,255,255)'
       }
       return constants.getPriceConfig(message.price).colors.header
     },
@@ -73,8 +101,17 @@ export default {
     updateProgress() {
       let curTime = new Date()
       for (let i = 0; i < this.messages.length;) {
-        let config = constants.getPriceConfig(this.messages[i].type === constants.MESSAGE_TYPE_MEMBER ? 28 : this.messages[i].price)
-        if ((curTime - this.messages[i].addTime) / (60 * 1000) >= config.pinTime) {
+        let pinTime
+        if (this.messages[i].type === constants.MESSAGE_TYPE_MEMBER) {
+          pinTime = 2
+        } else {
+          let config = constants.getPriceConfig(this.messages[i].type === constants.MESSAGE_TYPE_MEMBER ? 28 : this.messages[i].price)
+          pinTime = config.pinTime
+        }
+        if ((curTime - this.messages[i].addTime) / (60 * 1000) >= pinTime) {
+          if (this.pinnedMessage == this.messages[i]) {
+            this.pinnedMessage = null
+          }
           this.messages.splice(i, 1)
         } else {
           i++
@@ -82,6 +119,13 @@ export default {
       }
 
       this.$forceUpdate()
+    },
+    onItemClick(message) {
+      if (this.pinnedMessage == message) {
+        this.pinnedMessage = null
+      } else {
+        this.pinnedMessage = message
+      }
     }
   }
 }

@@ -56,7 +56,6 @@ export default {
     return {
       MESSAGE_TYPE_TEXT: constants.MESSAGE_TYPE_TEXT,
       MESSAGE_TYPE_MEMBER: constants.MESSAGE_TYPE_MEMBER,
-      MESSAGE_TYPE_GIFT: constants.MESSAGE_TYPE_GIFT,
 
       styleElement,
       canAutoScroll: true
