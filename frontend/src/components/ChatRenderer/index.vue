@@ -1,6 +1,6 @@
 <template>
   <yt-live-chat-renderer class="style-scope yt-live-chat-app" style="--scrollbar-width:11px;" hide-timestamps>
-    <ticker class="style-scope yt-live-chat-renderer" :messages="paidMessages"></ticker>
+    <ticker class="style-scope yt-live-chat-renderer" :messages="paidMessages" :hidden="paidMessages.length === 0"></ticker>
     <yt-live-chat-item-list-renderer class="style-scope yt-live-chat-renderer" allow-scroll>
       <div id="item-scroller" ref="scroller" class="style-scope yt-live-chat-item-list-renderer animated" @scroll="onScroll">
         <div id="item-offset" class="style-scope yt-live-chat-item-list-renderer" style="height: 1800px;">
