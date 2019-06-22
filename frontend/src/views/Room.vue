@@ -1,10 +1,11 @@
 <template>
-  <chat-renderer :messages="messages" :css="config.css"></chat-renderer>
+  <chat-renderer :paidMessages="paidMessages" :messages="messages" :css="config.css"></chat-renderer>
 </template>
 
 <script>
 import config from '@/api/config'
 import ChatRenderer from '@/components/ChatRenderer'
+import * as constants from '@/components/ChatRenderer/constants'
 
 const COMMAND_JOIN_ROOM = 0
 const COMMAND_ADD_TEXT = 1
@@ -27,7 +28,8 @@ export default {
       messagesBufferTimerId: null,
       nextId: 0,
       messagesBuffer: [], // 暂时不显示的消息，可能会丢弃
-      messages: [] // 正在显示的消息
+      messages: [], // 正在显示的消息
+      paidMessages: []
     }
   },
   async created() {
@@ -84,7 +86,7 @@ export default {
           break
         }
         message = {
-          type: 0, // TextMessage
+          type: constants.MESSAGE_TYPE_TEXT,
           avatarUrl: data.avatarUrl,
           time: `${time.getMinutes()}:${time.getSeconds()}`,
           authorName: data.authorName,
@@ -102,7 +104,7 @@ export default {
         if (price < this.config.minGiftPrice) // 丢人
           break
         message = {
-          type: 2, // PaidMessage
+          type: constants.MESSAGE_TYPE_GIFT,
           avatarUrl: data.avatarUrl,
           authorName: data.authorName,
           price: price,
@@ -116,7 +118,7 @@ export default {
           break
         }
         message = {
-          type: 1, // LegacyPaidMessage
+          type: constants.MESSAGE_TYPE_MEMBER,
           avatarUrl: data.avatarUrl,
           time: `${time.getMinutes()}:${time.getSeconds()}`,
           authorName: data.authorName,
@@ -180,7 +182,11 @@ export default {
     },
     addMessageShow(message) {
       message.id = this.nextId++
+      message.addTime = new Date()
       this.messages.push(message)
+      if (message.type !== constants.MESSAGE_TYPE_TEXT) {
+        this.paidMessages.unshift(message)
+      }
       // 防止同时添加和删除项目时所有的项目重新渲染 https://github.com/vuejs/vue/issues/6857
       this.$nextTick(() => {
         if (this.messages.length > 50) {
@@ -190,9 +196,15 @@ export default {
     },
     handleMessagesBuffer() {
       // 3秒内未发出则丢弃
+      let i
       let curTime = new Date()
-      while (this.messagesBuffer.length > 0 && curTime - this.messagesBuffer[0].addTime > 3 * 1000) {
-        this.messagesBuffer.shift()
+      for (i = 0; i < this.messagesBuffer.length; i++) {
+        if (curTime - this.messagesBuffer[i].addTime <= 3 * 1000) {
+          break
+        }
+      }
+      if (i > 0) {
+        this.messages.splice(0, Math.min(i, this.messagesBuffer.length))
       }
       if (this.messagesBuffer.length <= 0) {
         return

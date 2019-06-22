@@ -1,31 +1,18 @@
 <template>
   <yt-live-chat-renderer class="style-scope yt-live-chat-app" style="--scrollbar-width:11px;" hide-timestamps>
-    <!-- <yt-live-chat-ticker-renderer>
-      <yt-live-chat-ticker-paid-message-item-renderer style="background-color: rgba(0,184,212,1);">
-        <div id="content">
-          <span id="fake-avatar"></span>
-          <span>$5.00</span>
-        </div>
-      </yt-live-chat-ticker-paid-message-item-renderer>
-      <yt-live-chat-ticker-paid-message-item-renderer style="background-color: rgba(208,0,0,1);">
-        <div id="content">
-          <span id="fake-avatar"></span>
-          <span>$500.00</span>
-        </div>
-      </yt-live-chat-ticker-paid-message-item-renderer>
-    </yt-live-chat-ticker-renderer> -->
+    <ticker class="style-scope yt-live-chat-renderer" :messages="paidMessages"></ticker>
     <yt-live-chat-item-list-renderer class="style-scope yt-live-chat-renderer" allow-scroll>
       <div id="item-scroller" ref="scroller" class="style-scope yt-live-chat-item-list-renderer animated" @scroll="onScroll">
         <div id="item-offset" class="style-scope yt-live-chat-item-list-renderer" style="height: 1800px;">
           <div id="items" class="style-scope yt-live-chat-item-list-renderer" style="overflow: hidden; transform: translateY(0px);">
             <template v-for="message in messages">
-              <text-message :key="message.id" v-if="message.type == 0"
+              <text-message :key="message.id" v-if="message.type === MESSAGE_TYPE_TEXT"
                 class="style-scope yt-live-chat-item-list-renderer"
                 :avatarUrl="message.avatarUrl" :time="message.time" :authorName="message.authorName"
                 :authorType="message.authorType" :content="message.content" :privilegeType="message.privilegeType"
                 :repeated="message.repeated"
               ></text-message>
-              <legacy-paid-message :key="message.id" v-else-if="message.type == 1"
+              <legacy-paid-message :key="message.id" v-else-if="message.type === MESSAGE_TYPE_MEMBER"
                 class="style-scope yt-live-chat-item-list-renderer"
                 :avatarUrl="message.avatarUrl" :title="message.title" :content="message.content"
                 :time="message.time"
@@ -44,18 +31,22 @@
 </template>
 
 <script>
+import Ticker from './Ticker.vue'
 import TextMessage from './TextMessage.vue'
 import LegacyPaidMessage from './LegacyPaidMessage.vue'
 import PaidMessage from './PaidMessage.vue'
+import * as constants from './constants'
 
 export default {
   name: 'ChatRenderer',
   components: {
+    Ticker,
     TextMessage,
     LegacyPaidMessage,
     PaidMessage
   },
   props: {
+    paidMessages: Array,
     messages: Array,
     css: String
   },
@@ -63,6 +54,10 @@ export default {
     let styleElement = document.createElement('style')
     document.head.appendChild(styleElement)
     return {
+      MESSAGE_TYPE_TEXT: constants.MESSAGE_TYPE_TEXT,
+      MESSAGE_TYPE_MEMBER: constants.MESSAGE_TYPE_MEMBER,
+      MESSAGE_TYPE_GIFT: constants.MESSAGE_TYPE_GIFT,
+
       styleElement,
       canAutoScroll: true
     }

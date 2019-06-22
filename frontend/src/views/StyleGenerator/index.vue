@@ -190,7 +190,7 @@
     <el-col :span="12">
       <div id="example-container">
         <div id="fakebody">
-          <chat-renderer :messages="messages" :css="exampleCss"></chat-renderer>
+          <chat-renderer :paidMessages="examplePaidMessages" :messages="messages" :css="exampleCss"></chat-renderer>
         </div>
       </div>
     </el-col>
@@ -208,18 +208,20 @@ import * as constants from '@/components/ChatRenderer/constants'
 let time = new Date()
 let textMessageTemplate = {
   id: 0,
-  type: 0, // TextMessage
+  addTime: time,
+  type: constants.MESSAGE_TYPE_TEXT,
   avatarUrl: 'https://static.hdslb.com/images/member/noface.gif',
   time: `${time.getMinutes()}:${time.getSeconds()}`,
   authorName: '',
-  authorType: 0,
+  authorType: constants.AUTHRO_TYPE_NORMAL,
   content: '',
   privilegeType: 0,
   repeated: 1
 }
 let legacyPaidMessageTemplate = {
   id: 0,
-  type: 1, // LegacyPaidMessage
+  addTime: time,
+  type: constants.MESSAGE_TYPE_MEMBER,
   avatarUrl: 'https://static.hdslb.com/images/member/noface.gif',
   time: `${time.getMinutes()}:${time.getSeconds()}`,
   authorName: '',
@@ -228,7 +230,8 @@ let legacyPaidMessageTemplate = {
 }
 let paidMessageTemplate = {
   id: 0,
-  type: 2, // PaidMessage
+  addTime: time,
+  type: constants.MESSAGE_TYPE_GIFT,
   avatarUrl: 'https://static.hdslb.com/images/member/noface.gif',
   authorName: '',
   price: 0,
@@ -282,6 +285,12 @@ const EXAMPLE_MESSAGES = [
     content: 'Sent 礼花x1'
   }
 ]
+let examplePaidMessages = []
+for (let message of EXAMPLE_MESSAGES) {
+  if (message.type !== constants.MESSAGE_TYPE_TEXT) {
+    examplePaidMessages.push(message)
+  }
+}
 
 export default {
   name: 'StyleGenerator',
@@ -296,7 +305,8 @@ export default {
       form: {...config},
       result,
       exampleCss: result.replace(/^body\b/gm, '#fakebody'),
-      messages: EXAMPLE_MESSAGES
+      messages: EXAMPLE_MESSAGES,
+      examplePaidMessages
     }
   },
   computed: {
