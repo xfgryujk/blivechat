@@ -82,6 +82,7 @@ yt-live-chat-text-message-renderer>#content>.el-badge .el-badge__content {
   text-shadow: none !important;
   font-family: sans-serif !important;
   background-color: var(--repeated-mark-color) !important;
+  border: none;
 }
 </style>
 
