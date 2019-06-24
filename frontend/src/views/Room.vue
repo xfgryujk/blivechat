@@ -204,7 +204,7 @@ export default {
         }
       }
       if (i > 0) {
-        this.messages.splice(0, Math.min(i, this.messagesBuffer.length))
+        this.messagesBuffer.splice(0, Math.min(i, this.messagesBuffer.length))
       }
       if (this.messagesBuffer.length <= 0) {
         return
