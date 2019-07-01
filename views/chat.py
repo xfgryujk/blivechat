@@ -23,30 +23,48 @@ class Command(enum.IntEnum):
     ADD_MEMBER = 3
 
 
+DEFAULT_AVATAR_URL = 'https://static.hdslb.com/images/member/noface.gif'
+
 _http_session = aiohttp.ClientSession()
 _avatar_url_cache: Dict[int, str] = {}
+_last_fetch_avatar_time = datetime.datetime.now()
 _last_avatar_failed_time = None
+_uids_to_fetch_avatar = asyncio.Queue(15)
 
 
 async def get_avatar_url(user_id):
     if user_id in _avatar_url_cache:
         return _avatar_url_cache[user_id]
 
-    global _last_avatar_failed_time
+    global _last_avatar_failed_time, _last_fetch_avatar_time
+    cur_time = datetime.datetime.now()
+    # 防止获取头像频率太高被ban
+    if (cur_time - _last_fetch_avatar_time).total_seconds() < 0.2:
+        # 由_fetch_avatar_loop过一段时间再获取并缓存
+        try:
+            _uids_to_fetch_avatar.put_nowait(user_id)
+        except asyncio.QueueFull:
+            pass
+        return DEFAULT_AVATAR_URL
+
     if _last_avatar_failed_time is not None:
-        if (datetime.datetime.now() - _last_avatar_failed_time).seconds < 5 * 60:
-            # 5分钟以内被ban
-            return 'https://static.hdslb.com/images/member/noface.gif'
+        if (cur_time - _last_avatar_failed_time).total_seconds() < 5 * 60 + 3:
+            # 5分钟以内被ban，解封大约要15分钟
+            return DEFAULT_AVATAR_URL
         else:
             _last_avatar_failed_time = None
 
-    async with _http_session.get('https://api.bilibili.com/x/space/acc/info',
-                                 params={'mid': user_id}) as r:
-        if r.status != 200:  # 可能会被B站ban
-            logger.warning('获取头像失败：status=%d %s uid=%d', r.status, r.reason, user_id)
-            _last_avatar_failed_time = datetime.datetime.now()
-            return 'https://static.hdslb.com/images/member/noface.gif'
-        data = await r.json()
+    _last_fetch_avatar_time = cur_time
+    try:
+        async with _http_session.get('https://api.bilibili.com/x/space/acc/info',
+                                     params={'mid': user_id}) as r:
+            if r.status != 200:  # 可能会被B站ban
+                logger.warning('获取头像失败：status=%d %s uid=%d', r.status, r.reason, user_id)
+                _last_avatar_failed_time = cur_time
+                return DEFAULT_AVATAR_URL
+            data = await r.json()
+    except aiohttp.ServerDisconnectedError:
+        return DEFAULT_AVATAR_URL
     url = data['data']['face']
     if not url.endswith('noface.gif'):
         url += '@48w_48h'
@@ -57,6 +75,22 @@ async def get_avatar_url(user_id):
             del _avatar_url_cache[key]
 
     return url
+
+
+async def _fetch_avatar_loop():
+    while True:
+        try:
+            user_id = await _uids_to_fetch_avatar.get()
+            if user_id in _avatar_url_cache:
+                continue
+            # 延时长一些使实时弹幕有机会获取头像
+            await asyncio.sleep(0.4 - (datetime.datetime.now() - _last_fetch_avatar_time).total_seconds())
+            asyncio.ensure_future(get_avatar_url(user_id))
+        except:
+            pass
+
+
+asyncio.ensure_future(_fetch_avatar_loop())
 
 
 class Room(blivedm.BLiveClient):
@@ -103,7 +137,7 @@ class Room(blivedm.BLiveClient):
         if gift.coin_type != 'gold':  # 丢人
             return
         self.send_message(Command.ADD_GIFT, {
-            'avatarUrl': await get_avatar_url(gift.uid),
+            'avatarUrl': gift.face,
             'timestamp': gift.timestamp,
             'authorName': gift.uname,
             'giftName': gift.gift_name,
