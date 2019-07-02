@@ -203,13 +203,17 @@ export default {
           break
         }
       }
-      if (i > 0) {
-        this.messagesBuffer.splice(0, Math.min(i, this.messagesBuffer.length))
-      }
+      this.messagesBuffer.splice(0, i)
       if (this.messagesBuffer.length <= 0) {
         return
       }
-      this.addMessageShow(this.messagesBuffer.shift())
+      let message = this.messagesBuffer.shift()
+      // 防止短时间发送多条时不能合并
+      if (this.mergeSimilar(message.content)) {
+        this.handleMessagesBuffer()
+        return
+      }
+      this.addMessageShow(message)
     }
   }
 }

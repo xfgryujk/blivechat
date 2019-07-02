@@ -63,7 +63,7 @@ async def get_avatar_url(user_id):
                 _last_avatar_failed_time = cur_time
                 return DEFAULT_AVATAR_URL
             data = await r.json()
-    except aiohttp.ServerDisconnectedError:
+    except aiohttp.ClientConnectionError:
         return DEFAULT_AVATAR_URL
     url = data['data']['face']
     if not url.endswith('noface.gif'):
