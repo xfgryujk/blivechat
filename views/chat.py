@@ -111,6 +111,9 @@ class Room(blivedm.BLiveClient):
             client.write_message(body)
 
     async def _on_receive_danmaku(self, danmaku: blivedm.DanmakuMessage):
+        asyncio.ensure_future(self.__on_receive_danmaku(danmaku))
+
+    async def __on_receive_danmaku(self, danmaku: blivedm.DanmakuMessage):
         if danmaku.uid == self.room_owner_uid:
             author_type = 3  # 主播
         elif danmaku.admin:
@@ -146,6 +149,9 @@ class Room(blivedm.BLiveClient):
         })
 
     async def _on_buy_guard(self, message: blivedm.GuardBuyMessage):
+        asyncio.ensure_future(self.__on_buy_guard(message))
+
+    async def __on_buy_guard(self, message: blivedm.GuardBuyMessage):
         self.send_message(Command.ADD_MEMBER, {
             'avatarUrl':  await get_avatar_url(message.uid),
             'timestamp': message.start_time,
