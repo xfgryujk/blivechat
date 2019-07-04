@@ -66,11 +66,16 @@
     <el-form-item>
       <el-button type="primary" @click="saveConfig">保存配置</el-button>
       <el-button type="primary" :disabled="!roomUrl" @click="enterRoom">进入房间</el-button>
+      <el-button type="primary" @click="exportConfig">导出配置</el-button>
+      <el-button type="primary" @click="importConfig">导入配置</el-button>
     </el-form-item>
   </el-form>
 </template>
 
 <script>
+import download from 'downloadjs'
+
+import {mergeConfig} from '@/utils'
 import config from '@/api/config'
 
 export default {
@@ -120,6 +125,31 @@ export default {
     copyUrl() {
       this.$refs.roomUrlInput.select()
       document.execCommand('Copy')
+    },
+    exportConfig() {
+      let cfg = mergeConfig(this.form, config.DEFAULT_CONFIG)
+      download(JSON.stringify(cfg, null, 2), 'blivechat.json', 'application/json')
+    },
+    importConfig() {
+      let input = document.createElement('input')
+      input.type = 'file'
+      input.accept = 'application/json'
+      input.onchange = () => {
+        let reader = new window.FileReader()
+        reader.onload = () => {
+          let cfg
+          try {
+            cfg = JSON.parse(reader.result)
+          } catch (e) {
+            this.$message.error('配置解析失败：' + e)
+            return
+          }
+          cfg = mergeConfig(cfg, config.DEFAULT_CONFIG)
+          this.form = {roomId: this.form.roomId, ...cfg}
+        }
+        reader.readAsText(input.files[0])
+      }
+      input.click()
     }
   }
 }
