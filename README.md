@@ -43,3 +43,18 @@
 3. 用浏览器打开[http://localhost](http://localhost)，输入房间ID，进入房间，复制房间URL
 4. （可选）用样式生成器生成样式，复制CSS
 5. 在OBS中添加浏览器源，输入URL和自定义CSS，或者可以在首页的样式设置里输入CSS
+
+### 使用Docker运行(仅x64)
+1. 安装[docker](https://www.runoob.com/docker/ubuntu-docker-install.html)
+2. 安装镜像
+
+   `docker build -t blivechat:latest .`
+
+3. 运行镜像
+
+   `docker run -d --name blivechat -p 80:80 blivechat`
+   
+   其中80:80的第一个80为映射到主机的端口号，可替换为其它端口。
+3. 用浏览器打开[http://localhost](http://localhost)，输入房间ID，进入房间，复制房间URL
+4. （可选）用样式生成器生成样式，复制CSS
+5. 在OBS中添加浏览器源，输入URL和自定义CSS，或者可以在首页的样式设置里输入CSS
