@@ -21,40 +21,32 @@
    ```bat
    blivechat.exe --host 127.0.0.1 --port 80
    ```
-3. 用浏览器打开[http://localhost](http://localhost)，输入房间ID，进入房间，复制房间URL
+3. 用浏览器打开[http://localhost](http://localhost)，输入房间ID，保存配置，进入房间，复制房间URL
 4. （可选）用样式生成器生成样式，复制CSS
 5. 在OBS中添加浏览器源，输入URL和自定义CSS，或者可以在首页的样式设置里输入CSS
 
 ### 源代码版
-1. 编译前端（需要安装NPM）：
+1. 编译前端（需要安装Node.js和npm）：
    ```sh
    cd frontend
    npm i
    npm run build
    ```
-2. 运行服务器：
+2. 运行服务器（需要Python3.6以上版本）：
    ```sh
+   pip3 install -r requirements.txt
    python3 main.py
    ```
    或者可以指定host和端口号：
    ```sh
    python3 main.py --host 127.0.0.1 --port 80
    ```
-3. 用浏览器打开[http://localhost](http://localhost)，输入房间ID，进入房间，复制房间URL
+3. 用浏览器打开[http://localhost](http://localhost)，输入房间ID，保存配置，进入房间，复制房间URL
 4. （可选）用样式生成器生成样式，复制CSS
 5. 在OBS中添加浏览器源，输入URL和自定义CSS，或者可以在首页的样式设置里输入CSS
 
-### 使用Docker运行(仅x64)
-1. 安装[docker](https://www.runoob.com/docker/ubuntu-docker-install.html)
-2. 安装镜像
-
-   `docker build -t blivechat:latest .`
-
-3. 运行镜像
-
-   `docker run -d --name blivechat -p 80:80 blivechat`
-   
-   其中80:80的第一个80为映射到主机的端口号，可替换为其它端口。
-3. 用浏览器打开[http://localhost](http://localhost)，输入房间ID，进入房间，复制房间URL
-4. （可选）用样式生成器生成样式，复制CSS
-5. 在OBS中添加浏览器源，输入URL和自定义CSS，或者可以在首页的样式设置里输入CSS
+### Docker
+1. ```sh
+   docker run -d -p 80:80 xfgryujk/blivechat
+   ```
+2. 以下略
