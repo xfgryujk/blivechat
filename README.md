@@ -47,6 +47,6 @@
 
 ### Docker
 1. ```sh
-   docker run -d -p 80:80 xfgryujk/blivechat
+   docker run -d -p 80:80 xfgryujk/blivechat:latest
    ```
 2. 以下略
