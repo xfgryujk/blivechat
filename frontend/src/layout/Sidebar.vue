@@ -8,23 +8,41 @@
       :default-active="$route.path"
     >
       <el-menu-item index="/">
-        <i class="el-icon-s-home"></i>首页
+        <i class="el-icon-s-home"></i>{{$t('sidebar.home')}}
       </el-menu-item>
       <el-menu-item :index="$router.resolve({name: 'stylegen'}).href">
-        <i class="el-icon-brush"></i>样式生成器
+        <i class="el-icon-brush"></i>{{$t('sidebar.stylegen')}}
       </el-menu-item>
       <a href="https://github.com/xfgryujk/blivechat" target="_blank">
         <el-menu-item>
-          <i class="el-icon-share"></i>项目地址
+          <i class="el-icon-share"></i>{{$t('sidebar.projectAddress')}}
         </el-menu-item>
       </a>
+      <el-submenu index="null">
+        <template slot="title">
+          <i class="el-icon-chat-line-square"></i>Language
+        </template>
+        <el-menu-item v-for="{locale, name} in [
+            {locale: 'zh', name: '中文'},
+            {locale: 'ja', name: '日本語'},
+            {locale: 'en', name: 'English'}
+          ]" :key="locale"
+          :class="{'is-active': locale === $i18n.locale}"
+          @click="onSelectLanguage(locale)"
+        >{{name}}</el-menu-item>
+      </el-submenu>
     </el-menu>
   </el-scrollbar>
 </template>
 
 <script>
 export default {
-  name: 'Sidebar'
+  name: 'Sidebar',
+  methods: {
+    onSelectLanguage(locale) {
+      window.localStorage.lang = this.$i18n.locale = locale
+    }
+  }
 }
 </script>
 

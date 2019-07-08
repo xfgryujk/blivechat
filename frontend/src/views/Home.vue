@@ -1,57 +1,57 @@
 <template>
   <el-form :model="form" ref="form" label-width="150px" :rules="{
     roomId: [
-      {required: true, message: '房间ID不能为空', trigger: 'blur'},
-      {type: 'integer', min: 1, message: '房间ID必须为正整数', trigger: 'blur'}
+      {required: true, message: $t('home.roomIdEmpty'), trigger: 'blur'},
+      {type: 'integer', min: 1, message: $t('home.roomIdInteger'), trigger: 'blur'}
     ]
   }">
     <el-tabs>
-      <el-tab-pane label="常规">
-        <el-form-item label="房间ID" required prop="roomId">
+      <el-tab-pane :label="$t('home.general')">
+        <el-form-item :label="$t('home.roomId')" required prop="roomId">
           <el-input v-model.number="form.roomId" type="number" min="1"></el-input>
         </el-form-item>
-        <el-form-item label="显示弹幕">
+        <el-form-item :label="$t('home.showDanmaku')">
           <el-switch v-model="form.showDanmaku"></el-switch>
         </el-form-item>
-        <el-form-item label="显示礼物和新舰长">
+        <el-form-item :label="$t('home.showGift')">
           <el-switch v-model="form.showGift"></el-switch>
         </el-form-item>
-        <el-form-item label="合并相似弹幕">
+        <el-form-item :label="$t('home.mergeSimilarDanmaku')">
           <el-switch v-model="form.mergeSimilarDanmaku"></el-switch>
         </el-form-item>
-        <el-form-item label="最低显示礼物价格（元）">
+        <el-form-item :label="$t('home.minGiftPrice')">
           <el-input v-model.number="form.minGiftPrice" type="number" min="0"></el-input>
         </el-form-item>
-        <el-form-item label="弹幕最大速度（条/秒，0为无限制）">
+        <el-form-item :label="$t('home.maxSpeed')">
           <el-input v-model.number="form.maxSpeed" type="number" min="0"></el-input>
         </el-form-item>
       </el-tab-pane>
 
-      <el-tab-pane label="屏蔽">
-        <el-form-item label="礼物弹幕">
+      <el-tab-pane :label="$t('home.block')">
+        <el-form-item :label="$t('home.giftDanmaku')">
           <el-switch v-model="form.blockGiftDanmaku"></el-switch>
         </el-form-item>
-        <el-form-item label="用户等级低于">
+        <el-form-item :label="$t('home.blockLevel')">
           <el-slider v-model="form.blockLevel" show-input :min="0" :max="60"></el-slider>
         </el-form-item>
-        <el-form-item label="非正式会员">
+        <el-form-item :label="$t('home.informalUser')">
           <el-switch v-model="form.blockNewbie"></el-switch>
         </el-form-item>
-        <el-form-item label="未绑定手机用户">
+        <el-form-item :label="$t('home.unverifiedUser')">
           <el-switch v-model="form.blockNotMobileVerified"></el-switch>
         </el-form-item>
-        <el-form-item label="屏蔽关键词">
-          <el-input v-model="form.blockKeywords" type="textarea" :rows="5" placeholder="一行一个"></el-input>
+        <el-form-item :label="$t('home.blockKeywords')">
+          <el-input v-model="form.blockKeywords" type="textarea" :rows="5" :placeholder="$t('home.onePerLine')"></el-input>
         </el-form-item>
-        <el-form-item label="屏蔽用户">
-          <el-input v-model="form.blockUsers" type="textarea" :rows="5" placeholder="一行一个"></el-input>
+        <el-form-item :label="$t('home.blockUsers')">
+          <el-input v-model="form.blockUsers" type="textarea" :rows="5" :placeholder="$t('home.onePerLine')"></el-input>
         </el-form-item>
-        <el-form-item label="当前直播间勋章等级低于">
+        <el-form-item :label="$t('home.blockMedalLevel')">
           <el-slider v-model="form.blockMedalLevel" show-input :min="0" :max="20"></el-slider>
         </el-form-item>
       </el-tab-pane>
 
-      <el-tab-pane label="样式">
+      <el-tab-pane :label="$t('home.style')">
         <el-form-item label="CSS">
           <el-input v-model="form.css" type="textarea" :rows="20"></el-input>
         </el-form-item>
@@ -59,15 +59,15 @@
     </el-tabs>
     
     <el-divider></el-divider>
-    <el-form-item label="房间URL" v-show="roomUrl">
+    <el-form-item :label="$t('home.roomUrl')" v-show="roomUrl">
       <el-input ref="roomUrlInput" readonly :value="roomUrl" style="width: calc(100% - 6em); margin-right: 1em;"></el-input>
-      <el-button type="primary" @click="copyUrl">复制</el-button>
+      <el-button type="primary" @click="copyUrl">{{$t('home.copy')}}</el-button>
     </el-form-item>
     <el-form-item>
-      <el-button type="primary" @click="saveConfig">保存配置</el-button>
-      <el-button type="primary" :disabled="!roomUrl" @click="enterRoom">进入房间</el-button>
-      <el-button type="primary" @click="exportConfig">导出配置</el-button>
-      <el-button type="primary" @click="importConfig">导入配置</el-button>
+      <el-button type="primary" @click="saveConfig">{{$t('home.saveConfig')}}</el-button>
+      <el-button type="primary" :disabled="!roomUrl" @click="enterRoom">{{$t('home.enterRoom')}}</el-button>
+      <el-button type="primary" @click="exportConfig">{{$t('home.exportConfig')}}</el-button>
+      <el-button type="primary" @click="importConfig">{{$t('home.importConfig')}}</el-button>
     </el-form-item>
   </el-form>
 </template>
@@ -109,10 +109,10 @@ export default {
             window.localStorage.configId = (await config.createRemoteConfig(this.form)).id
           }
         } catch (e) {
-          this.$message.error('保存失败：' + e)
+          this.$message.error(this.$t('home.failedToSave') + e)
           return
         }
-        this.$message({message: '保存成功', type: 'success'})
+        this.$message({message: this.$t('home.successfullySaved'), type: 'success'})
 
         let resolved = this.$router.resolve({name: 'room', params: {roomId: this.form.roomId},
           query: {config_id: window.localStorage.configId}})
@@ -141,7 +141,7 @@ export default {
           try {
             cfg = JSON.parse(reader.result)
           } catch (e) {
-            this.$message.error('配置解析失败：' + e)
+            this.$message.error(this.$t('home.failedToParseConfig') + e)
             return
           }
           cfg = mergeConfig(cfg, config.DEFAULT_CONFIG)
