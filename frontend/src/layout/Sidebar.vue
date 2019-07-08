@@ -27,7 +27,6 @@
             {locale: 'ja', name: '日本語'},
             {locale: 'en', name: 'English'}
           ]" :key="locale"
-          :class="{'is-active': locale === $i18n.locale}"
           @click="onSelectLanguage(locale)"
         >{{name}}</el-menu-item>
       </el-submenu>

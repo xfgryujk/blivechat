@@ -1,6 +1,7 @@
 <template>
-  <el-container class="app-wrapper">
-    <el-aside width="200px" class="sidebar-container">
+  <el-container class="app-wrapper" :class="{mobile: isMobile}">
+    <div v-show="isMobile && !hideSidebar" class="drawer-bg" @click="hideSidebar = true"></div>
+    <el-aside width="210px" class="sidebar-container" :class="{'hide-sidebar': hideSidebar}">
       <div class="logo-container">
         <router-link to="/">
           <img src="@/assets/img/logo.png" class="sidebar-logo">
@@ -10,6 +11,7 @@
       <sidebar></sidebar>
     </el-aside>
     <el-main>
+      <el-button v-show="isMobile" class="menu-button" icon="el-icon-s-unfold" @click="hideSidebar = false"></el-button>
       <router-view></router-view>
     </el-main>
   </el-container>
@@ -22,6 +24,24 @@ export default {
   name: 'Layout',
   components: {
     Sidebar
+  },
+  data() {
+    return {
+      isMobile: false,
+      hideSidebar: true
+    }
+  },
+  created() {
+    window.addEventListener('resize', this.onResize)
+    this.onResize()
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.onResize)
+  },
+  methods: {
+    onResize() {
+      this.isMobile = document.body.clientWidth <= 992
+    }
   }
 }
 </script>
@@ -39,9 +59,33 @@ a, a:focus, a:hover {
   text-decoration: none;
 }
 
+.drawer-bg {
+  background: #000;
+  opacity: 0.3;
+  width: 100%;
+  top: 0;
+  height: 100%;
+  position: absolute;
+  z-index: 999;
+}
+
 .sidebar-container {
   background-color: #304156;
   overflow: hidden;
+}
+
+.app-wrapper.mobile .sidebar-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  transition-duration: 0.3s;
+  z-index: 1001;
+}
+
+.app-wrapper.mobile .sidebar-container.hide-sidebar {
+  pointer-events: none;
+  transition-duration: 0.3s;
+  transform: translate3d(-210px, 0, 0);
 }
 
 .sidebar-container .logo-container {

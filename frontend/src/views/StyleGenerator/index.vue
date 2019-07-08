@@ -382,6 +382,10 @@ export default {
   padding: 25px;
 }
 
+.app-wrapper.mobile #example-container {
+  display: none;
+}
+
 #fakebody {
   outline: 1px #999 dashed;
   height: 100%;
