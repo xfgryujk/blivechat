@@ -33,8 +33,8 @@ export default {
     }
   },
   async created() {
-    // 开发时使用localhost:80
-    const url = process.env.NODE_ENV === 'development' ? 'ws://localhost/chat' : `ws://${window.location.host}/chat`
+    // 开发时使用localhost:12450
+    const url = process.env.NODE_ENV === 'development' ? 'ws://localhost:12450/chat' : `ws://${window.location.host}/chat`
     this.websocket = new WebSocket(url)
     this.websocket.onopen = this.onWsOpen.bind(this)
     this.websocket.onmessage = this.onWsMessage.bind(this)

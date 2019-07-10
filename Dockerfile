@@ -28,6 +28,6 @@ RUN npm run build
 
 # 运行
 WORKDIR /blivechat
-EXPOSE 80
+EXPOSE 12450
 ENTRYPOINT ["python3", "main.py"]
-CMD ["--host", "0.0.0.0", "--port", "80"]
+CMD ["--host", "0.0.0.0", "--port", "12450"]

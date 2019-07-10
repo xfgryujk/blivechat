@@ -20,7 +20,7 @@ WEB_ROOT = os.path.join(os.path.dirname(__file__), 'frontend', 'dist')
 def main():
     parser = argparse.ArgumentParser(description='用于OBS的仿YouTube风格的bilibili直播聊天层')
     parser.add_argument('--host', help='服务器host，默认为127.0.0.1', default='127.0.0.1')
-    parser.add_argument('--port', help='服务器端口，默认为80', type=int, default=80)
+    parser.add_argument('--port', help='服务器端口，默认为12450', type=int, default=12450)
     parser.add_argument('--debug', help='调试模式', action='store_true')
     args = parser.parse_args()
 

@@ -19,7 +19,7 @@
 1. 下载[发布版](https://github.com/xfgryujk/blivechat/releases)（仅提供x64 Windows版）
 2. 双击`blivechat.exe`运行服务器，或者用命令行可以指定host和端口号：
    ```bat
-   blivechat.exe --host 127.0.0.1 --port 80
+   blivechat.exe --host 127.0.0.1 --port 12450
    ```
 3. 用浏览器打开[http://localhost](http://localhost)，输入房间ID，保存配置，进入房间，复制房间URL
 4. （可选）用样式生成器生成样式，复制CSS
@@ -39,7 +39,7 @@
    ```
    或者可以指定host和端口号：
    ```sh
-   python3 main.py --host 127.0.0.1 --port 80
+   python3 main.py --host 127.0.0.1 --port 12450
    ```
 3. 用浏览器打开[http://localhost](http://localhost)，输入房间ID，保存配置，进入房间，复制房间URL
 4. （可选）用样式生成器生成样式，复制CSS
@@ -47,6 +47,6 @@
 
 ### Docker
 1. ```sh
-   docker run -d -p 80:80 xfgryujk/blivechat:latest
+   docker run -d -p 12450:12450 xfgryujk/blivechat:latest
    ```
 2. 以下略

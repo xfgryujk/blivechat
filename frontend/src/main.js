@@ -17,8 +17,8 @@ import ja from './lang/ja'
 import en from './lang/en'
 
 if (process.env.NODE_ENV === 'development') {
-  // 开发时使用localhost:80
-  axios.defaults.baseURL = 'http://localhost'
+  // 开发时使用localhost:12450
+  axios.defaults.baseURL = 'http://localhost:12450'
 }
 
 Vue.use(VueRouter)
