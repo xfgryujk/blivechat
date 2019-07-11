@@ -65,7 +65,11 @@ export default {
     this.styleElement.innerText = this.css
     this.scrollToBottom()
   },
+  created() {
+    window.addEventListener('resize', this.scrollToBottom)
+  },
   beforeDestroy() {
+    window.removeEventListener('resize', this.scrollToBottom)
     document.head.removeChild(this.styleElement)
   },
   updated() {
