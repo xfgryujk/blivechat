@@ -309,6 +309,12 @@ export default {
       examplePaidMessages
     }
   },
+  mounted() {
+    const observer = new MutationObserver(() => window.dispatchEvent(new Event('resize')))
+
+    const child = document.querySelector('#example-container')
+    observer.observe(child, { attributes: true })
+  },
   computed: {
     computedResult() {
       return stylegen.getStyle(this.form)
