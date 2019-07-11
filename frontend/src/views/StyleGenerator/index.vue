@@ -357,8 +357,8 @@ export default {
 #example-container {
   position: fixed;
   top: 30px;
-  right: 30px;
-  width: 400px;
+  left: calc(210px + 40px + (100vw - 210px - 40px) / 2);
+  width: calc((100vw - 210px - 40px) / 2 - 40px - 30px);
   height: calc(100vh - 110px);
 
   background-color: #444;
