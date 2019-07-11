@@ -380,6 +380,14 @@ export default {
   background-position:0 0, 16px 0, 16px -16px, 0px 16px;
 
   padding: 25px;
+
+  resize: both;
+  overflow: hidden;
+}
+
+#example-container:active {
+  height: 0;
+  width: 0;
 }
 
 .app-wrapper.mobile #example-container {
