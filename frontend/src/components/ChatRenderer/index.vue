@@ -71,12 +71,12 @@ export default {
   },
   created() {
     if (this.demo) {
-      window.addEventListener('resize', this.scrollToBottom)
+      window.addEventListener('exampleResize', this.scrollToBottom)
     }
   },
   beforeDestroy() {
     if (this.demo) {
-      window.removeEventListener('resize', this.scrollToBottom)
+      window.removeEventListener('exampleResize', this.scrollToBottom)
     }
     document.head.removeChild(this.styleElement)
   },

@@ -310,7 +310,7 @@ export default {
     }
   },
   mounted() {
-    const observer = new MutationObserver(() => window.dispatchEvent(new Event('resize')))
+    const observer = new MutationObserver(() => window.dispatchEvent(new Event('exampleResize')))
 
     const child = document.querySelector('#example-container')
     observer.observe(child, { attributes: true })
