@@ -190,7 +190,7 @@
     <el-col :span="12">
       <div id="example-container">
         <div id="fakebody">
-          <chat-renderer :paidMessages="examplePaidMessages" :messages="messages" :css="exampleCss" demo></chat-renderer>
+          <chat-renderer :paidMessages="examplePaidMessages" :messages="messages" :css="exampleCss" ref="example"></chat-renderer>
         </div>
       </div>
     </el-col>
@@ -310,7 +310,7 @@ export default {
     }
   },
   mounted() {
-    const observer = new MutationObserver(() => window.dispatchEvent(new Event('exampleResize')))
+    const observer = new MutationObserver(() => this.$refs.example.scrollToBottom())
 
     const child = document.querySelector('#example-container')
     observer.observe(child, { attributes: true })
