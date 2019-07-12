@@ -190,7 +190,7 @@
     <el-col :span="12">
       <div id="example-container">
         <div id="fakebody">
-          <chat-renderer :paidMessages="examplePaidMessages" :messages="messages" :css="exampleCss"></chat-renderer>
+          <chat-renderer :paidMessages="examplePaidMessages" :messages="messages" :css="exampleCss" demo></chat-renderer>
         </div>
       </div>
     </el-col>

@@ -48,6 +48,10 @@ export default {
   props: {
     paidMessages: Array,
     messages: Array,
+    demo: {
+      type: Boolean,
+      required: false,
+    },
     css: String
   },
   data() {
@@ -66,10 +70,14 @@ export default {
     this.scrollToBottom()
   },
   created() {
-    window.addEventListener('resize', this.scrollToBottom)
+    if (this.demo) {
+      window.addEventListener('resize', this.scrollToBottom)
+    }
   },
   beforeDestroy() {
-    window.removeEventListener('resize', this.scrollToBottom)
+    if (this.demo) {
+      window.removeEventListener('resize', this.scrollToBottom)
+    }
     document.head.removeChild(this.styleElement)
   },
   updated() {
