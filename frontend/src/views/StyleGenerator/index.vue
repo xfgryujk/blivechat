@@ -190,7 +190,7 @@
     <el-col :span="12">
       <div id="example-container">
         <div id="fakebody">
-          <chat-renderer :paidMessages="examplePaidMessages" :messages="messages" :css="exampleCss"></chat-renderer>
+          <chat-renderer :paidMessages="examplePaidMessages" :messages="messages" :css="exampleCss" ref="example"></chat-renderer>
         </div>
       </div>
     </el-col>
@@ -309,6 +309,12 @@ export default {
       examplePaidMessages
     }
   },
+  mounted() {
+    const observer = new MutationObserver(() => this.$refs.example.scrollToBottom())
+
+    const child = document.querySelector('#example-container')
+    observer.observe(child, { attributes: true })
+  },
   computed: {
     computedResult() {
       return stylegen.getStyle(this.form)
@@ -357,8 +363,8 @@ export default {
 #example-container {
   position: fixed;
   top: 30px;
-  right: 30px;
-  width: 400px;
+  left: calc(210px + 40px + (100vw - 210px - 40px) / 2);
+  width: calc((100vw - 210px - 40px) / 2 - 40px - 30px);
   height: calc(100vh - 110px);
 
   background-color: #444;
@@ -380,6 +386,14 @@ export default {
   background-position:0 0, 16px 0, 16px -16px, 0px 16px;
 
   padding: 25px;
+
+  resize: both;
+  overflow: hidden;
+}
+
+#example-container:active {
+  height: 0;
+  width: 0;
 }
 
 .app-wrapper.mobile #example-container {
