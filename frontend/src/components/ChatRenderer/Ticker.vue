@@ -45,6 +45,7 @@ import ImgShadow from './ImgShadow.vue'
 import LegacyPaidMessage from './LegacyPaidMessage.vue'
 import PaidMessage from './PaidMessage.vue'
 import * as constants from './constants'
+import {formatCurrency} from '@/utils'
 
 export default {
   name: 'Ticker',
@@ -106,9 +107,9 @@ export default {
     },
     getText(message) {
       if (message.type === constants.MESSAGE_TYPE_MEMBER) {
-        return '会员'
+        return 'Member'
       }
-      return `CN¥${message.price}`
+      return 'CN¥' + formatCurrency(message.price)
     },
     updateProgress() {
       let curTime = new Date()

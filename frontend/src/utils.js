@@ -6,6 +6,13 @@ export function mergeConfig (config, defaultConfig) {
   return res
 }
 
+export function formatCurrency (price) {
+  return new Intl.NumberFormat('zh-CN', {
+    minimumFractionDigits: price < 100 ? 2 : 0
+  }).format(price)
+}
+
 export default {
-  mergeConfig
+  mergeConfig,
+  formatCurrency
 }

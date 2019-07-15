@@ -264,7 +264,7 @@ const EXAMPLE_MESSAGES = [
     ...legacyPaidMessageTemplate,
     id: nextId++,
     authorName: 'Paryi',
-    content: 'Welcome Paryi'
+    content: 'Welcome Paryi!'
   }, {
     ...paidMessageTemplate,
     id: nextId++,

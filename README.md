@@ -21,8 +21,8 @@
    ```bat
    blivechat.exe --host 127.0.0.1 --port 12450
    ```
-3. 用浏览器打开[http://localhost:12450](http://localhost:12450)，输入房间ID，保存配置，进入房间，复制房间URL
-4. （可选）用样式生成器生成样式，复制CSS
+3. 用浏览器打开[http://localhost:12450](http://localhost:12450)，输入房间ID，保存配置，复制房间URL
+4. 用样式生成器生成样式，复制CSS
 5. 在OBS中添加浏览器源，输入URL和自定义CSS，或者可以在首页的样式设置里输入CSS
 
 ### 源代码版
@@ -41,8 +41,8 @@
    ```sh
    python3 main.py --host 127.0.0.1 --port 12450
    ```
-3. 用浏览器打开[http://localhost:12450](http://localhost:12450)，输入房间ID，保存配置，进入房间，复制房间URL
-4. （可选）用样式生成器生成样式，复制CSS
+3. 用浏览器打开[http://localhost:12450](http://localhost:12450)，输入房间ID，保存配置，复制房间URL
+4. 用样式生成器生成样式，复制CSS
 5. 在OBS中添加浏览器源，输入URL和自定义CSS，或者可以在首页的样式设置里输入CSS
 
 ### Docker

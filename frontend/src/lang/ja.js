@@ -17,14 +17,14 @@
     maxSpeed: 'コメントの最大速度（バー/秒、0は無制限）',
 
     block: 'ブロック',
-    giftDanmaku: 'システムコメント（プレゼント効果）',
-    blockLevel: 'ユーザーレベルがx未満',
-    informalUser: '非公式ユーザー',
-    unverifiedUser: '認証されていないユーザー',
-    blockKeywords: 'キーワード',
+    giftDanmaku: 'ブロックシステムコメント（プレゼント効果）',
+    blockLevel: 'ブロックユーザーレベルがx未満',
+    informalUser: 'ブロック非公式ユーザー',
+    unverifiedUser: 'ブロック認証されていないユーザー',
+    blockKeywords: 'ブロックキーワード',
     onePerLine: '1行に1つずつ',
-    blockUsers: 'ユーザー',
-    blockMedalLevel: '勲章等級がx未満',
+    blockUsers: 'ブロックユーザー',
+    blockMedalLevel: 'ブロック勲章等級がx未満',
 
     style: 'スタイル',
 

@@ -16,7 +16,7 @@
         <div id="header-content" class="style-scope yt-live-chat-paid-message-renderer">
           <div id="header-content-primary-column" class="style-scope yt-live-chat-paid-message-renderer">
             <div id="author-name" class="style-scope yt-live-chat-paid-message-renderer">{{authorName}}</div>
-            <div id="purchase-amount" class="style-scope yt-live-chat-paid-message-renderer">CN¥{{price}}</div>
+            <div id="purchase-amount" class="style-scope yt-live-chat-paid-message-renderer">{{priceText}}</div>
           </div>
           <span id="timestamp" class="style-scope yt-live-chat-paid-message-renderer">{{time}}</span>
         </div>
@@ -33,6 +33,7 @@
 <script>
 import ImgShadow from './ImgShadow.vue'
 import * as constants from './constants'
+import {formatCurrency} from '@/utils'
 
 export default {
   name: 'PaidMessage',
@@ -49,6 +50,9 @@ export default {
   computed: {
     color() {
       return constants.getPriceConfig(this.price).colors
+    },
+    priceText() {
+      return 'CN¥' + formatCurrency(this.price)
     }
   }
 }

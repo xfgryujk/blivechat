@@ -17,14 +17,14 @@ export default {
     maxSpeed: '弹幕最大速度（条/秒，0为无限制）',
 
     block: '屏蔽',
-    giftDanmaku: '礼物弹幕',
-    blockLevel: '用户等级低于',
-    informalUser: '非正式会员',
-    unverifiedUser: '未绑定手机用户',
+    giftDanmaku: '屏蔽礼物弹幕',
+    blockLevel: '屏蔽用户等级低于',
+    informalUser: '屏蔽非正式会员',
+    unverifiedUser: '屏蔽未绑定手机用户',
     blockKeywords: '屏蔽关键词',
     onePerLine: '一行一个',
     blockUsers: '屏蔽用户',
-    blockMedalLevel: '当前直播间勋章等级低于',
+    blockMedalLevel: '屏蔽当前直播间勋章等级低于',
 
     style: '样式',
 

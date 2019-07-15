@@ -1,7 +1,6 @@
 import axios from 'axios'
 
 import {mergeConfig} from '@/utils'
-import stylegen from '@/views/StyleGenerator/stylegen'
 
 export const DEFAULT_CONFIG = {
   minGiftPrice: 6.911, // $1
@@ -18,7 +17,7 @@ export const DEFAULT_CONFIG = {
   blockUsers: '',
   blockMedalLevel: 0,
 
-  css: stylegen.getStyle(stylegen.DEFAULT_CONFIG)
+  css: ''
 }
 
 export function setLocalConfig (config) {

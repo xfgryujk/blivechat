@@ -123,7 +123,7 @@ export default {
           time: `${time.getMinutes()}:${time.getSeconds()}`,
           authorName: data.authorName,
           title: 'NEW MEMBER!',
-          content: `Welcome ${data.authorName}`
+          content: `Welcome ${data.authorName}!`
         }
         break
       }

@@ -17,14 +17,14 @@ export default {
     maxSpeed: 'Max speed of messages (/second, 0 for unlimited)',
 
     block: 'Block',
-    giftDanmaku: 'System messages (gift effect)',
-    blockLevel: 'User level lower than',
-    informalUser: 'Informal users',
-    unverifiedUser: 'Unverified users',
+    giftDanmaku: 'Block system messages (gift effect)',
+    blockLevel: 'Block user level lower than',
+    informalUser: 'Block informal users',
+    unverifiedUser: 'Block unverified users',
     blockKeywords: 'Block keywords',
     onePerLine: 'One per line',
     blockUsers: 'Block users',
-    blockMedalLevel: 'Medal level lower than',
+    blockMedalLevel: 'Block medal level lower than',
 
     style: 'Style',
 

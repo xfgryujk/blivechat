@@ -382,11 +382,11 @@ function getAnimationStyle (config) {
       : ` transform: translateX(${config.reverseSlide ? 16 : -16}px);`
     } }`)
     curTime += config.fadeInTime
-    keyframes.push(`  ${(curTime / totalTime) * 100}% { opacity: 1; transform: none;}`)
+    keyframes.push(`  ${(curTime / totalTime) * 100}% { opacity: 1; transform: none; }`)
   }
   if (config.animateOut) {
     curTime += config.animateOutWaitTime * 1000
-    keyframes.push(`  ${(curTime / totalTime) * 100}% { opacity: 1; transform: none;}`)
+    keyframes.push(`  ${(curTime / totalTime) * 100}% { opacity: 1; transform: none; }`)
     curTime += config.fadeOutTime
     keyframes.push(`  ${(curTime / totalTime) * 100}% { opacity: 0;${!config.slide ? ''
       : ` transform: translateX(${config.reverseSlide ? -16 : 16}px);`
