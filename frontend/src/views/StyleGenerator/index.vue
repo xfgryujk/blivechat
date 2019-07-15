@@ -188,7 +188,7 @@
       </el-form>
     </el-col>
     <el-col :span="12">
-      <div id="example-container">
+      <div id="example-container" ref="exampleContainer">
         <div id="fakebody">
           <chat-renderer :paidMessages="examplePaidMessages" :messages="messages" :css="exampleCss" ref="example"></chat-renderer>
         </div>
@@ -309,16 +309,14 @@ export default {
       examplePaidMessages
     }
   },
-  mounted() {
-    const observer = new MutationObserver(() => this.$refs.example.scrollToBottom())
-
-    const child = document.querySelector('#example-container')
-    observer.observe(child, { attributes: true })
-  },
   computed: {
     computedResult() {
       return stylegen.getStyle(this.form)
     }
+  },
+  mounted() {
+    let observer = new MutationObserver(() => this.$refs.example.scrollToBottom())
+    observer.observe(this.$refs.exampleContainer, {attributes: true})
   },
   methods: {
     getFontSuggestions(query, callback) {
@@ -389,11 +387,6 @@ export default {
 
   resize: both;
   overflow: hidden;
-}
-
-#example-container:active {
-  height: 0;
-  width: 0;
 }
 
 .app-wrapper.mobile #example-container {
