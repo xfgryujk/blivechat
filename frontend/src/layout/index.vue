@@ -47,6 +47,10 @@ export default {
 </script>
 
 <style>
+html {
+  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+}
+
 html, body, #app, .app-wrapper, .sidebar-container {
   height: 100%;
 }
@@ -116,11 +120,5 @@ a, a:focus, a:hover {
 
 .sidebar-container .is-horizontal {
   display: none;
-}
-</style>
-
-<style scoped>
-* {
-  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
 }
 </style>
