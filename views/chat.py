@@ -48,7 +48,7 @@ async def get_avatar_url(user_id):
         return DEFAULT_AVATAR_URL
 
     if _last_avatar_failed_time is not None:
-        if (cur_time - _last_avatar_failed_time).total_seconds() < 5 * 60 + 3:
+        if (cur_time - _last_avatar_failed_time).total_seconds() < 4 * 60 + 3:
             # 5分钟以内被ban，解封大约要15分钟
             return DEFAULT_AVATAR_URL
         else:
@@ -59,7 +59,7 @@ async def get_avatar_url(user_id):
         async with _http_session.get('https://api.bilibili.com/x/space/acc/info',
                                      params={'mid': user_id}) as r:
             if r.status != 200:  # 可能会被B站ban
-                logger.warning('获取头像失败：status=%d %s uid=%d', r.status, r.reason, user_id)
+                logger.warning('Failed to fetch avatar: status=%d %s uid=%d', r.status, r.reason, user_id)
                 _last_avatar_failed_time = cur_time
                 return DEFAULT_AVATAR_URL
             data = await r.json()
@@ -167,7 +167,7 @@ class RoomManager:
         if room_id in self._rooms:
             room = self._rooms[room_id]
         else:
-            logger.info('创建房间%d', room_id)
+            logger.info('Creating room %d', room_id)
             room = Room(room_id)
             self._rooms[room_id] = room
             room.start()
@@ -182,7 +182,7 @@ class RoomManager:
         room = self._rooms[room_id]
         room.clients.remove(client)
         if not room.clients:
-            logger.info('移除房间%d', room_id)
+            logger.info('Removing room %d', room_id)
             room.stop_and_close()
             del self._rooms[room_id]
 
@@ -239,7 +239,7 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
         self.room_id = None
 
     def open(self):
-        logger.info('Websocket连接 %s', self.request.remote_ip)
+        logger.info('Websocket connected %s', self.request.remote_ip)
 
     def on_message(self, message):
         if self.room_id is not None:
@@ -247,13 +247,13 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
         body = json.loads(message)
         if body['cmd'] == Command.JOIN_ROOM:
             self.room_id = int(body['data']['roomId'])
-            logger.info('客户端%s加入房间%d', self.request.remote_ip, self.room_id)
+            logger.info('Client %s is joining room %d', self.request.remote_ip, self.room_id)
             room_manager.add_client(self.room_id, self)
         else:
-            logger.warning('未知的命令: %s data: %s', body['cmd'], body['data'])
+            logger.warning('Unknown cmd: %s data: %s', body['cmd'], body['data'])
 
     def on_close(self):
-        logger.info('Websocket断开 %s room: %s', self.request.remote_ip, self.room_id)
+        logger.info('Websocket disconnected %s room: %s', self.request.remote_ip, self.room_id)
         if self.room_id is not None:
             room_manager.del_client(self.room_id, self)
 

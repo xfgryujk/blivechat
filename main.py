@@ -46,7 +46,7 @@ def main():
         autoreload=False
     )
     app.listen(args.port, args.host)
-    logger.info('服务器启动：%s:%d', args.host, args.port)
+    logger.info('Server started: %s:%d', args.host, args.port)
     url = 'http://localhost' if args.port == 80 else f'http://localhost:{args.port}'
     webbrowser.open(url)
     tornado.ioloop.IOLoop.current().start()
