@@ -12,7 +12,14 @@ export function formatCurrency (price) {
   }).format(price)
 }
 
+export function getTimeTextMinSec (date) {
+  let min = ('00' + date.getMinutes()).slice(-2)
+  let sec = ('00' + date.getSeconds()).slice(-2)
+  return `${min}:${sec}`
+}
+
 export default {
   mergeConfig,
-  formatCurrency
+  formatCurrency,
+  getTimeTextMinSec
 }

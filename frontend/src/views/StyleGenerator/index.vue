@@ -211,7 +211,7 @@ let textMessageTemplate = {
   addTime: time,
   type: constants.MESSAGE_TYPE_TEXT,
   avatarUrl: 'https://static.hdslb.com/images/member/noface.gif',
-  time: `${time.getMinutes()}:${time.getSeconds()}`,
+  time: time,
   authorName: '',
   authorType: constants.AUTHRO_TYPE_NORMAL,
   content: '',
@@ -223,7 +223,7 @@ let legacyPaidMessageTemplate = {
   addTime: time,
   type: constants.MESSAGE_TYPE_MEMBER,
   avatarUrl: 'https://static.hdslb.com/images/member/noface.gif',
-  time: `${time.getMinutes()}:${time.getSeconds()}`,
+  time: time,
   authorName: '',
   title: 'NEW MEMBER!',
   content: ''
@@ -235,7 +235,7 @@ let paidMessageTemplate = {
   avatarUrl: 'https://static.hdslb.com/images/member/noface.gif',
   authorName: '',
   price: 0,
-  time: `${time.getMinutes()}:${time.getSeconds()}`,
+  time: time,
   content: ''
 }
 let nextId = 0

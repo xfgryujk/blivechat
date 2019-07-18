@@ -10,7 +10,7 @@
           <div id="event-text" class="style-scope yt-live-chat-legacy-paid-message-renderer">{{title}}</div>
           <div id="detail-text" class="style-scope yt-live-chat-legacy-paid-message-renderer">{{content}}</div>
         </div>
-        <div id="timestamp" class="style-scope yt-live-chat-legacy-paid-message-renderer">{{time}}</div>
+        <div id="timestamp" class="style-scope yt-live-chat-legacy-paid-message-renderer">{{timeText}}</div>
       </div>
     </div>
     <div id="inline-action-button-container" class="style-scope yt-live-chat-legacy-paid-message-renderer" aria-hidden="true">
@@ -21,6 +21,7 @@
 
 <script>
 import ImgShadow from './ImgShadow.vue'
+import utils from '@/utils'
 
 export default {
   name: 'LegacyPaidMessage',
@@ -32,7 +33,12 @@ export default {
     authorName: String,
     title: String,
     content: String,
-    time: String
+    time: Date
+  },
+  computed: {
+    timeText() {
+      return utils.getTimeTextMinSec(this.time)
+    }
   }
 }
 </script>

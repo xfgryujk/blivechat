@@ -4,7 +4,7 @@
       :imgUrl="avatarUrl"
     ></img-shadow>
     <div id="content" class="style-scope yt-live-chat-text-message-renderer">
-      <span id="timestamp" class="style-scope yt-live-chat-text-message-renderer">{{time}}</span>
+      <span id="timestamp" class="style-scope yt-live-chat-text-message-renderer">{{timeText}}</span>
       <yt-live-chat-author-chip class="style-scope yt-live-chat-text-message-renderer">
         <span id="author-name" dir="auto" class="style-scope yt-live-chat-author-chip" :type="authorTypeText">
           {{authorName}}
@@ -29,6 +29,7 @@
 import ImgShadow from './ImgShadow.vue'
 import AuthorBadge from './AuthorBadge.vue'
 import * as constants from './constants'
+import utils from '@/utils'
 
 const REPEATED_MARK_COLOR_START = [64, 158, 255]
 const REPEATED_MARK_COLOR_END = [245, 108, 108]
@@ -41,7 +42,7 @@ export default {
   },
   props: {
     avatarUrl: String,
-    time: String,
+    time: Date,
     authorName: String,
     authorType: Number,
     content: String,
@@ -49,6 +50,9 @@ export default {
     repeated: Number
   },
   computed: {
+    timeText() {
+      return utils.getTimeTextMinSec(this.time)
+    },
     authorTypeText() {
       return constants.AUTHOR_TYPE_TO_TEXT[this.authorType]
     },

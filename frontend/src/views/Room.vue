@@ -36,8 +36,8 @@ export default {
     // 开发时使用localhost:12450
     const url = process.env.NODE_ENV === 'development' ? 'ws://localhost:12450/chat' : `ws://${window.location.host}/chat`
     this.websocket = new WebSocket(url)
-    this.websocket.onopen = this.onWsOpen.bind(this)
-    this.websocket.onmessage = this.onWsMessage.bind(this)
+    this.websocket.onopen = this.onWsOpen
+    this.websocket.onmessage = this.onWsMessage
 
     if (this.$route.query.config_id) {
       try {
@@ -88,7 +88,7 @@ export default {
         message = {
           type: constants.MESSAGE_TYPE_TEXT,
           avatarUrl: data.avatarUrl,
-          time: `${time.getMinutes()}:${time.getSeconds()}`,
+          time: time,
           authorName: data.authorName,
           authorType: data.authorType,
           content: data.content,
@@ -108,7 +108,7 @@ export default {
           avatarUrl: data.avatarUrl,
           authorName: data.authorName,
           price: price,
-          time: `${time.getMinutes()}:${time.getSeconds()}`,
+          time: time,
           content: `Sent ${data.giftName}x${data.giftNum}`
         }
         break
@@ -120,7 +120,7 @@ export default {
         message = {
           type: constants.MESSAGE_TYPE_MEMBER,
           avatarUrl: data.avatarUrl,
-          time: `${time.getMinutes()}:${time.getSeconds()}`,
+          time: time,
           authorName: data.authorName,
           title: 'NEW MEMBER!',
           content: `Welcome ${data.authorName}!`
