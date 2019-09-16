@@ -15,6 +15,7 @@
     mergeSimilarDanmaku: '同じコメントを合併する',
     minGiftPrice: '最低表示スーパーチャット価格（CNY）',
     maxSpeed: 'コメントの最大速度（バー/秒、0は無制限）',
+    maxNumber: '最大コメント数',
 
     block: 'ブロック',
     giftDanmaku: 'ブロックシステムコメント（プレゼント効果）',

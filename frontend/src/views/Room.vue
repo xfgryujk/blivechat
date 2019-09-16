@@ -189,8 +189,8 @@ export default {
       }
       // 防止同时添加和删除项目时所有的项目重新渲染 https://github.com/vuejs/vue/issues/6857
       this.$nextTick(() => {
-        if (this.messages.length > 50) {
-          this.messages.splice(0, this.messages.length - 50)
+        if (this.messages.length > this.config.maxNumber) {
+          this.messages.splice(0, this.messages.length - this.config.maxNumber)
         }
       })
     },

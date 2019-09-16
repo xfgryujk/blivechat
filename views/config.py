@@ -9,7 +9,7 @@ configs: Dict[str, dict] = {}
 
 ALLOWED_FIELDS = (
     'showDanmaku', 'showGift', 'mergeSimilarDanmaku', 'minGiftPrice', 'maxSpeed',
-    'blockGiftDanmaku', 'blockLevel', 'blockNewbie', 'blockNotMobileVerified',
+    'maxNumber', 'blockGiftDanmaku', 'blockLevel', 'blockNewbie', 'blockNotMobileVerified',
     'blockKeywords', 'blockUsers', 'blockMedalLevel', 'css'
 )
 

@@ -3,11 +3,12 @@ import axios from 'axios'
 import {mergeConfig} from '@/utils'
 
 export const DEFAULT_CONFIG = {
-  minGiftPrice: 6.911, // $1
+  minGiftPrice: 7.0754, // $1
   mergeSimilarDanmaku: true,
   showDanmaku: true,
   showGift: true,
   maxSpeed: 4,
+  maxNumber: 60,
 
   blockGiftDanmaku: true,
   blockLevel: 0,

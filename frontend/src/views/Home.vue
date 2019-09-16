@@ -25,6 +25,9 @@
         <el-form-item :label="$t('home.maxSpeed')">
           <el-input v-model.number="form.maxSpeed" type="number" min="0"></el-input>
         </el-form-item>
+        <el-form-item :label="$t('home.maxNumber')">
+          <el-input v-model.number="form.maxNumber" type="number" min="1"></el-input>
+        </el-form-item>
       </el-tab-pane>
 
       <el-tab-pane :label="$t('home.block')">
