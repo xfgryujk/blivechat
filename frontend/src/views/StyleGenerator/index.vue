@@ -263,14 +263,14 @@ const EXAMPLE_MESSAGES = [
   }, {
     ...legacyPaidMessageTemplate,
     id: nextId++,
-    authorName: 'Paryi',
-    content: 'Welcome Paryi!'
+    authorName: '吾乐KANA',
+    content: 'Welcome 吾乐KANA!'
   }, {
     ...paidMessageTemplate,
     id: nextId++,
-    authorName: '石油佬',
-    price: 1245,
-    content: 'Sent 小电视飞船x1'
+    authorName: '无火的残渣',
+    price: 66600,
+    content: 'Sent 小电视飞船x100'
   }, {
     ...textMessageTemplate,
     id: nextId++,
@@ -280,7 +280,7 @@ const EXAMPLE_MESSAGES = [
   }, {
     ...paidMessageTemplate,
     id: nextId++,
-    authorName: '臭DD',
+    authorName: '夏色祭保护协会会长',
     price: 28,
     content: 'Sent 礼花x1'
   }
