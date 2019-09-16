@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import webbrowser
+import asyncio
 import logging
 import os
+import webbrowser
 
 import tornado.ioloop
 import tornado.web
 
+import update
 import views.chat
 import views.config
 import views.main
@@ -31,6 +33,8 @@ def main():
         level=logging.INFO if not args.debug else logging.DEBUG
     )
 
+    asyncio.ensure_future(update.check_update())
+
     app = tornado.web.Application(
         [
             (r'/chat', views.chat.ChatHandler),
@@ -45,10 +49,15 @@ def main():
         debug=args.debug,
         autoreload=False
     )
-    app.listen(args.port, args.host)
+    try:
+        app.listen(args.port, args.host)
+    except OSError:
+        logger.warning('Address is used %s:%d', args.host, args.port)
+        return
+    finally:
+        url = 'http://localhost' if args.port == 80 else f'http://localhost:{args.port}'
+        webbrowser.open(url)
     logger.info('Server started: %s:%d', args.host, args.port)
-    url = 'http://localhost' if args.port == 80 else f'http://localhost:{args.port}'
-    webbrowser.open(url)
     tornado.ioloop.IOLoop.current().start()
 
 
