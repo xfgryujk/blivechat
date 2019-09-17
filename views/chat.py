@@ -95,7 +95,7 @@ asyncio.ensure_future(_fetch_avatar_loop())
 
 class Room(blivedm.BLiveClient):
     def __init__(self, room_id):
-        super().__init__(room_id, session=_http_session)
+        super().__init__(room_id, session=_http_session, heartbeat_interval=10)
         self.clients: List['ChatHandler'] = []
 
     def stop_and_close(self):
