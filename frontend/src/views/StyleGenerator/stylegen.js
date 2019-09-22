@@ -63,6 +63,8 @@ export const DEFAULT_CONFIG = {
   reverseSlide: false
 }
 
+const FALLBACK_FONTS = ', "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "\\5FAE\\8F6F\\96C5\\9ED1", SimHei, Arial, sans-serif'
+
 export function setLocalConfig (config) {
   config = mergeConfig(config, DEFAULT_CONFIG)
   window.localStorage.stylegenConfig = JSON.stringify(config)
@@ -105,7 +107,7 @@ yt-live-chat-author-chip #author-name {
 /* Outlines */
 yt-live-chat-renderer * {
   ${getShowOutlinesStyle(config)}
-  font-family: "${config.messageFont}", "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "\\5FAE\\8F6F\\96C5\\9ED1", SimHei, Arial, sans-serif;
+  font-family: "${config.messageFont}"${FALLBACK_FONTS};
   font-size: ${config.messageFontSize}px !important;
   line-height: ${config.messageLineHeight}px !important;
 }
@@ -116,11 +118,11 @@ yt-live-chat-legacy-paid-message-renderer #content {
 }
 
 /* Hide scrollbar. */
-yt-live-chat-item-list-renderer #items{
+yt-live-chat-item-list-renderer #items {
   overflow: hidden !important;
 }
 
-yt-live-chat-item-list-renderer #item-scroller{
+yt-live-chat-item-list-renderer #item-scroller {
   overflow: hidden !important;
 }
 
@@ -164,7 +166,7 @@ yt-live-chat-text-message-renderer #chat-badges {
 yt-live-chat-text-message-renderer #timestamp {
   display: ${config.showTime ? 'inline' : 'none'} !important;
   ${config.timeColor ? `color: ${config.timeColor} !important;` : ''}
-  font-family: "${config.timeFont}", "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "\\5FAE\\8F6F\\96C5\\9ED1", SimHei, Arial, sans-serif;
+  font-family: "${config.timeFont}"${FALLBACK_FONTS};
   font-size: ${config.timeFontSize}px !important;
   line-height: ${config.timeLineHeight || config.timeFontSize}px !important;
 }
@@ -188,7 +190,7 @@ yt-live-chat-text-message-renderer yt-live-chat-author-badge-renderer[type="memb
 /* Channel names. */
 yt-live-chat-text-message-renderer #author-name {
   ${config.userNameColor ? `color: ${config.userNameColor} !important;` : ''}
-  font-family: "${config.userNameFont}", "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "\\5FAE\\8F6F\\96C5\\9ED1", SimHei, Arial, sans-serif;
+  font-family: "${config.userNameFont}"${FALLBACK_FONTS};
   font-size: ${config.userNameFontSize}px !important;
   line-height: ${config.userNameLineHeight || config.userNameFontSize}px !important;
 }
@@ -199,7 +201,7 @@ ${getShowColonStyle(config)}
 yt-live-chat-text-message-renderer #message,
 yt-live-chat-text-message-renderer #message * {
   ${config.messageColor ? `color: ${config.messageColor} !important;` : ''}
-  font-family: "${config.messageFont}", "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "\\5FAE\\8F6F\\96C5\\9ED1", SimHei, Arial, sans-serif;
+  font-family: "${config.messageFont}"${FALLBACK_FONTS};
   font-size: ${config.messageFontSize}px !important;
   line-height: ${config.messageLineHeight || config.messageFontSize}px !important;
 }
@@ -214,7 +216,7 @@ yt-live-chat-paid-message-renderer #author-name *,
 yt-live-chat-legacy-paid-message-renderer #event-text,
 yt-live-chat-legacy-paid-message-renderer #event-text * {
   ${config.firstLineColor ? `color: ${config.firstLineColor} !important;` : ''}
-  font-family: "${config.firstLineFont}", "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "\\5FAE\\8F6F\\96C5\\9ED1", SimHei, Arial, sans-serif;
+  font-family: "${config.firstLineFont}"${FALLBACK_FONTS};
   font-size: ${config.firstLineFontSize}px !important;
   line-height: ${config.firstLineLineHeight || config.firstLineFontSize}px !important;
 }
@@ -224,7 +226,7 @@ yt-live-chat-paid-message-renderer #purchase-amount *,
 yt-live-chat-legacy-paid-message-renderer #detail-text,
 yt-live-chat-legacy-paid-message-renderer #detail-text * {
   ${config.secondLineColor ? `color: ${config.secondLineColor} !important;` : ''}
-  font-family: "${config.secondLineFont}", "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "\\5FAE\\8F6F\\96C5\\9ED1", SimHei, Arial, sans-serif;
+  font-family: "${config.secondLineFont}"${FALLBACK_FONTS};
   font-size: ${config.secondLineFontSize}px !important;
   line-height: ${config.secondLineLineHeight || config.secondLineFontSize}px !important;
 }
@@ -232,7 +234,7 @@ yt-live-chat-legacy-paid-message-renderer #detail-text * {
 yt-live-chat-paid-message-renderer #content,
 yt-live-chat-paid-message-renderer #content * {
   ${config.scContentColor ? `color: ${config.scContentColor} !important;` : ''}
-  font-family: "${config.scContentFont}", "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "\\5FAE\\8F6F\\96C5\\9ED1", SimHei, Arial, sans-serif;
+  font-family: "${config.scContentFont}"${FALLBACK_FONTS};
   font-size: ${config.scContentFontSize}px !important;
   line-height: ${config.scContentLineHeight || config.scContentFontSize}px !important;
 }
@@ -273,7 +275,7 @@ yt-live-chat-ticker-paid-message-item-renderer *,
 yt-live-chat-ticker-sponsor-item-renderer,
 yt-live-chat-ticker-sponsor-item-renderer * {
   ${config.secondLineColor ? `color: ${config.secondLineColor} !important;` : ''}
-  font-family: "${config.secondLineFont}", "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "\\5FAE\\8F6F\\96C5\\9ED1", SimHei, Arial, sans-serif;
+  font-family: "${config.secondLineFont}"${FALLBACK_FONTS};
 }
 
 yt-live-chat-mode-change-message-renderer, 

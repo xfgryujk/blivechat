@@ -280,7 +280,7 @@ const EXAMPLE_MESSAGES = [
   }, {
     ...paidMessageTemplate,
     id: nextId++,
-    authorName: '夏色祭保护协会会长',
+    authorName: '夏色祭保護協会会長',
     price: 28,
     content: 'Sent 礼花x1'
   }

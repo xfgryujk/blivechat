@@ -48,8 +48,8 @@ async def get_avatar_url(user_id):
         return DEFAULT_AVATAR_URL
 
     if _last_avatar_failed_time is not None:
-        if (cur_time - _last_avatar_failed_time).total_seconds() < 4 * 60 + 3:
-            # 5分钟以内被ban，解封大约要15分钟
+        if (cur_time - _last_avatar_failed_time).total_seconds() < 3 * 60 + 3:
+            # 3分钟以内被ban，解封大约要15分钟
             return DEFAULT_AVATAR_URL
         else:
             _last_avatar_failed_time = None

@@ -31,8 +31,9 @@ import AuthorBadge from './AuthorBadge.vue'
 import * as constants from './constants'
 import utils from '@/utils'
 
-const REPEATED_MARK_COLOR_START = [64, 158, 255]
-const REPEATED_MARK_COLOR_END = [245, 108, 108]
+// HSL
+const REPEATED_MARK_COLOR_START = [210, 100.0, 62.5]
+const REPEATED_MARK_COLOR_END = [360, 87.3, 69.2]
 
 export default {
   name: 'TextMessage',
@@ -69,7 +70,7 @@ export default {
           color[i] = REPEATED_MARK_COLOR_START[i] + (REPEATED_MARK_COLOR_END[i] - REPEATED_MARK_COLOR_START[i]) * t
         }
       }
-      return `rgb(${color.join(', ')})`
+      return `hsl(${color[0]}, ${color[1]}%, ${color[2]}%)`
     }
   }
 }
