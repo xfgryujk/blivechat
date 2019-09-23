@@ -21,7 +21,7 @@
           <span id="timestamp" class="style-scope yt-live-chat-paid-message-renderer">{{timeText}}</span>
         </div>
       </div>
-      <div id="content" class="style-scope yt-live-chat-paid-message-renderer">
+      <div id="content" class="style-scope yt-live-chat-paid-message-renderer" v-show="content">
         <div id="message" dir="auto" class="style-scope yt-live-chat-paid-message-renderer">
           {{content}}
         </div>
