@@ -17,10 +17,13 @@ logger = logging.getLogger(__name__)
 
 
 class Command(enum.IntEnum):
-    JOIN_ROOM = 0
-    ADD_TEXT = 1
-    ADD_GIFT = 2
-    ADD_MEMBER = 3
+    HEARTBEAT = 0
+    JOIN_ROOM = 1
+    ADD_TEXT = 2
+    ADD_GIFT = 3
+    ADD_MEMBER = 4
+    ADD_SUPER_CHAT = 5
+    DEL_SUPER_CHAT = 6
 
 
 DEFAULT_AVATAR_URL = 'https://static.hdslb.com/images/member/noface.gif'
@@ -156,6 +159,21 @@ class Room(blivedm.BLiveClient):
             'avatarUrl':  await get_avatar_url(message.uid),
             'timestamp': message.start_time,
             'authorName': message.username
+        })
+
+    async def _on_super_chat(self, message: blivedm.SuperChatMessage):
+        self.send_message(Command.ADD_SUPER_CHAT, {
+            'avatarUrl': message.face,
+            'timestamp': message.start_time,
+            'authorName': message.uname,
+            'price': message.price,
+            'content': message.message,
+            'id': message.id
+        })
+
+    async def _on_super_chat_delete(self, message: blivedm.SuperChatDeleteMessage):
+        self.send_message(Command.ADD_SUPER_CHAT, {
+            'ids':  message.ids
         })
 
 

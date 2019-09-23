@@ -231,7 +231,7 @@ let legacyPaidMessageTemplate = {
 let paidMessageTemplate = {
   id: 0,
   addTime: time,
-  type: constants.MESSAGE_TYPE_GIFT,
+  type: constants.MESSAGE_TYPE_SUPER_CHAT,
   avatarUrl: 'https://static.hdslb.com/images/member/noface.gif',
   authorName: '',
   price: 0,

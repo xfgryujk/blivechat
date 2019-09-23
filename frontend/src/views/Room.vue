@@ -7,10 +7,13 @@ import config from '@/api/config'
 import ChatRenderer from '@/components/ChatRenderer'
 import * as constants from '@/components/ChatRenderer/constants'
 
-const COMMAND_JOIN_ROOM = 0
-const COMMAND_ADD_TEXT = 1
-const COMMAND_ADD_GIFT = 2
-const COMMAND_ADD_MEMBER = 3
+// const COMMAND_HEARTBEAT = 0
+const COMMAND_JOIN_ROOM = 1
+const COMMAND_ADD_TEXT = 2
+const COMMAND_ADD_GIFT = 3
+const COMMAND_ADD_MEMBER = 4
+const COMMAND_ADD_SUPER_CHAT = 5
+const COMMAND_DEL_SUPER_CHAT = 6
 
 export default {
   name: 'Room',
@@ -101,20 +104,21 @@ export default {
           break
         }
         let price = data.totalCoin / 1000
-        if (price < this.config.minGiftPrice) // 丢人
+        if (price < this.config.minGiftPrice) { // 丢人
           break
+        }
         message = {
-          type: constants.MESSAGE_TYPE_GIFT,
+          type: constants.MESSAGE_TYPE_SUPER_CHAT,
           avatarUrl: data.avatarUrl,
           authorName: data.authorName,
           price: price,
           time: time,
-          content: `Sent ${data.giftName}x${data.giftNum}`
+          content: '' // 有了SC，礼物不需要内容了
         }
         break
       }
       case COMMAND_ADD_MEMBER:
-        if (!this.config.showGift) {
+        if (!this.config.showGift || !this.filterSuperChatMessage(data)) {
           break
         }
         message = {
@@ -125,6 +129,25 @@ export default {
           title: 'NEW MEMBER!',
           content: `Welcome ${data.authorName}!`
         }
+        break
+      case COMMAND_ADD_SUPER_CHAT:
+        if (!this.config.showGift) {
+          break
+        }
+        if (data.price < this.config.minGiftPrice) { // 丢人
+          break
+        }
+        message = {
+          type: constants.MESSAGE_TYPE_SUPER_CHAT,
+          avatarUrl: data.avatarUrl,
+          authorName: data.authorName,
+          price: data.price,
+          time: time,
+          content: data.content
+        }
+        break
+      case COMMAND_DEL_SUPER_CHAT:
+        // TODO 删除SC
         break
       }
       if (message) {
@@ -143,6 +166,19 @@ export default {
       } else if (this.config.blockMedalLevel > 0 && data.medalLevel < this.config.blockMedalLevel) {
         return false
       }
+      for (let keyword of this.config.blockKeywords) {
+        if (data.content.indexOf(keyword) !== -1) {
+          return false
+        }
+      }
+      for (let user of this.config.blockUsers) {
+        if (data.authorName === user) {
+          return false
+        }
+      }
+      return true
+    },
+    filterSuperChatMessage(data) {
       for (let keyword of this.config.blockKeywords) {
         if (data.content.indexOf(keyword) !== -1) {
           return false
