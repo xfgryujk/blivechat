@@ -7,7 +7,7 @@ import config from '@/api/config'
 import ChatRenderer from '@/components/ChatRenderer'
 import * as constants from '@/components/ChatRenderer/constants'
 
-// const COMMAND_HEARTBEAT = 0
+const COMMAND_HEARTBEAT = 0
 const COMMAND_JOIN_ROOM = 1
 const COMMAND_ADD_TEXT = 2
 const COMMAND_ADD_GIFT = 3
@@ -27,7 +27,12 @@ export default {
     cfg.maxSpeed = 0
     return {
       config: cfg,
+
       websocket: null,
+      retryCount: 0,
+      isDestroying: false,
+      heartbeatTimerId: null,
+
       messagesBufferTimerId: null,
       nextId: 0,
       messagesBuffer: [], // 暂时不显示的消息，可能会丢弃
@@ -35,28 +40,17 @@ export default {
       paidMessages: []
     }
   },
-  async created() {
-    // 开发时使用localhost:12450
-    const url = process.env.NODE_ENV === 'development' ? 'ws://localhost:12450/chat' : `ws://${window.location.host}/chat`
-    this.websocket = new WebSocket(url)
-    this.websocket.onopen = this.onWsOpen
-    this.websocket.onmessage = this.onWsMessage
-
+  created() {
+    this.wsConnect()
     if (this.$route.query.config_id) {
-      try {
-        let cfg = await config.getRemoteConfig(this.$route.query.config_id)
-        cfg.blockKeywords = cfg.blockKeywords.split('\n').filter(val => val)
-        cfg.blockUsers = cfg.blockUsers.split('\n').filter(val => val)
-        this.config = cfg
-      } catch (e) {
-        this.$message.error('获取配置失败：' + e)
-      }
+      this.updateConfig(this.$route.query.config_id)
     }
   },
   beforeDestroy() {
     if (this.messagesBufferTimerId) {
       window.clearInterval(this.messagesBufferTimerId)
     }
+    this.isDestroying = true
     this.websocket.close()
   },
   watch: {
@@ -66,18 +60,54 @@ export default {
         this.messagesBufferTimerId = null
       }
       if (val.maxSpeed > 0) {
-        this.messagesBufferTimerId = window.setInterval(this.handleMessagesBuffer.bind(this), 1000 / val.maxSpeed)
+        this.messagesBufferTimerId = window.setInterval(this.handleMessagesBuffer, 1000 / val.maxSpeed)
       }
     }
   },
   methods: {
+    async updateConfig(configId) {
+      try {
+        let cfg = await config.getRemoteConfig(configId)
+        cfg.blockKeywords = cfg.blockKeywords.split('\n').filter(val => val)
+        cfg.blockUsers = cfg.blockUsers.split('\n').filter(val => val)
+        this.config = cfg
+      } catch (e) {
+        this.$message.error('获取配置失败：' + e)
+      }
+    },
+    wsConnect() {
+      // 开发时使用localhost:12450
+      const url = process.env.NODE_ENV === 'development' ? 'ws://localhost:12450/chat' : `ws://${window.location.host}/chat`
+      this.websocket = new WebSocket(url)
+      this.websocket.onopen = this.onWsOpen
+      this.websocket.onclose = this.onWsClose
+      this.websocket.onmessage = this.onWsMessage
+      this.heartbeatTimerId = window.setInterval(this.sendHeartbeat, 10 * 1000)
+    },
+    sendHeartbeat() {
+      this.websocket.send(JSON.stringify({
+        cmd: COMMAND_HEARTBEAT
+      }))
+    },
     onWsOpen() {
+      this.retryCount = 0
       this.websocket.send(JSON.stringify({
         cmd: COMMAND_JOIN_ROOM,
         data: {
           roomId: parseInt(this.$route.params.roomId)
         }
       }))
+    },
+    onWsClose() {
+      if (this.heartbeatTimerId) {
+        window.clearInterval(this.heartbeatTimerId)
+        this.heartbeatTimerId = null
+      }
+      if (this.isDestroying) {
+        return
+      }
+      window.console.log(`掉线重连中${++this.retryCount}`)
+      this.wsConnect()
     },
     onWsMessage(event) {
       let {cmd, data} = JSON.parse(event.data)

@@ -181,76 +181,49 @@ class RoomManager:
     def __init__(self):
         self._rooms: Dict[int, Room] = {}
 
-    def add_client(self, room_id, client: 'ChatHandler'):
-        if room_id in self._rooms:
-            room = self._rooms[room_id]
-        else:
-            logger.info('Creating room %d', room_id)
-            room = Room(room_id)
-            self._rooms[room_id] = room
-            room.start()
+    async def add_client(self, room_id, client: 'ChatHandler'):
+        if room_id not in self._rooms:
+            if not await self._add_room(room_id):
+                client.close()
+                return
+        room = self._rooms[room_id]
         room.clients.append(client)
+        logger.info('%d clients in room %s', len(room.clients), room_id)
 
         if client.application.settings['debug']:
-            self.__send_test_message(room)
+            client.send_test_message()
 
     def del_client(self, room_id, client: 'ChatHandler'):
         if room_id not in self._rooms:
             return
         room = self._rooms[room_id]
         room.clients.remove(client)
+        logger.info('%d clients in room %s', len(room.clients), room_id)
         if not room.clients:
-            logger.info('Removing room %d', room_id)
-            room.stop_and_close()
-            del self._rooms[room_id]
+            self._del_room(room_id)
 
-    # 测试用
-    @staticmethod
-    def __send_test_message(room):
-        base_data = {
-            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@48w_48h',
-            'timestamp': time.time(),
-            'authorName': 'xfgryujk',
-        }
-        text_data = {
-            **base_data,
-            'authorType': 0,
-            'content': '我能吞下玻璃而不伤身体',
-            'privilegeType': 0,
-            'isGiftDanmaku': False,
-            'authorLevel': 20,
-            'isNewbie': False,
-            'isMobileVerified': True
-        }
-        member_data = base_data
-        gift_data = {
-            **base_data,
-            'giftName': '摩天大楼',
-            'giftNum': 1,
-            'totalCoin': 450000
-        }
-        sc_data = {
-            **base_data,
-            'price': 30,
-            'content': 'The quick brown fox jumps over the lazy dog',
-            'id': 1
-        }
-        room.send_message(Command.ADD_TEXT, text_data)
-        text_data['authorName'] = '主播'
-        text_data['authorType'] = 3
-        text_data['content'] = "I can eat glass, it doesn't hurt me."
-        room.send_message(Command.ADD_TEXT, text_data)
-        room.send_message(Command.ADD_MEMBER, member_data)
-        room.send_message(Command.ADD_SUPER_CHAT, sc_data)
-        sc_data['price'] = 100
-        sc_data['content'] = '敏捷的棕色狐狸跳过了懒狗'
-        sc_data['id'] = 2
-        room.send_message(Command.ADD_SUPER_CHAT, sc_data)
-        # room.send_message(Command.DEL_SUPER_CHAT, {'ids': [1, 2]})
-        room.send_message(Command.ADD_GIFT, gift_data)
-        gift_data['giftName'] = '小电视飞船'
-        gift_data['totalCoin'] = 1245000
-        room.send_message(Command.ADD_GIFT, gift_data)
+    async def _add_room(self, room_id):
+        if room_id in self._rooms:
+            return True
+        logger.info('Creating room %d', room_id)
+        room = Room(room_id)
+        self._rooms[room_id] = room
+        if await room.init_room():
+            room.start()
+            return True
+        else:
+            self._del_room(room_id)
+            return False
+
+    def _del_room(self, room_id):
+        if room_id not in self._rooms:
+            return
+        logger.info('Removing room %d', room_id)
+        room = self._rooms[room_id]
+        for client in room.clients:
+            client.close()
+        room.stop_and_close()
+        del self._rooms[room_id]
 
 
 room_manager = RoomManager()
@@ -266,18 +239,21 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
         logger.info('Websocket connected %s', self.request.remote_ip)
 
     def on_message(self, message):
-        if self.room_id is not None:
-            return
         body = json.loads(message)
-        if body['cmd'] == Command.JOIN_ROOM:
+        cmd = body['cmd']
+        if cmd == Command.HEARTBEAT:
+            pass
+        elif cmd == Command.JOIN_ROOM:
+            if self.room_id is not None:
+                return
             self.room_id = int(body['data']['roomId'])
             logger.info('Client %s is joining room %d', self.request.remote_ip, self.room_id)
-            room_manager.add_client(self.room_id, self)
+            asyncio.ensure_future(room_manager.add_client(self.room_id, self))
         else:
-            logger.warning('Unknown cmd: %s data: %s', body['cmd'], body['data'])
+            logger.warning('Unknown cmd: %s body: %s', cmd, body)
 
     def on_close(self):
-        logger.info('Websocket disconnected %s room: %s', self.request.remote_ip, self.room_id)
+        logger.info('Websocket disconnected %s room: %s', self.request.remote_ip, str(self.room_id))
         if self.room_id is not None:
             room_manager.del_client(self.room_id, self)
 
@@ -286,3 +262,54 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
         if self.application.settings['debug']:
             return True
         return super().check_origin(origin)
+
+    # 测试用
+    def send_test_message(self):
+        base_data = {
+            'avatarUrl':  'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@48w_48h',
+            'timestamp':  time.time(),
+            'authorName': 'xfgryujk',
+        }
+        text_data = {
+            **base_data,
+            'authorType':       0,
+            'content':          '我能吞下玻璃而不伤身体',
+            'privilegeType':    0,
+            'isGiftDanmaku':    False,
+            'authorLevel':      20,
+            'isNewbie':         False,
+            'isMobileVerified': True
+        }
+        member_data = base_data
+        gift_data = {
+            **base_data,
+            'giftName':  '摩天大楼',
+            'giftNum':   1,
+            'totalCoin': 450000
+        }
+        sc_data = {
+            **base_data,
+            'price':   30,
+            'content': 'The quick brown fox jumps over the lazy dog',
+            'id':      1
+        }
+        self.send_message(Command.ADD_TEXT, text_data)
+        text_data['authorName'] = '主播'
+        text_data['authorType'] = 3
+        text_data['content'] = "I can eat glass, it doesn't hurt me."
+        self.send_message(Command.ADD_TEXT, text_data)
+        self.send_message(Command.ADD_MEMBER, member_data)
+        self.send_message(Command.ADD_SUPER_CHAT, sc_data)
+        sc_data['price'] = 100
+        sc_data['content'] = '敏捷的棕色狐狸跳过了懒狗'
+        sc_data['id'] = 2
+        self.send_message(Command.ADD_SUPER_CHAT, sc_data)
+        # self.send_message(Command.DEL_SUPER_CHAT, {'ids': [1, 2]})
+        self.send_message(Command.ADD_GIFT, gift_data)
+        gift_data['giftName'] = '小电视飞船'
+        gift_data['totalCoin'] = 1245000
+        self.send_message(Command.ADD_GIFT, gift_data)
+
+    def send_message(self, cmd, data):
+        body = json.dumps({'cmd': cmd, 'data': data})
+        self.write_message(body)
