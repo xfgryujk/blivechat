@@ -1,5 +1,6 @@
 <template>
-  <yt-live-chat-paid-message-renderer class="style-scope yt-live-chat-item-list-renderer" allow-animations :style="{
+  <yt-live-chat-paid-message-renderer class="style-scope yt-live-chat-item-list-renderer" allow-animations
+    :show-only-header="!content" :style="{
       '--yt-live-chat-paid-message-primary-color': color.contentBg,
       '--yt-live-chat-paid-message-secondary-color': color.headerBg,
       '--yt-live-chat-paid-message-header-color': color.header,
@@ -21,7 +22,7 @@
           <span id="timestamp" class="style-scope yt-live-chat-paid-message-renderer">{{timeText}}</span>
         </div>
       </div>
-      <div id="content" class="style-scope yt-live-chat-paid-message-renderer" v-show="content">
+      <div id="content" class="style-scope yt-live-chat-paid-message-renderer">
         <div id="message" dir="auto" class="style-scope yt-live-chat-paid-message-renderer">
           {{content}}
         </div>
