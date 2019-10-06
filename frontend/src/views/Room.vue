@@ -83,12 +83,13 @@ export default {
       let {cmd, data} = JSON.parse(event.data)
       let message = null
       let time = data.timestamp ? new Date(data.timestamp * 1000) : new Date()
-      switch(cmd) {
+      switch (cmd) {
       case COMMAND_ADD_TEXT:
         if (!this.config.showDanmaku || !this.filterTextMessage(data) || this.mergeSimilar(data.content)) {
           break
         }
         message = {
+          id: `text_${this.nextId++}`,
           type: constants.MESSAGE_TYPE_TEXT,
           avatarUrl: data.avatarUrl,
           time: time,
@@ -108,6 +109,7 @@ export default {
           break
         }
         message = {
+          id: `gift_${this.nextId++}`,
           type: constants.MESSAGE_TYPE_SUPER_CHAT,
           avatarUrl: data.avatarUrl,
           authorName: data.authorName,
@@ -122,6 +124,7 @@ export default {
           break
         }
         message = {
+          id: `member_${this.nextId++}`,
           type: constants.MESSAGE_TYPE_MEMBER,
           avatarUrl: data.avatarUrl,
           time: time,
@@ -138,6 +141,7 @@ export default {
           break
         }
         message = {
+          id: `sc_${data.id}`,
           type: constants.MESSAGE_TYPE_SUPER_CHAT,
           avatarUrl: data.avatarUrl,
           authorName: data.authorName,
@@ -146,9 +150,20 @@ export default {
           content: data.content
         }
         break
-      case COMMAND_DEL_SUPER_CHAT:
-        // TODO 删除SC
+      case COMMAND_DEL_SUPER_CHAT: {
+        let arrays = [this.messages, this.messagesBuffer, this.paidMessages]
+        for (let id of data.ids) {
+          id = `sc_${id}`
+          for (let arr of arrays) {
+            for (let i = 0; i < arr.length; i++) {
+              if (arr[i].id === id) {
+                arr.splice(i, 1)
+              }
+            }
+          }
+        }
         break
+      }
       }
       if (message) {
         this.addMessageBuffer(message)
@@ -208,7 +223,7 @@ export default {
       return false
     },
     addMessageBuffer(message) {
-      if (this.config.maxSpeed > 0 && message.type === 0) {
+      if (this.config.maxSpeed > 0 && message.type === constants.MESSAGE_TYPE_TEXT) {
         message.addTime = new Date()
         this.messagesBuffer.push(message)
       } else {
@@ -217,7 +232,6 @@ export default {
       }
     },
     addMessageShow(message) {
-      message.id = this.nextId++
       message.addTime = new Date()
       this.messages.push(message)
       if (message.type !== constants.MESSAGE_TYPE_TEXT) {

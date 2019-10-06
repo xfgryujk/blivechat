@@ -208,8 +208,8 @@ class RoomManager:
     @staticmethod
     def __send_test_message(room):
         base_data = {
-            'avatarUrl':  'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@48w_48h',
-            'timestamp':  time.time(),
+            'avatarUrl': 'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@48w_48h',
+            'timestamp': time.time(),
             'authorName': 'xfgryujk',
         }
         text_data = {
@@ -222,25 +222,31 @@ class RoomManager:
             'isNewbie': False,
             'isMobileVerified': True
         }
-        vip_data = base_data
+        member_data = base_data
         gift_data = {
             **base_data,
-            'giftName': '礼花',
+            'giftName': '摩天大楼',
             'giftNum': 1,
-            'totalCoin': 28000
+            'totalCoin': 450000
+        }
+        sc_data = {
+            **base_data,
+            'price': 30,
+            'content': 'The quick brown fox jumps over the lazy dog',
+            'id': 1
         }
         room.send_message(Command.ADD_TEXT, text_data)
         text_data['authorName'] = '主播'
         text_data['authorType'] = 3
         text_data['content'] = "I can eat glass, it doesn't hurt me."
         room.send_message(Command.ADD_TEXT, text_data)
-        room.send_message(Command.ADD_MEMBER, vip_data)
-        room.send_message(Command.ADD_GIFT, gift_data)
-        gift_data['giftName'] = '节奏风暴'
-        gift_data['totalCoin'] = 100000
-        room.send_message(Command.ADD_GIFT, gift_data)
-        gift_data['giftName'] = '摩天大楼'
-        gift_data['totalCoin'] = 450000
+        room.send_message(Command.ADD_MEMBER, member_data)
+        room.send_message(Command.ADD_SUPER_CHAT, sc_data)
+        sc_data['price'] = 100
+        sc_data['content'] = '敏捷的棕色狐狸跳过了懒狗'
+        sc_data['id'] = 2
+        room.send_message(Command.ADD_SUPER_CHAT, sc_data)
+        # room.send_message(Command.DEL_SUPER_CHAT, {'ids': [1, 2]})
         room.send_message(Command.ADD_GIFT, gift_data)
         gift_data['giftName'] = '小电视飞船'
         gift_data['totalCoin'] = 1245000
