@@ -2,7 +2,8 @@ export default {
   sidebar: {
     home: 'Home',
     stylegen: 'Style generator',
-    projectAddress: 'Project address'
+    projectAddress: 'Project address',
+    giftRecord: 'Super Chat record'
   },
   home: {
     roomIdEmpty: "Room ID can't be empty",

@@ -2,7 +2,8 @@
   sidebar: {
     home: 'トップページ',
     stylegen: 'スタイルジェネレータ',
-    projectAddress: 'プロジェクトアドレス'
+    projectAddress: 'プロジェクトアドレス',
+    giftRecord: 'スーパーチャット記録'
   },
   home: {
     roomIdEmpty: 'ルームのIDを空白にすることはできません',

@@ -18,6 +18,11 @@
           <i class="el-icon-share"></i>{{$t('sidebar.projectAddress')}}
         </el-menu-item>
       </a>
+      <a href="https://bilisc.com/" target="_blank">
+        <el-menu-item>
+          <i class="el-icon-share"></i>{{$t('sidebar.giftRecord')}}
+        </el-menu-item>
+      </a>
       <el-submenu index="null">
         <template slot="title">
           <i class="el-icon-chat-line-square"></i>Language

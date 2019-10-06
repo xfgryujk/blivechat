@@ -2,7 +2,8 @@ export default {
   sidebar: {
     home: '首页',
     stylegen: '样式生成器',
-    projectAddress: '项目地址'
+    projectAddress: '项目地址',
+    giftRecord: '打赏记录'
   },
   home: {
     roomIdEmpty: '房间ID不能为空',
@@ -11,9 +12,9 @@ export default {
     general: '常规',
     roomId: '房间ID',
     showDanmaku: '显示弹幕',
-    showGift: '显示礼物和新舰长',
+    showGift: '显示打赏和新舰长',
     mergeSimilarDanmaku: '合并相似弹幕',
-    minGiftPrice: '最低显示礼物价格（元）',
+    minGiftPrice: '最低显示打赏价格（元）',
     maxSpeed: '弹幕最大速度（条/秒，0为无限制）',
     maxNumber: '最大弹幕数',
 
@@ -76,7 +77,7 @@ export default {
     moderatorMessageBgColor: '房管消息背景色',
     memberMessageBgColor: '舰长消息背景色',
 
-    scAndNewMember: '礼物、舰长',
+    scAndNewMember: '打赏、舰长',
     firstLineFont: '第一行字体',
     firstLineFontSize: '第一行字体尺寸',
     firstLineLineHeight: '第一行行高（0为默认）',
