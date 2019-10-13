@@ -37,6 +37,9 @@ import LegacyPaidMessage from './LegacyPaidMessage.vue'
 import PaidMessage from './PaidMessage.vue'
 import * as constants from './constants'
 
+// const CHAT_SMOOTH_ANIMATION_TIME_MS = 84
+const SCROLLED_TO_BOTTOM_EPSILON = 15
+
 export default {
   name: 'ChatRenderer',
   components: {
@@ -83,8 +86,8 @@ export default {
       this.$refs.scroller.scrollTop = this.$refs.scroller.scrollHeight
     },
     onScroll() {
-      this.canAutoScroll = Math.abs(this.$refs.scroller.scrollHeight - this.$refs.scroller.scrollTop
-                                    - this.$refs.scroller.clientHeight) < 2
+      let scroller = this.$refs.scroller
+      this.canAutoScroll = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < SCROLLED_TO_BOTTOM_EPSILON
     }
   }
 }
