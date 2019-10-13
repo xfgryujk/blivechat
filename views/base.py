@@ -19,7 +19,10 @@ class ApiHandler(tornado.web.RequestHandler):
 
     def prepare(self):
         if self.request.headers.get('Content-Type', '').startswith('application/json'):
-            self.json_args = json.loads(self.request.body)
+            try:
+                self.json_args = json.loads(self.request.body)
+            except json.JSONDecodeError:
+                self.json_args = None
         else:
             self.json_args = None
 
