@@ -76,8 +76,10 @@ export default {
       }
     },
     wsConnect() {
+      const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
       // 开发时使用localhost:12450
-      const url = process.env.NODE_ENV === 'development' ? 'ws://localhost:12450/chat' : `ws://${window.location.host}/chat`
+      const host = process.env.NODE_ENV === 'development' ? 'localhost:12450' : window.location.host
+      const url = `${protocol}://${host}/chat`
       this.websocket = new WebSocket(url)
       this.websocket.onopen = this.onWsOpen
       this.websocket.onclose = this.onWsClose
