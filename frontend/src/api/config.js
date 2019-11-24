@@ -7,7 +7,6 @@ export const DEFAULT_CONFIG = {
   mergeSimilarDanmaku: true,
   showDanmaku: true,
   showGift: true,
-  maxSpeed: 4,
   maxNumber: 60,
 
   blockGiftDanmaku: true,

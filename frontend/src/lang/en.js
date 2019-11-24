@@ -15,7 +15,6 @@ export default {
     showGift: 'Show Super Chats',
     mergeSimilarDanmaku: 'Merge similar messages',
     minGiftPrice: 'Min price of Super Chats to show (CNY)',
-    maxSpeed: 'Max speed of messages (/second, 0 for unlimited)',
     maxNumber: 'Max number of messages',
 
     block: 'Block',

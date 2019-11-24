@@ -31,6 +31,7 @@
 </template>
 
 <script>
+import config from '@/api/config'
 import Ticker from './Ticker.vue'
 import TextMessage from './TextMessage.vue'
 import LegacyPaidMessage from './LegacyPaidMessage.vue'
@@ -49,9 +50,11 @@ export default {
     PaidMessage
   },
   props: {
-    paidMessages: Array,
-    messages: Array,
-    css: String
+    css: String,
+    maxNumber: {
+      type: Number,
+      default: config.DEFAULT_CONFIG.maxNumber
+    }
   },
   data() {
     let styleElement = document.createElement('style')
@@ -61,6 +64,8 @@ export default {
       MESSAGE_TYPE_MEMBER: constants.MESSAGE_TYPE_MEMBER,
 
       styleElement,
+      messages: [],
+      paidMessages: [],
       canAutoScroll: true
     }
   },
@@ -71,17 +76,72 @@ export default {
   beforeDestroy() {
     document.head.removeChild(this.styleElement)
   },
-  updated() {
-    if (this.canAutoScroll) {
-      this.scrollToBottom()
-    }
-  },
   watch: {
     css(val) {
       this.styleElement.innerText = val
     }
   },
   methods: {
+    addMessage(message) {
+      this.addMessages([message])
+    },
+    addMessages(messages) {
+      for (let message of messages) {
+        message = {
+          ...message,
+          addTime: new Date() // 添加一个本地时间给Ticker用，防止本地时间和服务器时间相差很大的情况
+        }
+        this.messages.push(message)
+        if (message.type !== constants.MESSAGE_TYPE_TEXT) {
+          this.paidMessages.push(message)
+        }
+      }
+
+      if (this.messages.length > this.maxNumber) {
+        // 防止同时添加和删除项目时所有的项目重新渲染 https://github.com/vuejs/vue/issues/6857
+        this.$nextTick(() => this.messages.splice(0, this.messages.length - this.maxNumber))
+      }
+
+      this.$nextTick(() => {
+        if (this.canAutoScroll) {
+          this.scrollToBottom()
+        }
+      })
+    },
+    mergeSimilar(content) {
+      for (let i = this.messages.length - 1; i >= 0 && i >= this.messages.length - 5; i--) {
+        let message = this.messages[i]
+        let longer, shorter
+        if (message.content.length > content.length) {
+          longer = message.content
+          shorter = content
+        } else {
+          longer = content
+          shorter = message.content
+        }
+        if (longer.indexOf(shorter) !== -1 // 长的包含短的
+            && longer.length - shorter.length < shorter.length // 长度差较小
+        ) {
+          message.repeated++
+          return true
+        }
+      }
+      return false
+    },
+    delMessage(id) {
+      for (let arr of [this.messages, this.paidMessages]) {
+        for (let i = 0; i < arr.length; i++) {
+          if (arr[i].id === id) {
+            arr.splice(i, 1)
+            break
+          }
+        }
+      }
+    },
+    clearMessages() {
+      this.messages = []
+      this.paidMessages = []
+    },
     scrollToBottom() {
       this.$refs.scroller.scrollTop = this.$refs.scroller.scrollHeight
     },

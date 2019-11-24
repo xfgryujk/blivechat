@@ -188,9 +188,9 @@
       </el-form>
     </el-col>
     <el-col :span="12">
-      <div id="example-container" ref="exampleContainer">
+      <div ref="exampleContainer" id="example-container">
         <div id="fakebody">
-          <chat-renderer :paidMessages="examplePaidMessages" :messages="messages" :css="exampleCss" ref="example"></chat-renderer>
+          <chat-renderer ref="renderer" :css="exampleCss"></chat-renderer>
         </div>
       </div>
     </el-col>
@@ -246,7 +246,8 @@ const EXAMPLE_MESSAGES = [
     authorName: 'mob路人',
     content: '8888888888',
     repeated: 12
-  }, {
+  },
+  {
     ...textMessageTemplate,
     id: nextId++,
     authorName: 'member舰长',
@@ -254,30 +255,35 @@ const EXAMPLE_MESSAGES = [
     content: '草',
     privilegeType: 3,
     repeated: 3
-  }, {
+  },
+  {
     ...textMessageTemplate,
     id: nextId++,
     authorName: 'admin房管',
     authorType: constants.AUTHRO_TYPE_ADMIN,
     content: 'kksk'
-  }, {
+  },
+  {
     ...legacyPaidMessageTemplate,
     id: nextId++,
     authorName: '吾乐KANA',
     content: 'Welcome 吾乐KANA!'
-  }, {
+  },
+  {
     ...paidMessageTemplate,
     id: nextId++,
     authorName: '无火的残渣',
     price: 66600,
     content: 'Sent 小电视飞船x100'
-  }, {
+  },
+  {
     ...textMessageTemplate,
     id: nextId++,
     authorName: 'streamer主播',
     authorType: constants.AUTHRO_TYPE_OWNER,
     content: '感谢石油佬送的小电视'
-  }, {
+  },
+  {
     ...paidMessageTemplate,
     id: nextId++,
     authorName: '夏色祭保護協会会長',
@@ -285,12 +291,6 @@ const EXAMPLE_MESSAGES = [
     content: 'Sent 礼花x1'
   }
 ]
-let examplePaidMessages = []
-for (let message of EXAMPLE_MESSAGES) {
-  if (message.type !== constants.MESSAGE_TYPE_TEXT) {
-    examplePaidMessages.push(message)
-  }
-}
 
 export default {
   name: 'StyleGenerator',
@@ -298,15 +298,14 @@ export default {
     ChatRenderer
   },
   data() {
-    let config = stylegen.getLocalConfig()
-    let result = stylegen.getStyle(config)
+    let stylegenConfig = stylegen.getLocalConfig()
+    let result = stylegen.getStyle(stylegenConfig)
     return {
       FONTS: [...fonts.LOCAL_FONTS, ...fonts.NETWORK_FONTS],
-      form: {...config},
+
+      form: {...stylegenConfig},
       result,
       exampleCss: result.replace(/^body\b/gm, '#fakebody'),
-      messages: EXAMPLE_MESSAGES,
-      examplePaidMessages
     }
   },
   computed: {
@@ -314,8 +313,19 @@ export default {
       return stylegen.getStyle(this.form)
     }
   },
+  watch: {
+    computedResult: _.debounce(function(val) {
+      this.result = val
+      stylegen.setLocalConfig(this.form)
+    }, 500),
+    result(val) {
+      this.exampleCss = val.replace(/^body\b/gm, '#fakebody')
+    }
+  },
   mounted() {
-    let observer = new MutationObserver(() => this.$refs.example.scrollToBottom())
+    this.$refs.renderer.addMessages(EXAMPLE_MESSAGES)
+
+    let observer = new MutationObserver(() => this.$refs.renderer.scrollToBottom())
     observer.observe(this.$refs.exampleContainer, {attributes: true})
   },
   methods: {
@@ -330,8 +340,8 @@ export default {
       callback(res)
     },
     playAnimation() {
-      this.messages = []
-      this.$nextTick(() => this.messages = EXAMPLE_MESSAGES)
+      this.$refs.renderer.clearMessages()
+      this.$nextTick(() => this.$refs.renderer.addMessages(EXAMPLE_MESSAGES))
     },
     copyResult() {
       this.$refs.result.select()
@@ -339,15 +349,6 @@ export default {
     },
     resetConfig() {
       this.form = {...stylegen.DEFAULT_CONFIG}
-    }
-  },
-  watch: {
-    computedResult: _.debounce(function(val) {
-      this.result = val
-      stylegen.setLocalConfig(this.form)
-    }, 500),
-    result(val) {
-      this.exampleCss = val.replace(/^body\b/gm, '#fakebody')
     }
   }
 }

@@ -15,7 +15,6 @@ export default {
     showGift: '显示打赏和新舰长',
     mergeSimilarDanmaku: '合并相似弹幕',
     minGiftPrice: '最低显示打赏价格（元）',
-    maxSpeed: '弹幕最大速度（条/秒，0为无限制）',
     maxNumber: '最大弹幕数',
 
     block: '屏蔽',

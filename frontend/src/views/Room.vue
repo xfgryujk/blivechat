@@ -1,5 +1,5 @@
 <template>
-  <chat-renderer :paidMessages="paidMessages" :messages="messages" :css="config.css"></chat-renderer>
+  <chat-renderer ref="renderer" :css="config.css" :maxNumber="config.maxNumber"></chat-renderer>
 </template>
 
 <script>
@@ -21,23 +21,23 @@ export default {
     ChatRenderer
   },
   data() {
-    let cfg = {...config.DEFAULT_CONFIG}
-    cfg.blockKeywords = cfg.blockKeywords.split('\n').filter(val => val)
-    cfg.blockUsers = cfg.blockUsers.split('\n').filter(val => val)
-    cfg.maxSpeed = 0
     return {
-      config: cfg,
+      config: {...config.DEFAULT_CONFIG},
 
       websocket: null,
       retryCount: 0,
       isDestroying: false,
       heartbeatTimerId: null,
 
-      messagesBufferTimerId: null,
       nextId: 0,
-      messagesBuffer: [], // 暂时不显示的消息，可能会丢弃
-      messages: [], // 正在显示的消息
-      paidMessages: []
+    }
+  },
+  computed: {
+    blockKeywords() {
+      return this.config.blockKeywords.split('\n').filter(val => val)
+    },
+    blockUsers() {
+      return this.config.blockUsers.split('\n').filter(val => val)
     }
   },
   created() {
@@ -47,30 +47,13 @@ export default {
     }
   },
   beforeDestroy() {
-    if (this.messagesBufferTimerId) {
-      window.clearInterval(this.messagesBufferTimerId)
-    }
     this.isDestroying = true
     this.websocket.close()
-  },
-  watch: {
-    config(val) {
-      if (this.messagesBufferTimerId) {
-        window.clearInterval(this.messagesBufferTimerId)
-        this.messagesBufferTimerId = null
-      }
-      if (val.maxSpeed > 0) {
-        this.messagesBufferTimerId = window.setInterval(this.handleMessagesBuffer, 1000 / val.maxSpeed)
-      }
-    }
   },
   methods: {
     async updateConfig(configId) {
       try {
-        let cfg = await config.getRemoteConfig(configId)
-        cfg.blockKeywords = cfg.blockKeywords.split('\n').filter(val => val)
-        cfg.blockUsers = cfg.blockUsers.split('\n').filter(val => val)
-        this.config = cfg
+        this.config = await config.getRemoteConfig(configId)
       } catch (e) {
         this.$message.error('获取配置失败：' + e)
       }
@@ -182,23 +165,15 @@ export default {
           content: data.content
         }
         break
-      case COMMAND_DEL_SUPER_CHAT: {
-        let arrays = [this.messages, this.messagesBuffer, this.paidMessages]
+      case COMMAND_DEL_SUPER_CHAT:
         for (let id of data.ids) {
           id = `sc_${id}`
-          for (let arr of arrays) {
-            for (let i = 0; i < arr.length; i++) {
-              if (arr[i].id === id) {
-                arr.splice(i, 1)
-              }
-            }
-          }
+          this.$refs.renderer.delMessage(id)
         }
         break
       }
-      }
       if (message) {
-        this.addMessageBuffer(message)
+        this.$refs.renderer.addMessage(message)
       }
     },
     filterTextMessage(data) {
@@ -213,25 +188,15 @@ export default {
       } else if (this.config.blockMedalLevel > 0 && data.medalLevel < this.config.blockMedalLevel) {
         return false
       }
-      for (let keyword of this.config.blockKeywords) {
-        if (data.content.indexOf(keyword) !== -1) {
-          return false
-        }
-      }
-      for (let user of this.config.blockUsers) {
-        if (data.authorName === user) {
-          return false
-        }
-      }
-      return true
+      return this.filterSuperChatMessage(data)
     },
     filterSuperChatMessage(data) {
-      for (let keyword of this.config.blockKeywords) {
+      for (let keyword of this.blockKeywords) {
         if (data.content.indexOf(keyword) !== -1) {
           return false
         }
       }
-      for (let user of this.config.blockUsers) {
+      for (let user of this.blockUsers) {
         if (data.authorName === user) {
           return false
         }
@@ -242,60 +207,7 @@ export default {
       if (!this.config.mergeSimilarDanmaku) {
         return false
       }
-      for (let i = this.messages.length - 1; i >= 0 && i >= this.messages.length - 5; i--) {
-        let message = this.messages[i]
-        if (
-          (message.content.indexOf(content) !== -1 || content.indexOf(message.content) !== -1) // 包含对方
-          && Math.abs(message.content.length - content.length) < Math.min(message.content.length, content.length) // 长度差比两者长度都小
-        ) {
-          message.repeated++
-          return true
-        }
-      }
-      return false
-    },
-    addMessageBuffer(message) {
-      if (this.config.maxSpeed > 0 && message.type === constants.MESSAGE_TYPE_TEXT) {
-        message.addTime = new Date()
-        this.messagesBuffer.push(message)
-      } else {
-        // 无速度限制或者是礼物
-        this.addMessageShow(message)
-      }
-    },
-    addMessageShow(message) {
-      message.addTime = new Date()
-      this.messages.push(message)
-      if (message.type !== constants.MESSAGE_TYPE_TEXT) {
-        this.paidMessages.unshift(message)
-      }
-      // 防止同时添加和删除项目时所有的项目重新渲染 https://github.com/vuejs/vue/issues/6857
-      this.$nextTick(() => {
-        if (this.messages.length > this.config.maxNumber) {
-          this.messages.splice(0, this.messages.length - this.config.maxNumber)
-        }
-      })
-    },
-    handleMessagesBuffer() {
-      // 3秒内未发出则丢弃
-      let i
-      let curTime = new Date()
-      for (i = 0; i < this.messagesBuffer.length; i++) {
-        if (curTime - this.messagesBuffer[i].addTime <= 3 * 1000) {
-          break
-        }
-      }
-      this.messagesBuffer.splice(0, i)
-      if (this.messagesBuffer.length <= 0) {
-        return
-      }
-      let message = this.messagesBuffer.shift()
-      // 防止短时间发送多条时不能合并
-      if (this.mergeSimilar(message.content)) {
-        this.handleMessagesBuffer()
-        return
-      }
-      this.addMessageShow(message)
+      return this.$refs.renderer.mergeSimilar(content)
     }
   }
 }
