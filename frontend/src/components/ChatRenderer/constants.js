@@ -20,6 +20,7 @@ export const GUARD_LEVEL_TO_TEXT = [
 export const MESSAGE_TYPE_TEXT = 0
 export const MESSAGE_TYPE_MEMBER = 1
 export const MESSAGE_TYPE_SUPER_CHAT = 2
+export const MESSAGE_TYPE_DEL = 3
 
 // 美元 -> 人民币 汇率
 const EXCHANGE_RATE = 7

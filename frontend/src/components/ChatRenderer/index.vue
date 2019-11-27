@@ -17,7 +17,7 @@
                 :avatarUrl="message.avatarUrl" :title="message.title" :content="message.content"
                 :time="message.time"
               ></legacy-paid-message>
-              <paid-message :key="message.id" v-else
+              <paid-message :key="message.id" v-else-if="message.type === MESSAGE_TYPE_SUPER_CHAT"
                 class="style-scope yt-live-chat-item-list-renderer"
                 :price="message.price" :avatarUrl="message.avatarUrl" :authorName="message.authorName"
                 :time="message.time" :content="message.content"
@@ -62,11 +62,24 @@ export default {
     return {
       MESSAGE_TYPE_TEXT: constants.MESSAGE_TYPE_TEXT,
       MESSAGE_TYPE_MEMBER: constants.MESSAGE_TYPE_MEMBER,
+      MESSAGE_TYPE_SUPER_CHAT: constants.MESSAGE_TYPE_SUPER_CHAT,
 
       styleElement,
-      messages: [],
-      paidMessages: [],
-      canAutoScroll: true
+      messages: [],                        // 显示的消息
+      paidMessages: [],                    // 固定在上方的消息
+
+      smoothedMessageQueue: [],            // 平滑消息队列，由外部调用addMessages等方法添加
+      emitSmoothedMessageTimerId: null,    // 消费平滑消息队列的定时器ID
+      enqueueIntervals: [],                // 最近进队列的时间间隔，用来估计下次进队列的时间
+      lastEnqueueTime: null,               // 上次进队列的时间
+      estimatedEnqueueInterval: null,      // 估计的下次进队列时间间隔
+
+      atBottom: true                       // 滚动到底部，用来判断能否自动滚动
+    }
+  },
+  computed: {
+    canScrollToBottom() {
+      return this.atBottom/* || this.allowScroll*/
     }
   },
   mounted() {
@@ -75,6 +88,10 @@ export default {
   },
   beforeDestroy() {
     document.head.removeChild(this.styleElement)
+    if (this.emitSmoothedMessageTimerId) {
+      window.clearTimeout(this.emitSmoothedMessageTimerId)
+      this.emitSmoothedMessageTimerId = null
+    }
   },
   watch: {
     css(val) {
@@ -86,27 +103,7 @@ export default {
       this.addMessages([message])
     },
     addMessages(messages) {
-      for (let message of messages) {
-        message = {
-          ...message,
-          addTime: new Date() // 添加一个本地时间给Ticker用，防止本地时间和服务器时间相差很大的情况
-        }
-        this.messages.push(message)
-        if (message.type !== constants.MESSAGE_TYPE_TEXT) {
-          this.paidMessages.push(message)
-        }
-      }
-
-      if (this.messages.length > this.maxNumber) {
-        // 防止同时添加和删除项目时所有的项目重新渲染 https://github.com/vuejs/vue/issues/6857
-        this.$nextTick(() => this.messages.splice(0, this.messages.length - this.maxNumber))
-      }
-
-      this.$nextTick(() => {
-        if (this.canAutoScroll) {
-          this.scrollToBottom()
-        }
-      })
+      this.enqueueMessages(messages)
     },
     mergeSimilar(content) {
       for (let i = this.messages.length - 1; i >= 0 && i >= this.messages.length - 5; i--) {
@@ -129,6 +126,141 @@ export default {
       return false
     },
     delMessage(id) {
+      this.delMessages([id])
+    },
+    delMessages(ids) {
+      this.enqueueMessages(ids.map(id => {
+        return {
+          id: id,
+          type: constants.MESSAGE_TYPE_DEL
+        }
+      }))
+    },
+    clearMessages() {
+      this.messages = []
+      this.paidMessages = []
+    },
+
+    enqueueMessages(messages) {
+      if (this.lastEnqueueTime) {
+        let interval = new Date() - this.lastEnqueueTime
+        if (interval > 0) {
+          this.enqueueIntervals.push(interval)
+          if (this.enqueueIntervals.length > 5) {
+            this.enqueueIntervals.splice(0, this.enqueueIntervals.length - 5)
+          }
+          this.estimatedEnqueueInterval = Math.max(...this.enqueueIntervals)
+        }
+      }
+      this.lastEnqueueTime = new Date()
+
+      // 只有要显示的消息需要平滑
+      let messageGroup = []
+      for (let message of messages) {
+        messageGroup.push(message)
+        if (message.type !== constants.MESSAGE_TYPE_DEL) {
+          this.smoothedMessageQueue.push(messageGroup)
+          messageGroup = []
+        }
+      }
+      if (messageGroup.length > 0) {
+          this.smoothedMessageQueue.push(messageGroup)
+      }
+
+      if (!this.emitSmoothedMessageTimerId) {
+        this.emitSmoothedMessageTimerId = window.setTimeout(this.emitSmoothedMessages)
+      }
+    },
+    emitSmoothedMessages() {
+      this.emitSmoothedMessageTimerId = null
+      if (this.smoothedMessageQueue.length <= 0) {
+        return
+      }
+
+      // 估计的下次进队列剩余时间
+      let estimatedNextEnqueueRemainTime = 10 * 1000
+      if (this.estimatedEnqueueInterval) {
+        estimatedNextEnqueueRemainTime = Math.max(this.lastEnqueueTime - new Date() + this.estimatedEnqueueInterval, 1)
+      }
+      // 最快80ms/条，计算发送的消息数，保证在下次进队列之前消费完队列
+      let groupNumToEmit
+      if (this.smoothedMessageQueue.length < estimatedNextEnqueueRemainTime / 80) {
+        // 队列中消息数很少，每次发1条也能发完
+        groupNumToEmit = 1
+      } else {
+        // 每次发1条以上，保证按最快速度能发完
+        groupNumToEmit = Math.ceil(this.smoothedMessageQueue.length / (estimatedNextEnqueueRemainTime / 80))
+      }
+
+      let messageGroups = this.smoothedMessageQueue.splice(0, groupNumToEmit)
+      let mergedGroup = []
+      for (let messageGroup of messageGroups) {
+        for (let message of messageGroup) {
+          mergedGroup.push(message)
+        }
+      }
+      this.handleMessageGroup(mergedGroup)
+
+      if (this.smoothedMessageQueue.length <= 0) {
+        return
+      }
+      let sleepTime
+      if (groupNumToEmit == 1) {
+        // 队列中消息数很少，随便定个80-1000ms的时间
+        sleepTime = estimatedNextEnqueueRemainTime / this.smoothedMessageQueue.length
+        sleepTime *= 0.5 + Math.random()
+        if (sleepTime > 1000) {
+          sleepTime = 1000
+        } else if (sleepTime < 80) {
+          sleepTime = 80
+        }
+      } else {
+        // 按最快速度发
+        sleepTime = 80
+      }
+      this.emitSmoothedMessageTimerId = window.setTimeout(this.emitSmoothedMessages, sleepTime)
+    },
+
+    handleMessageGroup(messageGroup) {
+      if (messageGroup.length <= 0) {
+        return
+      }
+
+      for (let message of messageGroup) {
+        switch (message.type) {
+          case constants.MESSAGE_TYPE_TEXT:
+          case constants.MESSAGE_TYPE_MEMBER:
+          case constants.MESSAGE_TYPE_SUPER_CHAT:
+            this.handleAddMessage(message)
+            break
+          case constants.MESSAGE_TYPE_DEL:
+            this.handleDelMessage(message.id)
+            break
+        }
+      }
+
+      if (this.messages.length > this.maxNumber) {
+        // 防止同时添加和删除项目时所有的项目重新渲染 https://github.com/vuejs/vue/issues/6857
+        this.$nextTick(() => this.messages.splice(0, this.messages.length - this.maxNumber))
+      }
+      this.$nextTick(() => {
+        if (this.canScrollToBottom) {
+          this.scrollToBottom()
+        }
+      })
+    },
+    handleAddMessage(message) {
+      message = {
+        ...message,
+        addTime: new Date() // 添加一个本地时间给Ticker用，防止本地时间和服务器时间相差很大的情况
+      }
+      this.messages.push(message)
+      if (message.type !== constants.MESSAGE_TYPE_TEXT) {
+        this.paidMessages.push(message)
+      }
+    },
+    handleDelMessage(message) {
+      let id = message.id
       for (let arr of [this.messages, this.paidMessages]) {
         for (let i = 0; i < arr.length; i++) {
           if (arr[i].id === id) {
@@ -138,16 +270,20 @@ export default {
         }
       }
     },
-    clearMessages() {
-      this.messages = []
-      this.paidMessages = []
+
+    maybeScrollToBottom() {
+      if (this.canScrollToBottom) {
+        this.scrollToBottom()
+      }
     },
     scrollToBottom() {
       this.$refs.scroller.scrollTop = this.$refs.scroller.scrollHeight
+      this.atBottom = true
     },
     onScroll() {
       let scroller = this.$refs.scroller
-      this.canAutoScroll = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < SCROLLED_TO_BOTTOM_EPSILON
+      this.atBottom = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < SCROLLED_TO_BOTTOM_EPSILON
+      // this.flushActiveItems()
     }
   }
 }
