@@ -3,8 +3,8 @@
     <ticker class="style-scope yt-live-chat-renderer" :messages="paidMessages" :hidden="paidMessages.length === 0"></ticker>
     <yt-live-chat-item-list-renderer class="style-scope yt-live-chat-renderer" allow-scroll>
       <div id="item-scroller" ref="scroller" class="style-scope yt-live-chat-item-list-renderer animated" @scroll="onScroll">
-        <div id="item-offset" class="style-scope yt-live-chat-item-list-renderer" style="height: 1800px;">
-          <div id="items" class="style-scope yt-live-chat-item-list-renderer" style="overflow: hidden; transform: translateY(0px);">
+        <div ref="itemOffset" id="item-offset" class="style-scope yt-live-chat-item-list-renderer" style="height: 0px;">
+          <div ref="items" id="items" class="style-scope yt-live-chat-item-list-renderer" style="overflow: hidden; transform: translateY(0px);">
             <template v-for="message in messages">
               <text-message :key="message.id" v-if="message.type === MESSAGE_TYPE_TEXT"
                 class="style-scope yt-live-chat-item-list-renderer"
@@ -38,7 +38,7 @@ import LegacyPaidMessage from './LegacyPaidMessage.vue'
 import PaidMessage from './PaidMessage.vue'
 import * as constants from './constants'
 
-// const CHAT_SMOOTH_ANIMATION_TIME_MS = 84
+const CHAT_SMOOTH_ANIMATION_TIME_MS = 84
 const SCROLLED_TO_BOTTOM_EPSILON = 15
 
 export default {
@@ -74,6 +74,16 @@ export default {
       lastEnqueueTime: null,               // 上次进队列的时间
       estimatedEnqueueInterval: null,      // 估计的下次进队列时间间隔
 
+      messagesBuffer: [],                  // 暂时未显示的消息，当不能自动滚动时会积压在这
+      preinsertHeight: 0,                  // 插入新消息之前items的高度
+      isSmoothed: true,                    // 是否平滑滚动，当消息太快时不平滑滚动
+      chatRateMs: 1000,                    // 用来计算消息速度
+      scrollPixelsRemaining: 0,            // 平滑滚动剩余像素
+      scrollTimeRemainingMs: 0,            // 平滑滚动剩余时间
+      lastSmoothChatMessageAddMs: null,    // 上次showNewMessages时间
+      smoothScrollRafHandle: null,         // 平滑滚动requestAnimationFrame句柄
+      lastSmoothScrollUpdate: null,        // 平滑滚动上一帧时间
+
       atBottom: true                       // 滚动到底部，用来判断能否自动滚动
     }
   },
@@ -106,21 +116,24 @@ export default {
       this.enqueueMessages(messages)
     },
     mergeSimilar(content) {
-      for (let i = this.messages.length - 1; i >= 0 && i >= this.messages.length - 5; i--) {
-        let message = this.messages[i]
-        let longer, shorter
-        if (message.content.length > content.length) {
-          longer = message.content
-          shorter = content
-        } else {
-          longer = content
-          shorter = message.content
-        }
-        if (longer.indexOf(shorter) !== -1 // 长的包含短的
-            && longer.length - shorter.length < shorter.length // 长度差较小
-        ) {
-          message.repeated++
-          return true
+      let remainNum = 5
+      for (let arr of [this.messagesBuffer, this.messages]) {
+        for (let i = arr.length - 1; i >= 0 && --remainNum > 0; i--) {
+          let message = arr[i]
+          let longer, shorter
+          if (message.content.length > content.length) {
+            longer = message.content
+            shorter = content
+          } else {
+            longer = content
+            shorter = message.content
+          }
+          if (longer.indexOf(shorter) !== -1 // 长的包含短的
+              && longer.length - shorter.length < shorter.length // 长度差较小
+          ) {
+            message.repeated++
+            return true
+          }
         }
       }
       return false
@@ -239,29 +252,23 @@ export default {
         }
       }
 
-      if (this.messages.length > this.maxNumber) {
-        // 防止同时添加和删除项目时所有的项目重新渲染 https://github.com/vuejs/vue/issues/6857
-        this.$nextTick(() => this.messages.splice(0, this.messages.length - this.maxNumber))
-      }
-      this.$nextTick(() => {
-        if (this.canScrollToBottom) {
-          this.scrollToBottom()
-        }
-      })
+      this.maybeResizeScrollContainer(),
+      this.flushMessagesBuffer()
+      this.$nextTick(this.maybeScrollToBottom)
     },
     handleAddMessage(message) {
       message = {
         ...message,
         addTime: new Date() // 添加一个本地时间给Ticker用，防止本地时间和服务器时间相差很大的情况
       }
-      this.messages.push(message)
+      this.messagesBuffer.push(message)
       if (message.type !== constants.MESSAGE_TYPE_TEXT) {
         this.paidMessages.push(message)
       }
     },
     handleDelMessage(message) {
       let id = message.id
-      for (let arr of [this.messages, this.paidMessages]) {
+      for (let arr of [this.messages, this.paidMessages, this.messagesBuffer]) {
         for (let i = 0; i < arr.length; i++) {
           if (arr[i].id === id) {
             arr.splice(i, 1)
@@ -271,6 +278,112 @@ export default {
       }
     },
 
+    async flushMessagesBuffer() {
+      if (this.messagesBuffer.length <= 0) {
+        return
+      }
+      if (!this.canScrollToBottom) {
+        if (this.messagesBuffer.length > this.maxNumber) {
+          // 未显示消息数 > 最大可显示数，丢弃
+          this.messagesBuffer.splice(0, this.messagesBuffer.length - this.maxNumber)
+        }
+        return
+      }
+
+      let removeNum = Math.max(this.messages.length + this.messagesBuffer.length - this.maxNumber, 0)
+      if (removeNum > 0) {
+        this.messages.splice(0, removeNum)
+        // 防止同时添加和删除项目时所有的项目重新渲染 https://github.com/vuejs/vue/issues/6857
+        await this.$nextTick()
+      }
+
+      this.preinsertHeight = this.$refs.items.clientHeight
+      for (let message of this.messagesBuffer) {
+        this.messages.push(message)
+      }
+      this.messagesBuffer = []
+      // 等items高度变化
+      this.$nextTick(this.showNewMessages)
+    },
+    showNewMessages() {
+      let hasScrollBar = this.$refs.items.clientHeight > this.$refs.scroller.clientHeight
+      this.$refs.itemOffset.style.height = `${this.$refs.items.clientHeight}px`
+      if (!this.canScrollToBottom || !hasScrollBar) {
+        return
+      }
+
+      // 计算剩余像素
+      this.scrollPixelsRemaining += this.$refs.items.clientHeight - this.preinsertHeight
+      this.scrollToBottom()
+      this.$refs.items.style.transform = `translateY(${Math.floor(this.scrollPixelsRemaining)}px)`
+
+      // 计算是否平滑滚动、剩余时间
+      if (!this.lastSmoothChatMessageAddMs) {
+        this.lastSmoothChatMessageAddMs = performance.now()
+      }
+      let interval = performance.now() - this.lastSmoothChatMessageAddMs
+      this.chatRateMs = 0.9 * this.chatRateMs + 0.1 * interval
+      if (this.isSmoothed) {
+        if (this.chatRateMs < 400) {
+          this.isSmoothed = false
+        }
+      } else {
+        if (this.chatRateMs > 450) {
+          this.isSmoothed = true
+        }
+      }
+      this.scrollTimeRemainingMs += this.isSmoothed ? CHAT_SMOOTH_ANIMATION_TIME_MS : 0
+
+      if (!this.smoothScrollRafHandle) {
+        this.smoothScrollRafHandle = window.requestAnimationFrame(this.smoothScroll)
+      }
+      this.lastSmoothChatMessageAddMs = performance.now()
+    },
+    smoothScroll(time) {
+      if (!this.lastSmoothScrollUpdate) {
+        // 第一帧
+        this.lastSmoothScrollUpdate = time
+        this.smoothScrollRafHandle = window.requestAnimationFrame(this.smoothScroll)
+        return
+      }
+
+      let interval = time - this.lastSmoothScrollUpdate
+      if (
+        this.scrollPixelsRemaining <= 0 || this.scrollPixelsRemaining >= 400  // 已经滚动到底部或者离底部太远则结束
+        || interval >= 1000 // 离上一帧时间太久，可能用户切换到其他网页
+        || this.scrollTimeRemainingMs <= 0 // 时间已结束
+      ) {
+        this.resetSmoothScroll()
+        this.$refs.items.style.transform = 'translateY(0px)'
+        return
+      }
+
+      let pixelsToScroll = interval / this.scrollTimeRemainingMs * this.scrollPixelsRemaining
+      this.scrollPixelsRemaining -= pixelsToScroll
+      if (this.scrollPixelsRemaining < 0) {
+        this.scrollPixelsRemaining = 0
+      }
+      this.scrollTimeRemainingMs -= interval
+      if (this.scrollTimeRemainingMs < 0) {
+        this.scrollTimeRemainingMs = 0
+      }
+      this.lastSmoothScrollUpdate = time
+      this.smoothScrollRafHandle = window.requestAnimationFrame(this.smoothScroll)
+      this.$refs.items.style.transform = `translateY(${Math.floor(this.scrollPixelsRemaining)}px)`
+    },
+    resetSmoothScroll() {
+      this.scrollTimeRemainingMs = this.scrollPixelsRemaining = 0
+      this.lastSmoothScrollUpdate = null
+      if (this.smoothScrollRafHandle) {
+        window.cancelAnimationFrame(this.smoothScrollRafHandle)
+        this.smoothScrollRafHandle = null
+      }
+    },
+
+    maybeResizeScrollContainer() {
+      this.$refs.itemOffset.style.height = `${this.$refs.items.clientHeight}px`
+      this.maybeScrollToBottom()
+    },
     maybeScrollToBottom() {
       if (this.canScrollToBottom) {
         this.scrollToBottom()
@@ -283,7 +396,7 @@ export default {
     onScroll() {
       let scroller = this.$refs.scroller
       this.atBottom = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < SCROLLED_TO_BOTTOM_EPSILON
-      // this.flushActiveItems()
+      this.flushMessagesBuffer()
     }
   }
 }
