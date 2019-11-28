@@ -8,6 +8,9 @@
           <h1 class="sidebar-title">blivechat</h1>
         </router-link>
       </div>
+      <div class="version">
+        v1.2.3
+      </div>
       <sidebar></sidebar>
     </el-aside>
     <el-main>
@@ -116,6 +119,17 @@ a, a:focus, a:hover {
   font-size: 14px;
   font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
   vertical-align: middle;
+}
+
+.sidebar-container .version {
+  height: 30px;
+  background: #2b2f3a;
+  color: #aaa;
+  font-weight: 600;
+  line-height: 30px;
+  font-size: 14px;
+  vertical-align: middle;
+  text-align: center;
 }
 
 .sidebar-container .is-horizontal {
