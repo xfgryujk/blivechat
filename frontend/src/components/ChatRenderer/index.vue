@@ -4,7 +4,9 @@
     <yt-live-chat-item-list-renderer class="style-scope yt-live-chat-renderer" allow-scroll>
       <div id="item-scroller" ref="scroller" class="style-scope yt-live-chat-item-list-renderer animated" @scroll="onScroll">
         <div ref="itemOffset" id="item-offset" class="style-scope yt-live-chat-item-list-renderer" style="height: 0px;">
-          <div ref="items" id="items" class="style-scope yt-live-chat-item-list-renderer" style="overflow: hidden; transform: translateY(0px);">
+          <div ref="items" id="items" class="style-scope yt-live-chat-item-list-renderer" style="overflow: hidden"
+            :style="{transform: `translateY(${Math.floor(scrollPixelsRemaining)}px)`}"
+          >
             <template v-for="message in messages">
               <text-message :key="message.id" v-if="message.type === MESSAGE_TYPE_TEXT"
                 class="style-scope yt-live-chat-item-list-renderer"
@@ -102,6 +104,7 @@ export default {
       window.clearTimeout(this.emitSmoothedMessageTimerId)
       this.emitSmoothedMessageTimerId = null
     }
+    this.clearMessages()
   },
   watch: {
     css(val) {
@@ -138,6 +141,22 @@ export default {
       }
       return false
     },
+    mergeSimilarGift(authorName, price) {
+      let remainNum = 5
+      for (let arr of [this.messagesBuffer, this.messages]) {
+        for (let i = arr.length - 1; i >= 0 && --remainNum > 0; i--) {
+          let message = arr[i]
+          if (message.type === constants.MESSAGE_TYPE_SUPER_CHAT
+              && message.content === ''
+              && message.authorName === authorName
+          ) {
+            message.price += price
+            return true
+          }
+        }
+      }
+      return false
+    },
     delMessage(id) {
       this.delMessages([id])
     },
@@ -152,6 +171,19 @@ export default {
     clearMessages() {
       this.messages = []
       this.paidMessages = []
+      this.smoothedMessageQueue = []
+      this.messagesBuffer = []
+      this.isSmoothed = true
+      this.lastSmoothChatMessageAddMs = null
+      this.chatRateMs = 1000
+      this.lastSmoothScrollUpdate = null
+      this.scrollTimeRemainingMs = this.scrollPixelsRemaining = 0
+      this.smoothScrollRafHandle = null
+      this.preinsertHeight = 0
+      this.maybeResizeScrollContainer()
+      if (!this.atBottom) {
+        this.scrollToBottom()
+      }
     },
 
     enqueueMessages(messages) {
@@ -315,7 +347,6 @@ export default {
       // 计算剩余像素
       this.scrollPixelsRemaining += this.$refs.items.clientHeight - this.preinsertHeight
       this.scrollToBottom()
-      this.$refs.items.style.transform = `translateY(${Math.floor(this.scrollPixelsRemaining)}px)`
 
       // 计算是否平滑滚动、剩余时间
       if (!this.lastSmoothChatMessageAddMs) {
@@ -354,7 +385,6 @@ export default {
         || this.scrollTimeRemainingMs <= 0 // 时间已结束
       ) {
         this.resetSmoothScroll()
-        this.$refs.items.style.transform = 'translateY(0px)'
         return
       }
 
@@ -369,7 +399,6 @@ export default {
       }
       this.lastSmoothScrollUpdate = time
       this.smoothScrollRafHandle = window.requestAnimationFrame(this.smoothScroll)
-      this.$refs.items.style.transform = `translateY(${Math.floor(this.scrollPixelsRemaining)}px)`
     },
     resetSmoothScroll() {
       this.scrollTimeRemainingMs = this.scrollPixelsRemaining = 0
@@ -390,7 +419,7 @@ export default {
       }
     },
     scrollToBottom() {
-      this.$refs.scroller.scrollTop = this.$refs.scroller.scrollHeight
+      this.$refs.scroller.scrollTop = Math.pow(2, 24)
       this.atBottom = true
     },
     onScroll() {

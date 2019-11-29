@@ -123,6 +123,9 @@ export default {
         if (price < this.config.minGiftPrice) { // 丢人
           break
         }
+        if (this.mergeSimilarGift(data.authorName, price)) {
+          break
+        }
         message = {
           id: `gift_${this.nextId++}`,
           type: constants.MESSAGE_TYPE_SUPER_CHAT,
@@ -162,7 +165,7 @@ export default {
           authorName: data.authorName,
           price: data.price,
           time: time,
-          content: data.content
+          content: data.content.trim()
         }
         break
       case COMMAND_DEL_SUPER_CHAT:
@@ -208,6 +211,12 @@ export default {
         return false
       }
       return this.$refs.renderer.mergeSimilar(content)
+    },
+    mergeSimilarGift(authorName, price) {
+      if (!this.config.mergeSimilarDanmaku) {
+        return false
+      }
+      return this.$refs.renderer.mergeSimilarGift(authorName, price)
     }
   }
 }
