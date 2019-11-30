@@ -26,7 +26,7 @@ class Command(enum.IntEnum):
     DEL_SUPER_CHAT = 6
 
 
-DEFAULT_AVATAR_URL = 'https://static.hdslb.com/images/member/noface.gif'
+DEFAULT_AVATAR_URL = '//static.hdslb.com/images/member/noface.gif'
 
 _http_session = aiohttp.ClientSession()
 _avatar_url_cache: Dict[int, str] = {}
@@ -68,7 +68,7 @@ async def get_avatar_url(user_id):
             data = await r.json()
     except aiohttp.ClientConnectionError:
         return DEFAULT_AVATAR_URL
-    url = data['data']['face']
+    url = data['data']['face'].replace('http:', '').replace('https:', '')
     if not url.endswith('noface.gif'):
         url += '@48w_48h'
     _avatar_url_cache[user_id] = url
@@ -143,7 +143,7 @@ class Room(blivedm.BLiveClient):
         if gift.coin_type != 'gold':  # 丢人
             return
         self.send_message(Command.ADD_GIFT, {
-            'avatarUrl': gift.face,
+            'avatarUrl': gift.face.replace('http:', '').replace('https:', ''),
             'timestamp': gift.timestamp,
             'authorName': gift.uname,
             'giftName': gift.gift_name,
@@ -163,7 +163,7 @@ class Room(blivedm.BLiveClient):
 
     async def _on_super_chat(self, message: blivedm.SuperChatMessage):
         self.send_message(Command.ADD_SUPER_CHAT, {
-            'avatarUrl': message.face,
+            'avatarUrl': message.face.replace('http:', '').replace('https:', ''),
             'timestamp': message.start_time,
             'authorName': message.uname,
             'price': message.price,
@@ -266,7 +266,7 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
     # 测试用
     def send_test_message(self):
         base_data = {
-            'avatarUrl':  'https://i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@48w_48h',
+            'avatarUrl':  '//i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@48w_48h',
             'timestamp':  time.time(),
             'authorName': 'xfgryujk',
         }
