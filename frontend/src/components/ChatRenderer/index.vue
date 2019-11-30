@@ -112,10 +112,7 @@ export default {
     }
   },
   methods: {
-    addMessage({ avatarUrl, ...message }) {
-      if (avatarUrl) {
-        message.avatarUrl = avatarUrl.replace('http:', '').replace('https:', '')
-      }
+    addMessage(message) {
       this.addMessages([message])
     },
     addMessages(messages) {
