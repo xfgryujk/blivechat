@@ -295,7 +295,7 @@ export default {
       }
       this.messagesBuffer.push(message)
       if (message.type !== constants.MESSAGE_TYPE_TEXT) {
-        this.paidMessages.push(message)
+        this.paidMessages.unshift(message)
       }
     },
     handleDelMessage(message) {
