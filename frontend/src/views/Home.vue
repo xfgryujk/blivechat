@@ -116,7 +116,7 @@ export default {
 
         let resolved = this.$router.resolve({name: 'room', params: {roomId: this.form.roomId},
           query: {config_id: window.localStorage.configId}})
-        this.roomUrl = `http://${window.location.host}${resolved.href}`
+        this.roomUrl = `${window.location.protocol}//${window.location.host}${resolved.href}`
       })
     },
     enterRoom() {
