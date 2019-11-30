@@ -118,44 +118,63 @@ export default {
     addMessages(messages) {
       this.enqueueMessages(messages)
     },
-    mergeSimilar(content) {
-      let remainNum = 5
-      for (let arr of [this.messagesBuffer, this.messages]) {
-        for (let i = arr.length - 1; i >= 0 && --remainNum > 0; i--) {
-          let message = arr[i]
-          let longer, shorter
-          if (message.content.length > content.length) {
-            longer = message.content
-            shorter = content
-          } else {
-            longer = content
-            shorter = message.content
-          }
-          if (longer.indexOf(shorter) !== -1 // 长的包含短的
-              && longer.length - shorter.length < shorter.length // 长度差较小
-          ) {
-            message.repeated++
-            return true
-          }
+    mergeSimilarText(content) {
+      let res = false
+      this.forEachRecentMessage(5, message => {
+        if (message.type !== constants.MESSAGE_TYPE_TEXT) {
+          return true
         }
-      }
-      return false
+        let longer, shorter
+        if (message.content.length > content.length) {
+          longer = message.content
+          shorter = content
+        } else {
+          longer = content
+          shorter = message.content
+        }
+        if (longer.indexOf(shorter) !== -1 // 长的包含短的
+            && longer.length - shorter.length < shorter.length // 长度差较小
+        ) {
+          message.repeated++
+          res = true
+          return false
+        }
+        return true
+      })
+      return res
     },
     mergeSimilarGift(authorName, price) {
-      let remainNum = 5
-      for (let arr of [this.messagesBuffer, this.messages]) {
-        for (let i = arr.length - 1; i >= 0 && --remainNum > 0; i--) {
-          let message = arr[i]
-          if (message.type === constants.MESSAGE_TYPE_SUPER_CHAT
-              && message.content === ''
-              && message.authorName === authorName
-          ) {
-            message.price += price
-            return true
+      let res = false
+      this.forEachRecentMessage(5, message => {
+        if (message.type === constants.MESSAGE_TYPE_SUPER_CHAT
+            && message.content === ''
+            && message.authorName === authorName
+        ) {
+          message.price += price
+          res = true
+          return false
+        }
+        return true
+      })
+      return res
+    },
+    forEachRecentMessage(num, callback) {
+      // 从新到老遍历num条消息
+      for (let i = this.smoothedMessageQueue.length - 1; i >= 0 && num > 0; i--) {
+        let messageGroup = this.smoothedMessageQueue[i]
+        for (let j = messageGroup.length - 1; j >= 0 && num-- > 0; j--) {
+          if (!callback(messageGroup[j])) {
+            return
           }
         }
       }
-      return false
+      for (let arr of [this.messagesBuffer, this.messages]) {
+        for (let i = arr.length - 1; i >= 0 && num-- > 0; i--) {
+          if (!callback(arr[i])) {
+            return
+          }
+        }
+      }
     },
     delMessage(id) {
       this.delMessages([id])

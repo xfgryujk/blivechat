@@ -100,7 +100,7 @@ export default {
       let time = data.timestamp ? new Date(data.timestamp * 1000) : new Date()
       switch (cmd) {
       case COMMAND_ADD_TEXT:
-        if (!this.config.showDanmaku || !this.filterTextMessage(data) || this.mergeSimilar(data.content)) {
+        if (!this.config.showDanmaku || !this.filterTextMessage(data) || this.mergeSimilarText(data.content)) {
           break
         }
         message = {
@@ -206,11 +206,11 @@ export default {
       }
       return true
     },
-    mergeSimilar(content) {
+    mergeSimilarText(content) {
       if (!this.config.mergeSimilarDanmaku) {
         return false
       }
-      return this.$refs.renderer.mergeSimilar(content)
+      return this.$refs.renderer.mergeSimilarText(content)
     },
     mergeSimilarGift(authorName, price) {
       if (!this.config.mergeSimilarDanmaku) {
