@@ -208,7 +208,8 @@ export default {
     enqueueMessages(messages) {
       if (this.lastEnqueueTime) {
         let interval = new Date() - this.lastEnqueueTime
-        if (interval > 0) {
+        // 理论上B站发包间隔1S，如果不过滤间隔太短的会导致消息平滑失效
+        if (interval > 100) {
           this.enqueueIntervals.push(interval)
           if (this.enqueueIntervals.length > 5) {
             this.enqueueIntervals.splice(0, this.enqueueIntervals.length - 5)
