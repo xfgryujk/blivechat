@@ -111,7 +111,10 @@ class Room(blivedm.BLiveClient):
     def send_message(self, cmd, data):
         body = json.dumps({'cmd': cmd, 'data': data})
         for client in self.clients:
-            client.write_message(body)
+            try:
+                client.write_message(body)
+            except tornado.websocket.WebSocketClosedError:
+                pass
 
     async def _on_receive_danmaku(self, danmaku: blivedm.DanmakuMessage):
         asyncio.ensure_future(self.__on_receive_danmaku(danmaku))
@@ -312,4 +315,7 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
 
     def send_message(self, cmd, data):
         body = json.dumps({'cmd': cmd, 'data': data})
-        self.write_message(body)
+        try:
+            self.write_message(body)
+        except tornado.websocket.WebSocketClosedError:
+            pass
