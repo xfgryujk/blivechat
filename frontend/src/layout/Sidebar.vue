@@ -13,6 +13,9 @@
       <el-menu-item :index="$router.resolve({name: 'stylegen'}).href">
         <i class="el-icon-brush"></i>{{$t('sidebar.stylegen')}}
       </el-menu-item>
+      <el-menu-item :index="$router.resolve({name: 'help'}).href">
+        <i class="el-icon-question"></i>{{$t('sidebar.help')}}
+      </el-menu-item>
       <a href="https://github.com/xfgryujk/blivechat" target="_blank">
         <el-menu-item>
           <i class="el-icon-share"></i>{{$t('sidebar.projectAddress')}}
