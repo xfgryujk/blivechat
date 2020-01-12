@@ -96,62 +96,58 @@ async def _fetch_avatar_loop():
 asyncio.ensure_future(_fetch_avatar_loop())
 
 
-# 重新定义parse_XXX是为了减少对字段名的依赖，防止B站改字段名
-def _parse_danmaku(client: blivedm.BLiveClient, command):
-    info = command['info']
-    if info[3]:
-        room_id = info[3][3]
-        medal_level = info[3][0]
-    else:
-        room_id = medal_level = 0
-    return client._on_receive_danmaku(blivedm.DanmakuMessage(
-        None, None, None, info[0][4], None, None, info[0][9], None,
-        info[1],
-        info[2][0], info[2][1], info[2][2], None, None, info[2][5], info[2][6], None,
-        medal_level, None, None, room_id, None, None,
-        info[4][0], None, None,
-        None, None,
-        info[7]
-    ))
-
-
-def _parse_gift(client: blivedm.BLiveClient, command):
-    data = command['data']
-    return client._on_receive_gift(blivedm.GiftMessage(
-        data['giftName'], data['num'], data['uname'], data['face'], None,
-        None, data['timestamp'], None, None,
-        None, None, None, data['coin_type'], data['total_coin']
-    ))
-
-
-def _parse_buy_guard(client: blivedm.BLiveClient, command):
-    data = command['data']
-    return client._on_buy_guard(blivedm.GuardBuyMessage(
-        data['uid'], data['username'], None, None, None,
-        None, None, data['start_time'], None
-    ))
-
-
-def _parse_super_chat(client: blivedm.BLiveClient, command):
-    data = command['data']
-    return client._on_super_chat(blivedm.SuperChatMessage(
-        data['price'], data['message'], None, data['start_time'],
-        None, None, data['id'], None,
-        None, None, data['user_info']['uname'],
-        data['user_info']['face'], None,
-        None, None,
-        None, None, None,
-        None
-    ))
-
-
 class Room(blivedm.BLiveClient):
+    # 重新定义parse_XXX是为了减少对字段名的依赖，防止B站改字段名
+    def __parse_danmaku(self, command):
+        info = command['info']
+        if info[3]:
+            room_id = info[3][3]
+            medal_level = info[3][0]
+        else:
+            room_id = medal_level = 0
+        return self._on_receive_danmaku(blivedm.DanmakuMessage(
+            None, None, None, info[0][4], None, None, info[0][9], None,
+            info[1],
+            info[2][0], info[2][1], info[2][2], None, None, info[2][5], info[2][6], None,
+            medal_level, None, None, room_id, None, None,
+            info[4][0], None, None,
+            None, None,
+            info[7]
+        ))
+
+    def __parse_gift(self, command):
+        data = command['data']
+        return self._on_receive_gift(blivedm.GiftMessage(
+            data['giftName'], data['num'], data['uname'], data['face'], None,
+            None, data['timestamp'], None, None,
+            None, None, None, data['coin_type'], data['total_coin']
+        ))
+
+    def __parse_buy_guard(self, command):
+        data = command['data']
+        return self._on_buy_guard(blivedm.GuardBuyMessage(
+            data['uid'], data['username'], None, None, None,
+            None, None, data['start_time'], None
+        ))
+
+    def __parse_super_chat(self, command):
+        data = command['data']
+        return self._on_super_chat(blivedm.SuperChatMessage(
+            data['price'], data['message'], None, data['start_time'],
+            None, None, data['id'], None,
+            None, None, data['user_info']['uname'],
+            data['user_info']['face'], None,
+            None, None,
+            None, None, None,
+            None
+        ))
+
     _COMMAND_HANDLERS = {
         **blivedm.BLiveClient._COMMAND_HANDLERS,
-        'DANMU_MSG': _parse_danmaku,
-        'SEND_GIFT': _parse_gift,
-        'GUARD_BUY': _parse_buy_guard,
-        'SUPER_CHAT_MESSAGE': _parse_super_chat
+        'DANMU_MSG': __parse_danmaku,
+        'SEND_GIFT': __parse_gift,
+        'GUARD_BUY': __parse_buy_guard,
+        'SUPER_CHAT_MESSAGE': __parse_super_chat
     }
 
     def __init__(self, room_id):

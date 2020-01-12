@@ -2,7 +2,7 @@
 
 import aiohttp
 
-VERSION = 'v1.2.3'
+VERSION = 'v1.2.4'
 
 
 async def check_update():
