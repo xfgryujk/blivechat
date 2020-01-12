@@ -96,7 +96,64 @@ async def _fetch_avatar_loop():
 asyncio.ensure_future(_fetch_avatar_loop())
 
 
+# 重新定义parse_XXX是为了减少对字段名的依赖，防止B站改字段名
+def _parse_danmaku(client: blivedm.BLiveClient, command):
+    info = command['info']
+    if info[3]:
+        room_id = info[3][3]
+        medal_level = info[3][0]
+    else:
+        room_id = medal_level = 0
+    return client._on_receive_danmaku(blivedm.DanmakuMessage(
+        None, None, None, info[0][4], None, None, info[0][9], None,
+        info[1],
+        info[2][0], info[2][1], info[2][2], None, None, info[2][5], info[2][6], None,
+        medal_level, None, None, room_id, None, None,
+        info[4][0], None, None,
+        None, None,
+        info[7]
+    ))
+
+
+def _parse_gift(client: blivedm.BLiveClient, command):
+    data = command['data']
+    return client._on_receive_gift(blivedm.GiftMessage(
+        data['giftName'], data['num'], data['uname'], data['face'], None,
+        None, data['timestamp'], None, None,
+        None, None, None, data['coin_type'], data['total_coin']
+    ))
+
+
+def _parse_buy_guard(client: blivedm.BLiveClient, command):
+    data = command['data']
+    return client._on_buy_guard(blivedm.GuardBuyMessage(
+        data['uid'], data['username'], None, None, None,
+        None, None, data['start_time'], None
+    ))
+
+
+def _parse_super_chat(client: blivedm.BLiveClient, command):
+    data = command['data']
+    return client._on_super_chat(blivedm.SuperChatMessage(
+        data['price'], data['message'], None, data['start_time'],
+        None, None, data['id'], None,
+        None, None, data['user_info']['uname'],
+        data['user_info']['face'], None,
+        None, None,
+        None, None, None,
+        None
+    ))
+
+
 class Room(blivedm.BLiveClient):
+    _COMMAND_HANDLERS = {
+        **blivedm.BLiveClient._COMMAND_HANDLERS,
+        'DANMU_MSG': _parse_danmaku,
+        'SEND_GIFT': _parse_gift,
+        'GUARD_BUY': _parse_buy_guard,
+        'SUPER_CHAT_MESSAGE': _parse_super_chat
+    }
+
     def __init__(self, room_id):
         super().__init__(room_id, session=_http_session, heartbeat_interval=10)
         self.clients: List['ChatHandler'] = []
