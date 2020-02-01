@@ -119,18 +119,20 @@ export default {
       this.enqueueMessages(messages)
     },
     mergeSimilarText(content) {
+      content = content.trim().toLowerCase()
       let res = false
       this.forEachRecentMessage(5, message => {
         if (message.type !== constants.MESSAGE_TYPE_TEXT) {
           return true
         }
+        let messageContent = message.content.trim().toLowerCase()
         let longer, shorter
-        if (message.content.length > content.length) {
-          longer = message.content
+        if (messageContent.length > content.length) {
+          longer = messageContent
           shorter = content
         } else {
           longer = content
-          shorter = message.content
+          shorter = messageContent
         }
         if (longer.indexOf(shorter) !== -1 // 长的包含短的
             && longer.length - shorter.length < shorter.length // 长度差较小

@@ -91,8 +91,8 @@ export default {
     scContentLineLineHeight: 'Super Chat内容行高（0为默认）',
     scContentLineColor: 'Super Chat内容颜色',
     showNewMemberBg: '显示新舰长背景',
-    showScTicker: '显示Super Chat贴纸',
-    showOtherThings: '显示Super Chat贴纸之外的内容',
+    showScTicker: '显示Super Chat固定栏',
+    showOtherThings: '显示Super Chat固定栏之外的内容',
 
     animation: '动画',
     animateIn: '进入动画',

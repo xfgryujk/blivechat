@@ -17,10 +17,12 @@
           ></author-badge>
         </span>
       </yt-live-chat-author-chip>
-      <span id="message" class="style-scope yt-live-chat-text-message-renderer">{{content}}</span>
-      <el-badge :value="repeated" :max="99" v-show="repeated > 1" class="style-scope yt-live-chat-text-message-renderer"
-        :style="{'--repeated-mark-color': repeatedMarkColor}"
-      ></el-badge>
+      <span id="message" class="style-scope yt-live-chat-text-message-renderer">
+        {{content}}
+        <el-badge :value="repeated" :max="99" v-show="repeated > 1" class="style-scope yt-live-chat-text-message-renderer"
+          :style="{'--repeated-mark-color': repeatedMarkColor}"
+        ></el-badge>
+      </span>
     </div>
   </yt-live-chat-text-message-renderer>
 </template>
@@ -77,11 +79,11 @@ export default {
 </script>
 
 <style>
-yt-live-chat-text-message-renderer>#content>.el-badge {
-  margin-left: 10px;
+yt-live-chat-text-message-renderer>#content>#message>.el-badge {
+  margin-left: 5px;
 }
 
-yt-live-chat-text-message-renderer>#content>.el-badge .el-badge__content {
+yt-live-chat-text-message-renderer>#content>#message>.el-badge .el-badge__content {
   font-size: 12px !important;
   line-height: 18px !important;
   text-shadow: none !important;

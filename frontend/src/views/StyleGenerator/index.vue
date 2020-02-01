@@ -266,8 +266,8 @@ const EXAMPLE_MESSAGES = [
   {
     ...legacyPaidMessageTemplate,
     id: nextId++,
-    authorName: '吾乐KANA',
-    content: 'Welcome 吾乐KANA!'
+    authorName: '少年Pi',
+    content: 'Welcome 少年Pi!'
   },
   {
     ...paidMessageTemplate,
@@ -281,14 +281,14 @@ const EXAMPLE_MESSAGES = [
     id: nextId++,
     authorName: 'streamer主播',
     authorType: constants.AUTHRO_TYPE_OWNER,
-    content: '感谢石油佬送的小电视'
+    content: '老板大气，老板身体健康'
   },
   {
     ...paidMessageTemplate,
     id: nextId++,
     authorName: '夏色祭保護協会会長',
-    price: 28,
-    content: 'Sent 礼花x1'
+    price: 30,
+    content: '言いたいことがあるんだよ！'
   }
 ]
 
