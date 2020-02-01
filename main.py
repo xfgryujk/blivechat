@@ -11,7 +11,6 @@ import tornado.web
 
 import update
 import views.chat
-import views.config
 import views.main
 
 logger = logging.getLogger(__name__)
@@ -38,8 +37,6 @@ def main():
     app = tornado.web.Application(
         [
             (r'/chat', views.chat.ChatHandler),
-            (r'/config', views.config.ConfigsHandler),
-            (r'/config/(.+)', views.config.ConfigHandler),
 
             (r'/((css|fonts|img|js|static)/.*)', tornado.web.StaticFileHandler, {'path': WEB_ROOT}),
             (r'/(favicon\.ico)', tornado.web.StaticFileHandler, {'path': WEB_ROOT}),

@@ -28,17 +28,12 @@ export default {
     blockUsers: '屏蔽用户',
     blockMedalLevel: '屏蔽当前直播间勋章等级低于',
 
-    style: '样式',
-
     roomUrl: '房间URL',
     copy: '复制',
-    saveConfig: '保存配置',
     enterRoom: '进入房间',
     exportConfig: '导出配置',
     importConfig: '导入配置',
 
-    failedToSave: '保存失败：',
-    successfullySaved: '保存成功',
     failedToParseConfig: '配置解析失败：'
   },
   stylegen: {

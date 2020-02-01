@@ -28,17 +28,12 @@ export default {
     blockUsers: 'ブロックユーザー',
     blockMedalLevel: 'ブロック勲章等級がx未満',
 
-    style: 'スタイル',
-
     roomUrl: 'ルームのURL',
     copy: 'コピー',
-    saveConfig: 'コンフィグを保存する',
     enterRoom: 'ルームに入る',
     exportConfig: 'コンフィグの導出',
     importConfig: 'コンフィグの導入',
 
-    failedToSave: '保存に失敗しました：',
-    successfullySaved: '保存に成功しました',
     failedToParseConfig: 'コンフィグ解析に失敗しました'
   },
   stylegen: {

@@ -21,7 +21,7 @@
 
 <script>
 import ImgShadow from './ImgShadow.vue'
-import utils from '@/utils'
+import * as utils from '@/utils'
 
 export default {
   name: 'LegacyPaidMessage',

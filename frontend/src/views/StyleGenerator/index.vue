@@ -200,8 +200,8 @@
 <script>
 import _ from 'lodash'
 
-import stylegen from './stylegen'
-import fonts from './fonts'
+import * as stylegen from './stylegen'
+import * as fonts from './fonts'
 import ChatRenderer from '@/components/ChatRenderer'
 import * as constants from '@/components/ChatRenderer/constants'
 

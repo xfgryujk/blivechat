@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import config from '@/api/config'
+import * as config from '@/api/config'
 import Ticker from './Ticker.vue'
 import TextMessage from './TextMessage.vue'
 import LegacyPaidMessage from './LegacyPaidMessage.vue'

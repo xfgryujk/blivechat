@@ -34,7 +34,7 @@
 <script>
 import ImgShadow from './ImgShadow.vue'
 import * as constants from './constants'
-import utils from '@/utils'
+import * as utils from '@/utils'
 
 export default {
   name: 'PaidMessage',

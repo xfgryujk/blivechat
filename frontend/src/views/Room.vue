@@ -1,9 +1,10 @@
 <template>
-  <chat-renderer ref="renderer" :css="config.css" :maxNumber="config.maxNumber"></chat-renderer>
+  <chat-renderer ref="renderer" :maxNumber="config.maxNumber"></chat-renderer>
 </template>
 
 <script>
-import config from '@/api/config'
+import {mergeConfig, toBool, toInt} from '@/utils'
+import * as config from '@/api/config'
 import ChatRenderer from '@/components/ChatRenderer'
 import * as constants from '@/components/ChatRenderer/constants'
 
@@ -42,21 +43,35 @@ export default {
   },
   created() {
     this.wsConnect()
-    if (this.$route.query.config_id) {
-      this.updateConfig(this.$route.query.config_id)
-    }
+    this.updateConfig()
   },
   beforeDestroy() {
     this.isDestroying = true
     this.websocket.close()
   },
   methods: {
-    async updateConfig(configId) {
-      try {
-        this.config = await config.getRemoteConfig(configId)
-      } catch (e) {
-        this.$message.error('获取配置失败：' + e)
+    updateConfig() {
+      let cfg = {}
+      // 留空的使用默认值
+      for (let i in this.$route.query) {
+        if (this.$route.query[i] !== '') {
+          cfg[i] = this.$route.query[i]
+        }
       }
+      cfg = mergeConfig(cfg, config.DEFAULT_CONFIG)
+
+      cfg.minGiftPrice = toInt(cfg.minGiftPrice, config.DEFAULT_CONFIG.minGiftPrice)
+      cfg.mergeSimilarDanmaku = toBool(cfg.mergeSimilarDanmaku)
+      cfg.showDanmaku = toBool(cfg.showDanmaku)
+      cfg.showGift = toBool(cfg.showGift)
+      cfg.maxNumber = toInt(cfg.maxNumber, config.DEFAULT_CONFIG.maxNumber)
+      cfg.blockGiftDanmaku = toBool(cfg.blockGiftDanmaku)
+      cfg.blockLevel = toInt(cfg.blockLevel, config.DEFAULT_CONFIG.blockLevel)
+      cfg.blockNewbie = toBool(cfg.blockNewbie)
+      cfg.blockNotMobileVerified = toBool(cfg.blockNotMobileVerified)
+      cfg.blockMedalLevel = toInt(cfg.blockMedalLevel, config.DEFAULT_CONFIG.blockMedalLevel)
+
+      this.config = cfg
     },
     wsConnect() {
       const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
@@ -138,7 +153,7 @@ export default {
         break
       }
       case COMMAND_ADD_MEMBER:
-        if (!this.config.showGift || !this.filterSuperChatMessage(data)) {
+        if (!this.config.showGift || !this.filterNewMemberMessage(data)) {
           break
         }
         message = {
@@ -152,7 +167,7 @@ export default {
         }
         break
       case COMMAND_ADD_SUPER_CHAT:
-        if (!this.config.showGift) {
+        if (!this.config.showGift || !this.filterSuperChatMessage(data)) {
           break
         }
         if (data.price < this.config.minGiftPrice) { // 丢人
@@ -199,6 +214,9 @@ export default {
           return false
         }
       }
+      return this.filterNewMemberMessage(data)
+    },
+    filterNewMemberMessage(data) {
       for (let user of this.blockUsers) {
         if (data.authorName === user) {
           return false

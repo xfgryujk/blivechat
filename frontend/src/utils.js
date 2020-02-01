@@ -6,6 +6,21 @@ export function mergeConfig (config, defaultConfig) {
   return res
 }
 
+export function toBool (val) {
+  if (typeof val === 'string') {
+    return val !== 'false' && val !== ''
+  }
+  return !!val
+}
+
+export function toInt (val, _default) {
+  let res = parseInt(val)
+  if (isNaN(res)) {
+    res = _default
+  }
+  return res
+}
+
 export function formatCurrency (price) {
   return new Intl.NumberFormat('zh-CN', {
     minimumFractionDigits: price < 100 ? 2 : 0
@@ -16,10 +31,4 @@ export function getTimeTextMinSec (date) {
   let min = ('00' + date.getMinutes()).slice(-2)
   let sec = ('00' + date.getSeconds()).slice(-2)
   return `${min}:${sec}`
-}
-
-export default {
-  mergeConfig,
-  formatCurrency,
-  getTimeTextMinSec
 }

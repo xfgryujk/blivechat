@@ -1,5 +1,5 @@
 import {mergeConfig} from '@/utils'
-import fonts from './fonts'
+import * as fonts from './fonts'
 
 export const DEFAULT_CONFIG = {
   showOutlines: true,
@@ -403,11 +403,4 @@ yt-live-chat-legacy-paid-message-renderer {
   animation: anim ${totalTime}ms;
   animation-fill-mode: both;
 }`
-}
-
-export default {
-  DEFAULT_CONFIG,
-  setLocalConfig,
-  getLocalConfig,
-  getStyle
 }

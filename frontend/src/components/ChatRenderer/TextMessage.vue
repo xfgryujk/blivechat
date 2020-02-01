@@ -31,7 +31,7 @@
 import ImgShadow from './ImgShadow.vue'
 import AuthorBadge from './AuthorBadge.vue'
 import * as constants from './constants'
-import utils from '@/utils'
+import * as utils from '@/utils'
 
 // HSL
 const REPEATED_MARK_COLOR_START = [210, 100.0, 62.5]

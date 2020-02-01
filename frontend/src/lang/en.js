@@ -28,17 +28,12 @@ export default {
     blockUsers: 'Block users',
     blockMedalLevel: 'Block medal level lower than',
 
-    style: 'Style',
-
     roomUrl: 'Room URL',
     copy: 'Copy',
-    saveConfig: 'Save config',
     enterRoom: 'Enter room',
     exportConfig: 'Export config',
     importConfig: 'Import config',
 
-    failedToSave: 'Failed to save: ',
-    successfullySaved: 'Successfully saved',
     failedToParseConfig: 'Failed to parse config: '
   },
   stylegen: {
