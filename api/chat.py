@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
-import datetime
 import enum
 import json
 import logging
@@ -12,6 +11,7 @@ import aiohttp
 import tornado.websocket
 
 import blivedm.blivedm as blivedm
+import models.avatar
 
 logger = logging.getLogger(__name__)
 
@@ -26,74 +26,14 @@ class Command(enum.IntEnum):
     DEL_SUPER_CHAT = 6
 
 
-DEFAULT_AVATAR_URL = '//static.hdslb.com/images/member/noface.gif'
-
 _http_session = aiohttp.ClientSession()
-_avatar_url_cache: Dict[int, str] = {}
-_last_fetch_avatar_time = datetime.datetime.now()
-_last_avatar_failed_time = None
-_uids_to_fetch_avatar = asyncio.Queue(15)
+
+room_manager: Optional['RoomManager'] = None
 
 
-async def get_avatar_url(user_id):
-    if user_id in _avatar_url_cache:
-        return _avatar_url_cache[user_id]
-
-    global _last_avatar_failed_time, _last_fetch_avatar_time
-    cur_time = datetime.datetime.now()
-    # 防止获取头像频率太高被ban
-    if (cur_time - _last_fetch_avatar_time).total_seconds() < 0.2:
-        # 由_fetch_avatar_loop过一段时间再获取并缓存
-        try:
-            _uids_to_fetch_avatar.put_nowait(user_id)
-        except asyncio.QueueFull:
-            pass
-        return DEFAULT_AVATAR_URL
-
-    if _last_avatar_failed_time is not None:
-        if (cur_time - _last_avatar_failed_time).total_seconds() < 3 * 60 + 3:
-            # 3分钟以内被ban，解封大约要15分钟
-            return DEFAULT_AVATAR_URL
-        else:
-            _last_avatar_failed_time = None
-
-    _last_fetch_avatar_time = cur_time
-    try:
-        async with _http_session.get('https://api.bilibili.com/x/space/acc/info',
-                                     params={'mid': user_id}) as r:
-            if r.status != 200:  # 可能会被B站ban
-                logger.warning('Failed to fetch avatar: status=%d %s uid=%d', r.status, r.reason, user_id)
-                _last_avatar_failed_time = cur_time
-                return DEFAULT_AVATAR_URL
-            data = await r.json()
-    except aiohttp.ClientConnectionError:
-        return DEFAULT_AVATAR_URL
-    url = data['data']['face'].replace('http:', '').replace('https:', '')
-    if not url.endswith('noface.gif'):
-        url += '@48w_48h'
-    _avatar_url_cache[user_id] = url
-
-    if len(_avatar_url_cache) > 50000:
-        for _, key in zip(range(100), _avatar_url_cache):
-            del _avatar_url_cache[key]
-
-    return url
-
-
-async def _fetch_avatar_loop():
-    while True:
-        try:
-            user_id = await _uids_to_fetch_avatar.get()
-            if user_id in _avatar_url_cache:
-                continue
-            # 延时长一些使实时弹幕有机会获取头像
-            await asyncio.sleep(0.4 - (datetime.datetime.now() - _last_fetch_avatar_time).total_seconds())
-            asyncio.ensure_future(get_avatar_url(user_id))
-        except:
-            pass
-
-
-asyncio.ensure_future(_fetch_avatar_loop())
+def init():
+    global room_manager
+    room_manager = RoomManager()
 
 
 class Room(blivedm.BLiveClient):
@@ -119,7 +59,7 @@ class Room(blivedm.BLiveClient):
         data = command['data']
         return self._on_receive_gift(blivedm.GiftMessage(
             data['giftName'], data['num'], data['uname'], data['face'], None,
-            None, data['timestamp'], None, None,
+            data['uid'], data['timestamp'], None, None,
             None, None, None, data['coin_type'], data['total_coin']
         ))
 
@@ -135,7 +75,7 @@ class Room(blivedm.BLiveClient):
         return self._on_super_chat(blivedm.SuperChatMessage(
             data['price'], data['message'], None, data['start_time'],
             None, None, data['id'], None,
-            None, None, data['user_info']['uname'],
+            None, data['uid'], data['user_info']['uname'],
             data['user_info']['face'], None,
             None, None,
             None, None, None,
@@ -182,7 +122,7 @@ class Room(blivedm.BLiveClient):
         else:
             author_type = 0
         self.send_message(Command.ADD_TEXT, {
-            'avatarUrl': await get_avatar_url(danmaku.uid),
+            'avatarUrl': await models.avatar.get_avatar_url(danmaku.uid),
             'timestamp': danmaku.timestamp,
             'authorName': danmaku.uname,
             'authorType': author_type,
@@ -196,10 +136,12 @@ class Room(blivedm.BLiveClient):
         })
 
     async def _on_receive_gift(self, gift: blivedm.GiftMessage):
+        avatar_url = gift.face.replace('http:', '').replace('https:', '')
+        models.avatar.update_avatar_cache(gift.uid, avatar_url)
         if gift.coin_type != 'gold':  # 丢人
             return
         self.send_message(Command.ADD_GIFT, {
-            'avatarUrl': gift.face.replace('http:', '').replace('https:', ''),
+            'avatarUrl': avatar_url,
             'timestamp': gift.timestamp,
             'authorName': gift.uname,
             'giftName': gift.gift_name,
@@ -212,14 +154,16 @@ class Room(blivedm.BLiveClient):
 
     async def __on_buy_guard(self, message: blivedm.GuardBuyMessage):
         self.send_message(Command.ADD_MEMBER, {
-            'avatarUrl':  await get_avatar_url(message.uid),
+            'avatarUrl':  await models.avatar.get_avatar_url(message.uid),
             'timestamp': message.start_time,
             'authorName': message.username
         })
 
     async def _on_super_chat(self, message: blivedm.SuperChatMessage):
+        avatar_url = message.face.replace('http:', '').replace('https:', '')
+        models.avatar.update_avatar_cache(message.uid, avatar_url)
         self.send_message(Command.ADD_SUPER_CHAT, {
-            'avatarUrl': message.face.replace('http:', '').replace('https:', ''),
+            'avatarUrl': avatar_url,
             'timestamp': message.start_time,
             'authorName': message.uname,
             'price': message.price,
@@ -280,9 +224,6 @@ class RoomManager:
             client.close()
         room.stop_and_close()
         del self._rooms[room_id]
-
-
-room_manager = RoomManager()
 
 
 # noinspection PyAbstractClass
