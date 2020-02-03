@@ -70,7 +70,11 @@ def _do_get_avatar_url_from_database(user_id):
             else:
                 # 否则只更新内存缓存
                 _update_avatar_cache_in_memory(user_id, avatar_url)
+    except sqlalchemy.exc.OperationalError:
+        # SQLite会锁整个文件，忽略就行
+        return None
     except sqlalchemy.exc.SQLAlchemyError:
+        logger.exception('_do_get_avatar_url_from_database failed:')
         return None
     return avatar_url
 
@@ -100,7 +104,8 @@ async def _get_avatar_url_from_web_consumer():
                 cur_time = datetime.datetime.now()
                 if (cur_time - _last_fetch_failed_time).total_seconds() < 3 * 60 + 3:
                     # 3分钟以内被ban则先返回默认头像，解封大约要15分钟
-                    return DEFAULT_AVATAR_URL
+                    future.set_result(DEFAULT_AVATAR_URL)
+                    continue
                 else:
                     _last_fetch_failed_time = None
 
@@ -126,10 +131,11 @@ async def _do_get_avatar_url_from_web(user_id):
         async with _http_session.get('https://api.bilibili.com/x/space/acc/info',
                                      params={'mid': user_id}) as r:
             if r.status != 200:
-                # 可能被B站ban了
                 logger.warning('Failed to fetch avatar: status=%d %s uid=%d', r.status, r.reason, user_id)
-                global _last_fetch_failed_time
-                _last_fetch_failed_time = datetime.datetime.now()
+                if r.status == 412:
+                    # 被B站ban了
+                    global _last_fetch_failed_time
+                    _last_fetch_failed_time = datetime.datetime.now()
                 return DEFAULT_AVATAR_URL
             data = await r.json()
     except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
@@ -169,8 +175,10 @@ def _update_avatar_cache_in_database(user_id, avatar_url):
                 user.avatar_url = avatar_url
                 user.update_time = datetime.datetime.now()
             session.commit()
+    except (sqlalchemy.exc.OperationalError, sqlalchemy.exc.IntegrityError):
+        # SQLite会锁整个文件，忽略就行，另外还有多线程导致ID重复的问题
+        pass
     except sqlalchemy.exc.SQLAlchemyError:
-        # SQLite会锁整个文件，忽略就行
         logger.exception('_update_avatar_cache_in_database failed:')
 
 
