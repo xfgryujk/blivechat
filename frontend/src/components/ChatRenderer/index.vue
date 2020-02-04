@@ -97,6 +97,14 @@ export default {
       return this.atBottom/* || this.allowScroll*/
     }
   },
+  watch: {
+    css(val) {
+      this.styleElement.innerText = val
+    },
+    canScrollToBottom(val) {
+      this.cantScrollStartTime = val ? null : new Date()
+    }
+  },
   mounted() {
     this.styleElement.innerText = this.css
     this.scrollToBottom()
@@ -108,11 +116,6 @@ export default {
       this.emitSmoothedMessageTimerId = null
     }
     this.clearMessages()
-  },
-  watch: {
-    css(val) {
-      this.styleElement.innerText = val
-    }
   },
   methods: {
     addMessage(message) {
@@ -446,29 +449,18 @@ export default {
     scrollToBottom() {
       this.$refs.scroller.scrollTop = Math.pow(2, 24)
       this.atBottom = true
-      if (this.canScrollToBottom) {
-        this.cantScrollStartTime = null
-      }
     },
     onScroll() {
       this.refreshCantScrollStartTime()
       let scroller = this.$refs.scroller
       this.atBottom = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < SCROLLED_TO_BOTTOM_EPSILON
-      if (this.canScrollToBottom) {
-        this.cantScrollStartTime = null
-      }
       this.flushMessagesBuffer()
     },
     canScrollToBottomOrTimedOut() {
       if (this.canScrollToBottom) {
-        this.cantScrollStartTime = null
         return true
       }
       // 防止在OBS中卡住，超过一定时间也可以自动滚动
-      if (!this.cantScrollStartTime) {
-        this.cantScrollStartTime = new Date()
-        return false
-      }
       return new Date() - this.cantScrollStartTime >= 10 * 1000
     },
     refreshCantScrollStartTime() {
