@@ -3,6 +3,7 @@
 import asyncio
 import datetime
 import logging
+import re
 from typing import *
 
 import aiohttp
@@ -36,7 +37,10 @@ async def get_avatar_url(user_id):
     avatar_url = await get_avatar_url_from_database(user_id)
     if avatar_url is not None:
         return avatar_url
-    return await get_avatar_url_from_web(user_id)
+    avatar_url = await get_avatar_url_from_web(user_id)
+    if avatar_url is not None:
+        return avatar_url
+    return DEFAULT_AVATAR_URL
 
 
 def get_avatar_url_from_memory(user_id):
@@ -79,12 +83,12 @@ def _do_get_avatar_url_from_database(user_id):
     return avatar_url
 
 
-def get_avatar_url_from_web(user_id) -> Awaitable[str]:
+def get_avatar_url_from_web(user_id) -> Awaitable[Optional[str]]:
     future = _main_event_loop.create_future()
     try:
         _fetch_task_queue.put_nowait((user_id, future))
     except asyncio.QueueFull:
-        future.set_result(DEFAULT_AVATAR_URL)
+        future.set_result(None)
     return future
 
 
@@ -96,6 +100,7 @@ async def _get_avatar_url_from_web_consumer():
             # 先查缓存，防止队列中出现相同uid时重复获取
             avatar_url = get_avatar_url_from_memory(user_id)
             if avatar_url is not None:
+                future.set_result(avatar_url)
                 continue
 
             # 防止在被ban的时候获取
@@ -103,8 +108,8 @@ async def _get_avatar_url_from_web_consumer():
             if _last_fetch_failed_time is not None:
                 cur_time = datetime.datetime.now()
                 if (cur_time - _last_fetch_failed_time).total_seconds() < 3 * 60 + 3:
-                    # 3分钟以内被ban则先返回默认头像，解封大约要15分钟
-                    future.set_result(DEFAULT_AVATAR_URL)
+                    # 3分钟以内被ban，解封大约要15分钟
+                    future.set_result(None)
                     continue
                 else:
                     _last_fetch_failed_time = None
@@ -114,7 +119,7 @@ async def _get_avatar_url_from_web_consumer():
             # 限制频率，防止被B站ban
             await asyncio.sleep(0.2)
         except:
-            pass
+            logger.exception('_get_avatar_url_from_web_consumer error:')
 
 
 async def _get_avatar_url_from_web_coroutine(user_id, future):
@@ -136,16 +141,24 @@ async def _do_get_avatar_url_from_web(user_id):
                     # 被B站ban了
                     global _last_fetch_failed_time
                     _last_fetch_failed_time = datetime.datetime.now()
-                return DEFAULT_AVATAR_URL
+                return None
             data = await r.json()
     except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
-        return DEFAULT_AVATAR_URL
+        return None
 
-    avatar_url = data['data']['face'].replace('http:', '').replace('https:', '')
+    avatar_url = process_avatar_url(data['data']['face'])
+    update_avatar_cache(user_id, avatar_url)
+    return avatar_url
+
+
+def process_avatar_url(avatar_url):
+    # 去掉协议，兼容HTTP、HTTPS
+    m = re.fullmatch(r'(?:https?:)?(.*)', avatar_url)
+    if m is not None:
+        avatar_url = m[1]
+    # 缩小图片加快传输
     if not avatar_url.endswith('noface.gif'):
         avatar_url += '@48w_48h'
-
-    update_avatar_cache(user_id, avatar_url)
     return avatar_url
 
 

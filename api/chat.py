@@ -136,7 +136,7 @@ class Room(blivedm.BLiveClient):
         })
 
     async def _on_receive_gift(self, gift: blivedm.GiftMessage):
-        avatar_url = gift.face.replace('http:', '').replace('https:', '')
+        avatar_url = models.avatar.process_avatar_url(gift.face)
         models.avatar.update_avatar_cache(gift.uid, avatar_url)
         if gift.coin_type != 'gold':  # 丢人
             return
@@ -160,7 +160,7 @@ class Room(blivedm.BLiveClient):
         })
 
     async def _on_super_chat(self, message: blivedm.SuperChatMessage):
-        avatar_url = message.face.replace('http:', '').replace('https:', '')
+        avatar_url = models.avatar.process_avatar_url(message.face)
         models.avatar.update_avatar_cache(message.uid, avatar_url)
         self.send_message(Command.ADD_SUPER_CHAT, {
             'avatarUrl': avatar_url,
