@@ -71,7 +71,9 @@ def run_server(host, port, debug):
         logger.warning('Address is used %s:%d', host, port)
         return
     finally:
-        url = 'http://localhost' if port == 80 else f'http://localhost:{port}'
+        url = 'http://localhost/' if port == 80 else f'http://localhost:{port}/'
+        # 防止更新版本后浏览器加载缓存
+        url += '?_v=' + update.VERSION
         webbrowser.open(url)
     logger.info('Server started: %s:%d', host, port)
     tornado.ioloop.IOLoop.current().start()
