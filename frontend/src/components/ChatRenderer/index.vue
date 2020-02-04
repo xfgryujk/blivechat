@@ -1,8 +1,10 @@
 <template>
-  <yt-live-chat-renderer class="style-scope yt-live-chat-app" style="--scrollbar-width:11px;" hide-timestamps>
+  <yt-live-chat-renderer class="style-scope yt-live-chat-app" style="--scrollbar-width:11px;" hide-timestamps
+    @mousemove="refreshCantScrollStartTime"
+  >
     <ticker class="style-scope yt-live-chat-renderer" :messages="paidMessages" :hidden="paidMessages.length === 0"></ticker>
     <yt-live-chat-item-list-renderer class="style-scope yt-live-chat-renderer" allow-scroll>
-      <div id="item-scroller" ref="scroller" class="style-scope yt-live-chat-item-list-renderer animated" @scroll="onScroll">
+      <div ref="scroller" id="item-scroller" class="style-scope yt-live-chat-item-list-renderer animated" @scroll="onScroll">
         <div ref="itemOffset" id="item-offset" class="style-scope yt-live-chat-item-list-renderer" style="height: 0px;">
           <div ref="items" id="items" class="style-scope yt-live-chat-item-list-renderer" style="overflow: hidden"
             :style="{transform: `translateY(${Math.floor(scrollPixelsRemaining)}px)`}"
@@ -86,7 +88,8 @@ export default {
       smoothScrollRafHandle: null,         // 平滑滚动requestAnimationFrame句柄
       lastSmoothScrollUpdate: null,        // 平滑滚动上一帧时间
 
-      atBottom: true                       // 滚动到底部，用来判断能否自动滚动
+      atBottom: true,                      // 滚动到底部，用来判断能否自动滚动
+      cantScrollStartTime: null            // 开始不能自动滚动的时间，用来防止卡住
     }
   },
   computed: {
@@ -336,7 +339,7 @@ export default {
       if (this.messagesBuffer.length <= 0) {
         return
       }
-      if (!this.canScrollToBottom) {
+      if (!this.canScrollToBottomOrTimedOut()) {
         if (this.messagesBuffer.length > this.maxNumber) {
           // 未显示消息数 > 最大可显示数，丢弃
           this.messagesBuffer.splice(0, this.messagesBuffer.length - this.maxNumber)
@@ -362,7 +365,7 @@ export default {
     showNewMessages() {
       let hasScrollBar = this.$refs.items.clientHeight > this.$refs.scroller.clientHeight
       this.$refs.itemOffset.style.height = `${this.$refs.items.clientHeight}px`
-      if (!this.canScrollToBottom || !hasScrollBar) {
+      if (!this.canScrollToBottomOrTimedOut() || !hasScrollBar) {
         return
       }
 
@@ -436,18 +439,43 @@ export default {
       this.maybeScrollToBottom()
     },
     maybeScrollToBottom() {
-      if (this.canScrollToBottom) {
+      if (this.canScrollToBottomOrTimedOut()) {
         this.scrollToBottom()
       }
     },
     scrollToBottom() {
       this.$refs.scroller.scrollTop = Math.pow(2, 24)
       this.atBottom = true
+      if (this.canScrollToBottom) {
+        this.cantScrollStartTime = null
+      }
     },
     onScroll() {
+      this.refreshCantScrollStartTime()
       let scroller = this.$refs.scroller
       this.atBottom = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < SCROLLED_TO_BOTTOM_EPSILON
+      if (this.canScrollToBottom) {
+        this.cantScrollStartTime = null
+      }
       this.flushMessagesBuffer()
+    },
+    canScrollToBottomOrTimedOut() {
+      if (this.canScrollToBottom) {
+        this.cantScrollStartTime = null
+        return true
+      }
+      // 防止在OBS中卡住，超过一定时间也可以自动滚动
+      if (!this.cantScrollStartTime) {
+        this.cantScrollStartTime = new Date()
+        return false
+      }
+      return new Date() - this.cantScrollStartTime >= 10 * 1000
+    },
+    refreshCantScrollStartTime() {
+      // 有鼠标事件时刷新，防止用户看弹幕时自动滚动
+      if (this.cantScrollStartTime) {
+        this.cantScrollStartTime = new Date()
+      }
     }
   }
 }
