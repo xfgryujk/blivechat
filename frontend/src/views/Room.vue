@@ -112,9 +112,21 @@ export default {
     onWsMessage(event) {
       let {cmd, data} = JSON.parse(event.data)
       let message = null
-      let time = data.timestamp ? new Date(data.timestamp * 1000) : new Date()
       switch (cmd) {
       case COMMAND_ADD_TEXT:
+        data = {
+          avatarUrl: data[0],
+          timestamp: data[1],
+          authorName: data[2],
+          authorType: data[3],
+          content: data[4],
+          privilegeType: data[5],
+          isGiftDanmaku: !!data[6],
+          authorLevel: data[7],
+          isNewbie: !!data[8],
+          isMobileVerified: !!data[9],
+          medalLevel: data[10]
+        }
         if (!this.config.showDanmaku || !this.filterTextMessage(data) || this.mergeSimilarText(data.content)) {
           break
         }
@@ -122,7 +134,7 @@ export default {
           id: `text_${this.nextId++}`,
           type: constants.MESSAGE_TYPE_TEXT,
           avatarUrl: data.avatarUrl,
-          time: time,
+          time: new Date(data.timestamp * 1000),
           authorName: data.authorName,
           authorType: data.authorType,
           content: data.content,
@@ -147,7 +159,7 @@ export default {
           avatarUrl: data.avatarUrl,
           authorName: data.authorName,
           price: price,
-          time: time,
+          time: new Date(data.timestamp * 1000),
           content: '' // 有了SC，礼物不需要内容了
         }
         break
@@ -160,7 +172,7 @@ export default {
           id: `member_${this.nextId++}`,
           type: constants.MESSAGE_TYPE_MEMBER,
           avatarUrl: data.avatarUrl,
-          time: time,
+          time: new Date(data.timestamp * 1000),
           authorName: data.authorName,
           title: 'NEW MEMBER!',
           content: `Welcome ${data.authorName}!`
@@ -179,7 +191,7 @@ export default {
           avatarUrl: data.avatarUrl,
           authorName: data.authorName,
           price: data.price,
-          time: time,
+          time: new Date(data.timestamp * 1000),
           content: data.content.trim()
         }
         break

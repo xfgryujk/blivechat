@@ -4,6 +4,7 @@ import asyncio
 import enum
 import json
 import logging
+import random
 import time
 from typing import *
 
@@ -58,7 +59,7 @@ class Room(blivedm.BLiveClient):
     def __parse_gift(self, command):
         data = command['data']
         return self._on_receive_gift(blivedm.GiftMessage(
-            data['giftName'], data['num'], data['uname'], data['face'], None,
+            None, None, data['uname'], data['face'], None,
             data['uid'], data['timestamp'], None, None,
             None, None, None, data['coin_type'], data['total_coin']
         ))
@@ -121,19 +122,31 @@ class Room(blivedm.BLiveClient):
             author_type = 1  # 舰队
         else:
             author_type = 0
-        self.send_message(Command.ADD_TEXT, {
-            'avatarUrl': await models.avatar.get_avatar_url(danmaku.uid),
-            'timestamp': danmaku.timestamp,
-            'authorName': danmaku.uname,
-            'authorType': author_type,
-            'content': danmaku.msg,
-            'privilegeType': danmaku.privilege_type,
-            'isGiftDanmaku': bool(danmaku.msg_type),
-            'authorLevel': danmaku.user_level,
-            'isNewbie': danmaku.urank < 10000,
-            'isMobileVerified': bool(danmaku.mobile_verify),
-            'medalLevel': 0 if danmaku.room_id != self.room_id else danmaku.medal_level
-        })
+        # 为了节省带宽用list而不是dict
+        self.send_message(Command.ADD_TEXT, [
+            # 0: avatarUrl
+            await models.avatar.get_avatar_url(danmaku.uid),
+            # 1: timestamp
+            danmaku.timestamp,
+            # 2: authorName
+            danmaku.uname,
+            # 3: authorType
+            author_type,
+            # 4: content
+            danmaku.msg,
+            # 5: privilegeType
+            danmaku.privilege_type,
+            # 6: isGiftDanmaku
+            1 if danmaku.msg_type else 0,
+            # 7: authorLevel
+            danmaku.user_level,
+            # 8: isNewbie
+            1 if danmaku.urank < 10000 else 0,
+            # 9: isMobileVerified
+            1 if danmaku.mobile_verify else 0,
+            # 10: medalLevel
+            0 if danmaku.room_id != self.room_id else danmaku.medal_level
+        ])
 
     async def _on_receive_gift(self, gift: blivedm.GiftMessage):
         avatar_url = models.avatar.process_avatar_url(gift.face)
@@ -144,8 +157,6 @@ class Room(blivedm.BLiveClient):
             'avatarUrl': avatar_url,
             'timestamp': gift.timestamp,
             'authorName': gift.uname,
-            'giftName': gift.gift_name,
-            'giftNum': gift.num,
             'totalCoin': gift.total_coin
         })
 
@@ -154,7 +165,7 @@ class Room(blivedm.BLiveClient):
 
     async def __on_buy_guard(self, message: blivedm.GuardBuyMessage):
         self.send_message(Command.ADD_MEMBER, {
-            'avatarUrl':  await models.avatar.get_avatar_url(message.uid),
+            'avatarUrl': await models.avatar.get_avatar_url(message.uid),
             'timestamp': message.start_time,
             'authorName': message.username
         })
@@ -173,7 +184,7 @@ class Room(blivedm.BLiveClient):
 
     async def _on_super_chat_delete(self, message: blivedm.SuperChatDeleteMessage):
         self.send_message(Command.ADD_SUPER_CHAT, {
-            'ids':  message.ids
+            'ids': message.ids
         })
 
 
@@ -191,7 +202,7 @@ class RoomManager:
         logger.info('%d clients in room %s', len(room.clients), room_id)
 
         if client.application.settings['debug']:
-            client.send_test_message()
+            await client.send_test_message()
 
     def del_client(self, room_id, client: 'ChatHandler'):
         if room_id not in self._rooms:
@@ -230,29 +241,49 @@ class RoomManager:
 class ChatHandler(tornado.websocket.WebSocketHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._close_on_timeout_future = None
         self.room_id = None
 
     def open(self):
         logger.info('Websocket connected %s', self.request.remote_ip)
+        self._close_on_timeout_future = asyncio.ensure_future(self._close_on_timeout())
+
+    async def _close_on_timeout(self):
+        try:
+            # 超过一定时间还没加入房间则断开
+            await asyncio.sleep(10)
+            logger.warning('Client %s joining room timed out', self.request.remote_ip)
+            self.close()
+        except (asyncio.CancelledError, tornado.websocket.WebSocketClosedError):
+            pass
 
     def on_message(self, message):
-        body = json.loads(message)
-        cmd = body['cmd']
-        if cmd == Command.HEARTBEAT:
-            pass
-        elif cmd == Command.JOIN_ROOM:
-            if self.room_id is not None:
+        try:
+            body = json.loads(message)
+            cmd = body['cmd']
+            if cmd == Command.HEARTBEAT:
                 return
-            self.room_id = int(body['data']['roomId'])
-            logger.info('Client %s is joining room %d', self.request.remote_ip, self.room_id)
-            asyncio.ensure_future(room_manager.add_client(self.room_id, self))
-        else:
-            logger.warning('Unknown cmd: %s body: %s', cmd, body)
+            elif cmd == Command.JOIN_ROOM:
+                if self.has_joined_room:
+                    return
+                self.room_id = int(body['data']['roomId'])
+                logger.info('Client %s is joining room %d', self.request.remote_ip, self.room_id)
+
+                asyncio.ensure_future(room_manager.add_client(self.room_id, self))
+                self._close_on_timeout_future.cancel()
+                self._close_on_timeout_future = None
+            else:
+                logger.warning('Unknown cmd, client: %s, cmd: %d, body: %s', self.request.remote_ip, cmd, body)
+        except:
+            logger.exception('on_message error, client: %s, message: %s', self.request.remote_ip, message)
 
     def on_close(self):
         logger.info('Websocket disconnected %s room: %s', self.request.remote_ip, str(self.room_id))
-        if self.room_id is not None:
+        if self.has_joined_room:
             room_manager.del_client(self.room_id, self)
+        if self._close_on_timeout_future is not None:
+            self._close_on_timeout_future.cancel()
+            self._close_on_timeout_future = None
 
     # 跨域测试用
     def check_origin(self, origin):
@@ -261,51 +292,66 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
         return super().check_origin(origin)
 
     # 测试用
-    def send_test_message(self):
+    async def send_test_message(self):
         base_data = {
-            'avatarUrl':  '//i0.hdslb.com/bfs/face/29b6be8aa611e70a3d3ac219cdaf5e72b604f2de.jpg@48w_48h',
-            'timestamp':  time.time(),
+            'avatarUrl': await models.avatar.get_avatar_url(300474),
+            'timestamp': time.time(),
             'authorName': 'xfgryujk',
         }
-        text_data = {
-            **base_data,
-            'authorType':       0,
-            'content':          '我能吞下玻璃而不伤身体',
-            'privilegeType':    0,
-            'isGiftDanmaku':    False,
-            'authorLevel':      20,
-            'isNewbie':         False,
-            'isMobileVerified': True
-        }
-        member_data = base_data
+        text_data = [
+            # 0: avatarUrl
+            base_data['avatarUrl'],
+            # 1: timestamp
+            base_data['timestamp'],
+            # 2: authorName
+            base_data['authorName'],
+            # 3: authorType
+            0,
+            # 4: content
+            '我能吞下玻璃而不伤身体',
+            # 5: privilegeType
+            0,
+            # 6: isGiftDanmaku
+            0,
+            # 7: authorLevel
+            20,
+            # 8: isNewbie
+            0,
+            # 9: isMobileVerified
+            1,
+            # 10: medalLevel
+            0
+        ]
+        member_data = base_data.copy()
         gift_data = {
             **base_data,
-            'giftName':  '摩天大楼',
-            'giftNum':   1,
             'totalCoin': 450000
         }
         sc_data = {
             **base_data,
-            'price':   30,
+            'price': 30,
             'content': 'The quick brown fox jumps over the lazy dog',
-            'id':      1
+            'id': random.randint(1, 65535)
         }
         self.send_message(Command.ADD_TEXT, text_data)
-        text_data['authorName'] = '主播'
-        text_data['authorType'] = 3
-        text_data['content'] = "I can eat glass, it doesn't hurt me."
+        text_data[2] = '主播'
+        text_data[3] = 3
+        text_data[4] = "I can eat glass, it doesn't hurt me."
         self.send_message(Command.ADD_TEXT, text_data)
         self.send_message(Command.ADD_MEMBER, member_data)
         self.send_message(Command.ADD_SUPER_CHAT, sc_data)
         sc_data['price'] = 100
         sc_data['content'] = '敏捷的棕色狐狸跳过了懒狗'
-        sc_data['id'] = 2
+        sc_data['id'] = random.randint(1, 65535)
         self.send_message(Command.ADD_SUPER_CHAT, sc_data)
-        # self.send_message(Command.DEL_SUPER_CHAT, {'ids': [1, 2]})
+        # self.send_message(Command.DEL_SUPER_CHAT, {'ids': [sc_data['id']]})
         self.send_message(Command.ADD_GIFT, gift_data)
-        gift_data['giftName'] = '小电视飞船'
         gift_data['totalCoin'] = 1245000
         self.send_message(Command.ADD_GIFT, gift_data)
+
+    @property
+    def has_joined_room(self):
+        return self.room_id is not None
 
     def send_message(self, cmd, data):
         body = json.dumps({'cmd': cmd, 'data': data})
