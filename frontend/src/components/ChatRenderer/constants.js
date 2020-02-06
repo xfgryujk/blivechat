@@ -21,6 +21,7 @@ export const MESSAGE_TYPE_TEXT = 0
 export const MESSAGE_TYPE_MEMBER = 1
 export const MESSAGE_TYPE_SUPER_CHAT = 2
 export const MESSAGE_TYPE_DEL = 3
+export const MESSAGE_TYPE_UPDATE = 4
 
 // 美元 -> 人民币 汇率
 const EXCHANGE_RATE = 7

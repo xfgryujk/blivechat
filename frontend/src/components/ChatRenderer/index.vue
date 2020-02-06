@@ -150,6 +150,7 @@ export default {
         if (longer.indexOf(shorter) !== -1 // 长的包含短的
             && longer.length - shorter.length < shorter.length // 长度差较小
         ) {
+          // 其实有小概率导致弹幕卡住
           message.repeated++
           res = true
           return false
@@ -197,8 +198,8 @@ export default {
     delMessages(ids) {
       this.enqueueMessages(ids.map(id => {
         return {
-          id: id,
-          type: constants.MESSAGE_TYPE_DEL
+          type: constants.MESSAGE_TYPE_DEL,
+          id
         }
       }))
     },
@@ -220,27 +221,11 @@ export default {
       }
     },
     updateMessage(id, newValuesObj) {
-      // 遍历滚动的消息
-      this.forEachRecentMessage(999999999, message => {
-        if (message.id !== id) {
-          return true
-        }
-        for (let name in newValuesObj) {
-          message[name] = newValuesObj[name]
-        }
-        return false
-      })
-      // 遍历固定的消息
-      for (let message of this.paidMessages) {
-        if (message.id !== id) {
-          continue
-        }
-        for (let name in newValuesObj) {
-          message[name] = newValuesObj[name]
-        }
-        break
-      }
-      // TODO 解决自动滚动的问题
+      this.enqueueMessages([{
+        type: constants.MESSAGE_TYPE_UPDATE,
+        id,
+        newValuesObj
+      }])
     },
 
     enqueueMessages(messages) {
@@ -261,7 +246,7 @@ export default {
       let messageGroup = []
       for (let message of messages) {
         messageGroup.push(message)
-        if (message.type !== constants.MESSAGE_TYPE_DEL) {
+        if (message.type !== constants.MESSAGE_TYPE_DEL && message.type !== constants.MESSAGE_TYPE_UPDATE) {
           this.smoothedMessageQueue.push(messageGroup)
           messageGroup = []
         }
@@ -337,7 +322,10 @@ export default {
             this.handleAddMessage(message)
             break
           case constants.MESSAGE_TYPE_DEL:
-            this.handleDelMessage(message.id)
+            this.handleDelMessage(message)
+            break
+          case constants.MESSAGE_TYPE_UPDATE:
+            this.handleUpdateMessage(message)
             break
         }
       }
@@ -356,16 +344,39 @@ export default {
         this.paidMessages.unshift(message)
       }
     },
-    handleDelMessage(message) {
-      let id = message.id
+    handleDelMessage({id}) {
       for (let arr of [this.messages, this.paidMessages, this.messagesBuffer]) {
         for (let i = 0; i < arr.length; i++) {
           if (arr[i].id === id) {
             arr.splice(i, 1)
+            this.resetSmoothScroll()
             break
           }
         }
       }
+    },
+    handleUpdateMessage({id, newValuesObj}) {
+      // 遍历滚动的消息
+      this.forEachRecentMessage(999999999, message => {
+        if (message.id !== id) {
+          return true
+        }
+        for (let name in newValuesObj) {
+          message[name] = newValuesObj[name]
+        }
+        return false
+      })
+      // 遍历固定的消息
+      for (let message of this.paidMessages) {
+        if (message.id !== id) {
+          continue
+        }
+        for (let name in newValuesObj) {
+          message[name] = newValuesObj[name]
+        }
+        break
+      }
+      this.resetSmoothScroll()
     },
 
     async flushMessagesBuffer() {
