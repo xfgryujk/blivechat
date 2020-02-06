@@ -13,6 +13,7 @@ import api.main
 import config
 import models.avatar
 import models.database
+import models.translate
 import update
 
 logger = logging.getLogger(__name__)
@@ -35,6 +36,7 @@ def main():
     config.init()
     models.database.init(args.debug)
     models.avatar.init()
+    models.translate.init()
     api.chat.init()
     update.check_update()
 
