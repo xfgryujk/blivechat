@@ -50,6 +50,12 @@
           <el-slider v-model="form.blockMedalLevel" show-input :min="0" :max="20"></el-slider>
         </el-form-item>
       </el-tab-pane>
+
+      <el-tab-pane :label="$t('home.advanced')">
+        <el-form-item :label="$t('home.autoTranslate')">
+          <el-switch v-model="form.autoTranslate"></el-switch>
+        </el-form-item>
+      </el-tab-pane>
     </el-tabs>
 
     <el-divider></el-divider>

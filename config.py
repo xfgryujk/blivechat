@@ -30,6 +30,7 @@ def get_config():
 class AppConfig:
     def __init__(self):
         self.database_url = 'sqlite:///data/database.db'
+        self.enable_translate = True
 
     def load(self, path):
         config = configparser.ConfigParser()
@@ -37,6 +38,7 @@ class AppConfig:
         try:
             app_section = config['app']
             self.database_url = app_section['database_url']
+            self.enable_translate = app_section.getboolean('enable_translate')
         except (KeyError, ValueError):
             logger.exception('Failed to load config:')
             return False

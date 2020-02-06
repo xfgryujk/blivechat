@@ -28,6 +28,9 @@ export default {
     blockUsers: 'Block users',
     blockMedalLevel: 'Block medal level lower than',
 
+    advanced: 'Advanced',
+    autoTranslate: 'Auto translate messages to Japanese',
+
     roomUrl: 'Room URL',
     copy: 'Copy',
     enterRoom: 'Enter room',

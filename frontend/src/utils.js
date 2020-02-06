@@ -8,7 +8,7 @@ export function mergeConfig (config, defaultConfig) {
 
 export function toBool (val) {
   if (typeof val === 'string') {
-    return val !== 'false' && val !== ''
+    return ['false', 'no', 'off', '0', ''].indexOf(val.toLowerCase()) === -1
   }
   return !!val
 }

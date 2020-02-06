@@ -13,7 +13,9 @@ export const DEFAULT_CONFIG = {
   blockNotMobileVerified: true,
   blockKeywords: '',
   blockUsers: '',
-  blockMedalLevel: 0
+  blockMedalLevel: 0,
+
+  autoTranslate: false
 }
 
 export function setLocalConfig (config) {

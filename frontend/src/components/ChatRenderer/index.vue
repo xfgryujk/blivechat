@@ -13,7 +13,7 @@
               <text-message :key="message.id" v-if="message.type === MESSAGE_TYPE_TEXT"
                 class="style-scope yt-live-chat-item-list-renderer"
                 :avatarUrl="message.avatarUrl" :time="message.time" :authorName="message.authorName"
-                :authorType="message.authorType" :content="message.content" :privilegeType="message.privilegeType"
+                :authorType="message.authorType" :content="getShowContent(message)" :privilegeType="message.privilegeType"
                 :repeated="message.repeated"
               ></text-message>
               <legacy-paid-message :key="message.id" v-else-if="message.type === MESSAGE_TYPE_MEMBER"
@@ -24,7 +24,7 @@
               <paid-message :key="message.id" v-else-if="message.type === MESSAGE_TYPE_SUPER_CHAT"
                 class="style-scope yt-live-chat-item-list-renderer"
                 :price="message.price" :avatarUrl="message.avatarUrl" :authorName="message.authorName"
-                :time="message.time" :content="message.content"
+                :time="message.time" :content="getShowContent(message)"
               ></paid-message>
             </template>
           </div>
@@ -118,6 +118,13 @@ export default {
     this.clearMessages()
   },
   methods: {
+    getShowContent(message) {
+      if (message.translation) {
+        return `${message.content}（${message.translation}）`
+      }
+      return message.content
+    },
+
     addMessage(message) {
       this.addMessages([message])
     },
@@ -211,6 +218,29 @@ export default {
       if (!this.atBottom) {
         this.scrollToBottom()
       }
+    },
+    updateMessage(id, newValuesObj) {
+      // 遍历滚动的消息
+      this.forEachRecentMessage(999999999, message => {
+        if (message.id !== id) {
+          return true
+        }
+        for (let name in newValuesObj) {
+          message[name] = newValuesObj[name]
+        }
+        return false
+      })
+      // 遍历固定的消息
+      for (let message of this.paidMessages) {
+        if (message.id !== id) {
+          continue
+        }
+        for (let name in newValuesObj) {
+          message[name] = newValuesObj[name]
+        }
+        break
+      }
+      // TODO 解决自动滚动的问题
     },
 
     enqueueMessages(messages) {

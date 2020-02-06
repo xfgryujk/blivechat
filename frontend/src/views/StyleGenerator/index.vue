@@ -216,7 +216,8 @@ let textMessageTemplate = {
   authorType: constants.AUTHRO_TYPE_NORMAL,
   content: '',
   privilegeType: 0,
-  repeated: 1
+  repeated: 1,
+  translation: ''
 }
 let legacyPaidMessageTemplate = {
   id: 0,
@@ -236,20 +237,21 @@ let paidMessageTemplate = {
   authorName: '',
   price: 0,
   time: time,
-  content: ''
+  content: '',
+  translation: ''
 }
 let nextId = 0
 const EXAMPLE_MESSAGES = [
   {
     ...textMessageTemplate,
-    id: nextId++,
+    id: (nextId++).toString(),
     authorName: 'mob路人',
     content: '8888888888',
     repeated: 12
   },
   {
     ...textMessageTemplate,
-    id: nextId++,
+    id: (nextId++).toString(),
     authorName: 'member舰长',
     authorType:  constants.AUTHRO_TYPE_MEMBER,
     content: '草',
@@ -258,34 +260,34 @@ const EXAMPLE_MESSAGES = [
   },
   {
     ...textMessageTemplate,
-    id: nextId++,
+    id: (nextId++).toString(),
     authorName: 'admin房管',
     authorType: constants.AUTHRO_TYPE_ADMIN,
     content: 'kksk'
   },
   {
     ...legacyPaidMessageTemplate,
-    id: nextId++,
+    id: (nextId++).toString(),
     authorName: '少年Pi',
     content: 'Welcome 少年Pi!'
   },
   {
     ...paidMessageTemplate,
-    id: nextId++,
+    id: (nextId++).toString(),
     authorName: '无火的残渣',
     price: 66600,
     content: 'Sent 小电视飞船x100'
   },
   {
     ...textMessageTemplate,
-    id: nextId++,
+    id: (nextId++).toString(),
     authorName: 'streamer主播',
     authorType: constants.AUTHRO_TYPE_OWNER,
     content: '老板大气，老板身体健康'
   },
   {
     ...paidMessageTemplate,
-    id: nextId++,
+    id: (nextId++).toString(),
     authorName: '夏色祭保護協会会長',
     price: 30,
     content: '言いたいことがあるんだよ！'

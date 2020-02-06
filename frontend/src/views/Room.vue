@@ -15,6 +15,7 @@ const COMMAND_ADD_GIFT = 3
 const COMMAND_ADD_MEMBER = 4
 const COMMAND_ADD_SUPER_CHAT = 5
 const COMMAND_DEL_SUPER_CHAT = 6
+const COMMAND_UPDATE_TRANSLATION = 7
 
 export default {
   name: 'Room',
@@ -28,9 +29,7 @@ export default {
       websocket: null,
       retryCount: 0,
       isDestroying: false,
-      heartbeatTimerId: null,
-
-      nextId: 0,
+      heartbeatTimerId: null
     }
   },
   computed: {
@@ -42,8 +41,8 @@ export default {
     }
   },
   created() {
-    this.wsConnect()
     this.updateConfig()
+    this.wsConnect()
   },
   beforeDestroy() {
     this.isDestroying = true
@@ -70,6 +69,7 @@ export default {
       cfg.blockNewbie = toBool(cfg.blockNewbie)
       cfg.blockNotMobileVerified = toBool(cfg.blockNotMobileVerified)
       cfg.blockMedalLevel = toInt(cfg.blockMedalLevel, config.DEFAULT_CONFIG.blockMedalLevel)
+      cfg.autoTranslate = toBool(cfg.autoTranslate)
 
       this.config = cfg
     },
@@ -94,7 +94,10 @@ export default {
       this.websocket.send(JSON.stringify({
         cmd: COMMAND_JOIN_ROOM,
         data: {
-          roomId: parseInt(this.$route.params.roomId)
+          roomId: parseInt(this.$route.params.roomId),
+          config: {
+            autoTranslate: this.config.autoTranslate
+          }
         }
       }))
     },
@@ -125,13 +128,15 @@ export default {
           authorLevel: data[7],
           isNewbie: !!data[8],
           isMobileVerified: !!data[9],
-          medalLevel: data[10]
+          medalLevel: data[10],
+          id: data[11],
+          translation: data[12]
         }
         if (!this.config.showDanmaku || !this.filterTextMessage(data) || this.mergeSimilarText(data.content)) {
           break
         }
         message = {
-          id: `text_${this.nextId++}`,
+          id: data.id,
           type: constants.MESSAGE_TYPE_TEXT,
           avatarUrl: data.avatarUrl,
           time: new Date(data.timestamp * 1000),
@@ -139,7 +144,8 @@ export default {
           authorType: data.authorType,
           content: data.content,
           privilegeType: data.privilegeType,
-          repeated: 1
+          repeated: 1,
+          translation: data.translation
         }
         break
       case COMMAND_ADD_GIFT: {
@@ -154,7 +160,7 @@ export default {
           break
         }
         message = {
-          id: `gift_${this.nextId++}`,
+          id: data.id,
           type: constants.MESSAGE_TYPE_SUPER_CHAT,
           avatarUrl: data.avatarUrl,
           authorName: data.authorName,
@@ -169,7 +175,7 @@ export default {
           break
         }
         message = {
-          id: `member_${this.nextId++}`,
+          id: data.id,
           type: constants.MESSAGE_TYPE_MEMBER,
           avatarUrl: data.avatarUrl,
           time: new Date(data.timestamp * 1000),
@@ -186,7 +192,7 @@ export default {
           break
         }
         message = {
-          id: `sc_${data.id}`,
+          id: data.id,
           type: constants.MESSAGE_TYPE_SUPER_CHAT,
           avatarUrl: data.avatarUrl,
           authorName: data.authorName,
@@ -197,9 +203,18 @@ export default {
         break
       case COMMAND_DEL_SUPER_CHAT:
         for (let id of data.ids) {
-          id = `sc_${id}`
           this.$refs.renderer.delMessage(id)
         }
+        break
+      case COMMAND_UPDATE_TRANSLATION:
+        if (!this.config.autoTranslate) {
+          break
+        }
+        data = {
+          id: data[0],
+          translation: data[1]
+        }
+        this.$refs.renderer.updateMessage(data.id, {translation: data.translation})
         break
       }
       if (message) {

@@ -6,13 +6,16 @@ import json
 import logging
 import random
 import time
+import uuid
 from typing import *
 
 import aiohttp
 import tornado.websocket
 
 import blivedm.blivedm as blivedm
+import config
 import models.avatar
+import models.translate
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +28,7 @@ class Command(enum.IntEnum):
     ADD_MEMBER = 4
     ADD_SUPER_CHAT = 5
     DEL_SUPER_CHAT = 6
+    UPDATE_TRANSLATION = 7
 
 
 _http_session = aiohttp.ClientSession()
@@ -94,6 +98,7 @@ class Room(blivedm.BLiveClient):
     def __init__(self, room_id):
         super().__init__(room_id, session=_http_session, heartbeat_interval=10)
         self.clients: List['ChatHandler'] = []
+        self.auto_translate_count = 0
 
     def stop_and_close(self):
         if self.is_running:
@@ -105,6 +110,14 @@ class Room(blivedm.BLiveClient):
     def send_message(self, cmd, data):
         body = json.dumps({'cmd': cmd, 'data': data})
         for client in self.clients:
+            try:
+                client.write_message(body)
+            except tornado.websocket.WebSocketClosedError:
+                pass
+
+    def send_message_if(self, can_send_func: Callable[['ChatHandler'], bool], cmd, data):
+        body = json.dumps({'cmd': cmd, 'data': data})
+        for client in filter(can_send_func, self.clients):
             try:
                 client.write_message(body)
             except tornado.websocket.WebSocketClosedError:
@@ -122,6 +135,19 @@ class Room(blivedm.BLiveClient):
             author_type = 1  # 舰队
         else:
             author_type = 0
+
+        need_translate = self._need_translate(danmaku.msg)
+        if need_translate:
+            translation = models.translate.get_translation_from_cache(danmaku.msg)
+            if translation is None:
+                # 没有缓存，需要后面异步翻译后通知
+                translation = ''
+            else:
+                need_translate = False
+        else:
+            translation = ''
+
+        id_ = uuid.uuid4().hex
         # 为了节省带宽用list而不是dict
         self.send_message(Command.ADD_TEXT, [
             # 0: avatarUrl
@@ -145,15 +171,24 @@ class Room(blivedm.BLiveClient):
             # 9: isMobileVerified
             1 if danmaku.mobile_verify else 0,
             # 10: medalLevel
-            0 if danmaku.room_id != self.room_id else danmaku.medal_level
+            0 if danmaku.room_id != self.room_id else danmaku.medal_level,
+            # 11: id
+            id_,
+            # 12: translation
+            translation
         ])
+
+        if need_translate:
+            await self._translate_and_response(danmaku.msg, id_)
 
     async def _on_receive_gift(self, gift: blivedm.GiftMessage):
         avatar_url = models.avatar.process_avatar_url(gift.face)
         models.avatar.update_avatar_cache(gift.uid, avatar_url)
         if gift.coin_type != 'gold':  # 丢人
             return
+        id_ = uuid.uuid4().hex
         self.send_message(Command.ADD_GIFT, {
+            'id': id_,
             'avatarUrl': avatar_url,
             'timestamp': gift.timestamp,
             'authorName': gift.uname,
@@ -164,7 +199,9 @@ class Room(blivedm.BLiveClient):
         asyncio.ensure_future(self.__on_buy_guard(message))
 
     async def __on_buy_guard(self, message: blivedm.GuardBuyMessage):
+        id_ = uuid.uuid4().hex
         self.send_message(Command.ADD_MEMBER, {
+            'id': id_,
             'avatarUrl': await models.avatar.get_avatar_url(message.uid),
             'timestamp': message.start_time,
             'authorName': message.username
@@ -173,19 +210,58 @@ class Room(blivedm.BLiveClient):
     async def _on_super_chat(self, message: blivedm.SuperChatMessage):
         avatar_url = models.avatar.process_avatar_url(message.face)
         models.avatar.update_avatar_cache(message.uid, avatar_url)
+
+        need_translate = self._need_translate(message.message)
+        if need_translate:
+            translation = models.translate.get_translation_from_cache(message.message)
+            if translation is None:
+                # 没有缓存，需要后面异步翻译后通知
+                translation = ''
+            else:
+                need_translate = False
+        else:
+            translation = ''
+
+        id_ = str(message.id)
         self.send_message(Command.ADD_SUPER_CHAT, {
+            'id': id_,
             'avatarUrl': avatar_url,
             'timestamp': message.start_time,
             'authorName': message.uname,
             'price': message.price,
             'content': message.message,
-            'id': message.id
+            'translation': translation
         })
+
+        if need_translate:
+            asyncio.ensure_future(self._translate_and_response(message.message, id_))
 
     async def _on_super_chat_delete(self, message: blivedm.SuperChatDeleteMessage):
         self.send_message(Command.ADD_SUPER_CHAT, {
-            'ids': message.ids
+            'ids': list(map(str, message.ids))
         })
+
+    def _need_translate(self, text):
+        return (
+            config.get_config().enable_translate
+            and self.auto_translate_count > 0
+            and models.translate.need_translate(text)
+        )
+
+    async def _translate_and_response(self, text, msg_id):
+        translation = await models.translate.translate(text)
+        if translation is None:
+            return
+        self.send_message_if(
+            lambda client: client.auto_translate,
+            Command.UPDATE_TRANSLATION,
+            [
+                # 0: id
+                msg_id,
+                # 1: translation
+                translation
+            ]
+        )
 
 
 class RoomManager:
@@ -200,6 +276,8 @@ class RoomManager:
         room = self._rooms[room_id]
         room.clients.append(client)
         logger.info('%d clients in room %s', len(room.clients), room_id)
+        if client.auto_translate:
+            room.auto_translate_count += 1
 
         if client.application.settings['debug']:
             await client.send_test_message()
@@ -210,6 +288,8 @@ class RoomManager:
         room = self._rooms[room_id]
         room.clients.remove(client)
         logger.info('%d clients in room %s', len(room.clients), room_id)
+        if client.auto_translate:
+            room.auto_translate_count -= 1
         if not room.clients:
             self._del_room(room_id)
 
@@ -243,6 +323,7 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
         super().__init__(*args, **kwargs)
         self._close_on_timeout_future = None
         self.room_id = None
+        self.auto_translate = False
 
     def open(self):
         logger.info('Websocket connected %s', self.request.remote_ip)
@@ -268,6 +349,11 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
                     return
                 self.room_id = int(body['data']['roomId'])
                 logger.info('Client %s is joining room %d', self.request.remote_ip, self.room_id)
+                try:
+                    cfg = body['data']['config']
+                    self.auto_translate = cfg['autoTranslate']
+                except KeyError:
+                    pass
 
                 asyncio.ensure_future(room_manager.add_client(self.room_id, self))
                 self._close_on_timeout_future.cancel()
@@ -320,32 +406,43 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
             # 9: isMobileVerified
             1,
             # 10: medalLevel
-            0
+            0,
+            # 11: id
+            uuid.uuid4().hex,
+            # 12: translation
+            ''
         ]
-        member_data = base_data.copy()
+        member_data = {
+            **base_data,
+            'id': uuid.uuid4().hex
+        }
         gift_data = {
             **base_data,
+            'id': uuid.uuid4().hex,
             'totalCoin': 450000
         }
         sc_data = {
             **base_data,
+            'id': str(random.randint(1, 65535)),
             'price': 30,
             'content': 'The quick brown fox jumps over the lazy dog',
-            'id': random.randint(1, 65535)
+            'translation': ''
         }
         self.send_message(Command.ADD_TEXT, text_data)
         text_data[2] = '主播'
         text_data[3] = 3
         text_data[4] = "I can eat glass, it doesn't hurt me."
+        text_data[11] = uuid.uuid4().hex
         self.send_message(Command.ADD_TEXT, text_data)
         self.send_message(Command.ADD_MEMBER, member_data)
         self.send_message(Command.ADD_SUPER_CHAT, sc_data)
+        sc_data['id'] = str(random.randint(1, 65535))
         sc_data['price'] = 100
         sc_data['content'] = '敏捷的棕色狐狸跳过了懒狗'
-        sc_data['id'] = random.randint(1, 65535)
         self.send_message(Command.ADD_SUPER_CHAT, sc_data)
         # self.send_message(Command.DEL_SUPER_CHAT, {'ids': [sc_data['id']]})
         self.send_message(Command.ADD_GIFT, gift_data)
+        gift_data['id'] = uuid.uuid4().hex
         gift_data['totalCoin'] = 1245000
         self.send_message(Command.ADD_GIFT, gift_data)
 

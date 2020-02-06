@@ -28,6 +28,9 @@ export default {
     blockUsers: '屏蔽用户',
     blockMedalLevel: '屏蔽当前直播间勋章等级低于',
 
+    advanced: '高级',
+    autoTranslate: '自动翻译弹幕到日语',
+
     roomUrl: '房间URL',
     copy: '复制',
     enterRoom: '进入房间',
