@@ -53,7 +53,7 @@
 
       <el-tab-pane :label="$t('home.advanced')">
         <el-form-item :label="$t('home.autoTranslate')">
-          <el-switch v-model="form.autoTranslate"></el-switch>
+          <el-switch v-model="form.autoTranslate" :disabled="!serverConfig.enableTranslate"></el-switch>
         </el-form-item>
       </el-tab-pane>
     </el-tabs>
@@ -73,6 +73,7 @@
 
 <script>
 import _ from 'lodash'
+import axios from 'axios'
 import download from 'downloadjs'
 
 import {mergeConfig} from '@/utils'
@@ -82,6 +83,9 @@ export default {
   name: 'Home',
   data() {
     return {
+      serverConfig: {
+        enableTranslate: true
+      },
       form: {
         roomId: parseInt(window.localStorage.roomId || '1'),
         ...config.getLocalConfig()
@@ -105,7 +109,17 @@ export default {
       config.setLocalConfig(this.form)
     }, 500)
   },
+  mounted() {
+    this.updateServerConfig()
+  },
   methods: {
+    async updateServerConfig() {
+      try {
+        this.serverConfig = (await axios.get(`/server_info`)).data.config
+      } catch (e) {
+        this.$message.error('Failed to fetch server information: ' + e)
+      }
+    },
     enterRoom() {
       window.open(this.roomUrl, `room ${this.form.roomId}`, 'menubar=0,location=0,scrollbars=0,toolbar=0,width=600,height=600')
     },

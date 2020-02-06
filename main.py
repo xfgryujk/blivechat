@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 WEB_ROOT = os.path.join(os.path.dirname(__file__), 'frontend', 'dist')
 
 routes = [
+    (r'/server_info', api.main.ServerInfoHandler),
     (r'/chat', api.chat.ChatHandler),
 
     (r'/((css|fonts|img|js|static)/.*)', tornado.web.StaticFileHandler, {'path': WEB_ROOT}),
