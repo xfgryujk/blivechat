@@ -1,7 +1,7 @@
 # blivechat
 用于OBS的仿YouTube风格的bilibili直播评论栏
 
-最近喜欢看VTuber，想为此写些程序，于是有了这个东西。~~写到一半发现有类似项目了：[bilibili-live-chat](https://github.com/Tsuk1ko/bilibili-live-chat)、[BiliChat](https://github.com/3Shain/BiliChat)。~~ 本项目就当做练手吧，而且对YouTube的模仿程度更高
+最近喜欢看VTuber，想为此写些程序，于是有了这个东西。~~写到一半发现有类似项目了：[bilibili-live-chat](https://github.com/Tsuk1ko/bilibili-live-chat)、[BiliChat](https://github.com/3Shain/BiliChat)~~
 
 ![OBS截图](https://github.com/xfgryujk/blivechat/blob/master/screenshots/obs.png)  
 ![Chrome截图](https://github.com/xfgryujk/blivechat/blob/master/screenshots/chrome.png)  
@@ -13,6 +13,7 @@
 * 高亮舰队、房管、主播的用户名
 * 支持屏蔽弹幕、合并相似弹幕等设置
 * 自带样式生成器
+* 支持自动翻译弹幕、醒目留言到日语
 
 ## 使用方法
 ### 本地使用
