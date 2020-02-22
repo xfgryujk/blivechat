@@ -28,7 +28,7 @@ export default {
     blockUsers: 'ブロックユーザー',
     blockMedalLevel: 'ブロック勲章等級がx未満',
 
-    advanced: 'アドバンス',
+    advanced: 'アドバンスド',
     autoTranslate: '自動翻訳コメントから日本語へ',
 
     roomUrl: 'ルームのURL',
