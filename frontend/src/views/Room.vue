@@ -43,6 +43,11 @@ export default {
   created() {
     this.updateConfig()
     this.wsConnect()
+    // 提示用户已加载
+    this.$message({
+      message: 'Loaded',
+      duration: '500'
+    })
   },
   beforeDestroy() {
     this.isDestroying = true
