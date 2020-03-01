@@ -63,7 +63,7 @@ class Room(blivedm.BLiveClient):
     def __parse_gift(self, command):
         data = command['data']
         return self._on_receive_gift(blivedm.GiftMessage(
-            None, None, data['uname'], data['face'], None,
+            data['giftName'], data['num'], data['uname'], data['face'], None,
             data['uid'], data['timestamp'], None, None,
             None, None, None, data['coin_type'], data['total_coin']
         ))
@@ -192,7 +192,9 @@ class Room(blivedm.BLiveClient):
             'avatarUrl': avatar_url,
             'timestamp': gift.timestamp,
             'authorName': gift.uname,
-            'totalCoin': gift.total_coin
+            'totalCoin': gift.total_coin,
+            'giftName': gift.gift_name,
+            'num': gift.num
         })
 
     async def _on_buy_guard(self, message: blivedm.GuardBuyMessage):
@@ -419,7 +421,9 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
         gift_data = {
             **base_data,
             'id': uuid.uuid4().hex,
-            'totalCoin': 450000
+            'totalCoin': 450000,
+            'giftName': '摩天大楼',
+            'num': 1
         }
         sc_data = {
             **base_data,
@@ -444,6 +448,7 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
         self.send_message(Command.ADD_GIFT, gift_data)
         gift_data['id'] = uuid.uuid4().hex
         gift_data['totalCoin'] = 1245000
+        gift_data['giftName'] = '小电视飞船'
         self.send_message(Command.ADD_GIFT, gift_data)
 
     @property

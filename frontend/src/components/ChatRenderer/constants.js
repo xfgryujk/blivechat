@@ -18,10 +18,11 @@ export const GUARD_LEVEL_TO_TEXT = [
 ]
 
 export const MESSAGE_TYPE_TEXT = 0
-export const MESSAGE_TYPE_MEMBER = 1
-export const MESSAGE_TYPE_SUPER_CHAT = 2
-export const MESSAGE_TYPE_DEL = 3
-export const MESSAGE_TYPE_UPDATE = 4
+export const MESSAGE_TYPE_GIFT = 1
+export const MESSAGE_TYPE_MEMBER = 2
+export const MESSAGE_TYPE_SUPER_CHAT = 3
+export const MESSAGE_TYPE_DEL = 4
+export const MESSAGE_TYPE_UPDATE = 5
 
 // 美元 -> 人民币 汇率
 const EXCHANGE_RATE = 7
@@ -119,4 +120,18 @@ export function getPriceConfig (price) {
     }
   }
   return PRICE_CONFIGS[PRICE_CONFIGS.length - 1]
+}
+
+export function getShowContent(message) {
+  if (message.translation) {
+    return `${message.content}（${message.translation}）`
+  }
+  return message.content
+}
+
+export function getGiftShowContent(message, showGiftName) {
+  if (!showGiftName) {
+    return ''
+  }
+  return `Sent ${message.giftName}x${message.num}`
 }

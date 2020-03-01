@@ -14,7 +14,9 @@ export default {
     roomId: 'ルームID',
     showDanmaku: 'コメントを表示する',
     showGift: 'スーパーチャットと新メンバーを表示する',
+    showGiftName: 'ギフト名を表示する',
     mergeSimilarDanmaku: '同じコメントを合併する',
+    mergeGift: 'ギフトを合併する',
     minGiftPrice: '最低表示スーパーチャット価格（CNY）',
     maxNumber: '最大コメント数',
 

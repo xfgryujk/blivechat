@@ -2,9 +2,11 @@ import {mergeConfig} from '@/utils'
 
 export const DEFAULT_CONFIG = {
   minGiftPrice: 7, // $1
-  mergeSimilarDanmaku: true,
   showDanmaku: true,
   showGift: true,
+  showGiftName: false,
+  mergeSimilarDanmaku: true,
+  mergeGift: true,
   maxNumber: 60,
 
   blockGiftDanmaku: true,

@@ -268,8 +268,8 @@ const EXAMPLE_MESSAGES = [
   {
     ...legacyPaidMessageTemplate,
     id: (nextId++).toString(),
-    authorName: '少年Pi',
-    content: 'Welcome 少年Pi!'
+    authorName: '进击的冰糖',
+    content: 'Welcome 进击的冰糖!'
   },
   {
     ...paidMessageTemplate,

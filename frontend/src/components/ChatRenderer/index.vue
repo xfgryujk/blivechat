@@ -2,7 +2,9 @@
   <yt-live-chat-renderer class="style-scope yt-live-chat-app" style="--scrollbar-width:11px;" hide-timestamps
     @mousemove="refreshCantScrollStartTime"
   >
-    <ticker class="style-scope yt-live-chat-renderer" :messages="paidMessages" :hidden="paidMessages.length === 0"></ticker>
+    <ticker class="style-scope yt-live-chat-renderer" :messages="paidMessages" :showGiftName="showGiftName"
+      :hidden="paidMessages.length === 0"
+    ></ticker>
     <yt-live-chat-item-list-renderer class="style-scope yt-live-chat-renderer" allow-scroll>
       <div ref="scroller" id="item-scroller" class="style-scope yt-live-chat-item-list-renderer animated" @scroll="onScroll">
         <div ref="itemOffset" id="item-offset" class="style-scope yt-live-chat-item-list-renderer" style="height: 0px;">
@@ -16,6 +18,11 @@
                 :authorType="message.authorType" :content="getShowContent(message)" :privilegeType="message.privilegeType"
                 :repeated="message.repeated"
               ></text-message>
+              <paid-message :key="message.id" v-else-if="message.type === MESSAGE_TYPE_GIFT"
+                class="style-scope yt-live-chat-item-list-renderer"
+                :price="message.price" :avatarUrl="message.avatarUrl" :authorName="message.authorName"
+                :time="message.time" :content="getGiftShowContent(message)"
+              ></paid-message>
               <legacy-paid-message :key="message.id" v-else-if="message.type === MESSAGE_TYPE_MEMBER"
                 class="style-scope yt-live-chat-item-list-renderer"
                 :avatarUrl="message.avatarUrl" :title="message.title" :content="message.content"
@@ -58,6 +65,10 @@ export default {
     maxNumber: {
       type: Number,
       default: config.DEFAULT_CONFIG.maxNumber
+    },
+    showGiftName: {
+      type: Boolean,
+      default: config.DEFAULT_CONFIG.showGiftName
     }
   },
   data() {
@@ -65,6 +76,7 @@ export default {
     document.head.appendChild(styleElement)
     return {
       MESSAGE_TYPE_TEXT: constants.MESSAGE_TYPE_TEXT,
+      MESSAGE_TYPE_GIFT: constants.MESSAGE_TYPE_GIFT,
       MESSAGE_TYPE_MEMBER: constants.MESSAGE_TYPE_MEMBER,
       MESSAGE_TYPE_SUPER_CHAT: constants.MESSAGE_TYPE_SUPER_CHAT,
 
@@ -118,12 +130,10 @@ export default {
     this.clearMessages()
   },
   methods: {
-    getShowContent(message) {
-      if (message.translation) {
-        return `${message.content}（${message.translation}）`
-      }
-      return message.content
+    getGiftShowContent(message) {
+      return constants.getGiftShowContent(message, this.showGiftName)
     },
+    getShowContent: constants.getShowContent,
 
     addMessage(message) {
       this.addMessages([message])
@@ -159,14 +169,15 @@ export default {
       })
       return res
     },
-    mergeSimilarGift(authorName, price) {
+    mergeSimilarGift(authorName, price, giftName, num) {
       let res = false
       this.forEachRecentMessage(5, message => {
-        if (message.type === constants.MESSAGE_TYPE_SUPER_CHAT
-            && message.content === ''
+        if (message.type === constants.MESSAGE_TYPE_GIFT
             && message.authorName === authorName
+            && message.giftName === giftName
         ) {
           message.price += price
+          message.num += num
           res = true
           return false
         }
@@ -317,6 +328,7 @@ export default {
       for (let message of messageGroup) {
         switch (message.type) {
           case constants.MESSAGE_TYPE_TEXT:
+          case constants.MESSAGE_TYPE_GIFT:
           case constants.MESSAGE_TYPE_MEMBER:
           case constants.MESSAGE_TYPE_SUPER_CHAT:
             this.handleAddMessage(message)

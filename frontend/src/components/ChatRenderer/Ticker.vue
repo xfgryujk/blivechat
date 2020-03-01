@@ -34,18 +34,19 @@
       <paid-message :key="pinnedMessage.id" v-else
         class="style-scope yt-live-chat-ticker-renderer"
         :price="pinnedMessage.price" :avatarUrl="pinnedMessage.avatarUrl" :authorName="pinnedMessage.authorName"
-        :time="pinnedMessage.time" :content="pinnedMessage.content"
+        :time="pinnedMessage.time" :content="showContent"
       ></paid-message>
     </template>
   </yt-live-chat-ticker-renderer>
 </template>
 
 <script>
+import * as config from '@/api/config'
+import {formatCurrency} from '@/utils'
 import ImgShadow from './ImgShadow.vue'
 import LegacyPaidMessage from './LegacyPaidMessage.vue'
 import PaidMessage from './PaidMessage.vue'
 import * as constants from './constants'
-import {formatCurrency} from '@/utils'
 
 export default {
   name: 'Ticker',
@@ -55,7 +56,11 @@ export default {
     PaidMessage
   },
   props: {
-    messages: Array
+    messages: Array,
+    showGiftName: {
+      type: Boolean,
+      default: config.DEFAULT_CONFIG.showGiftName
+    }
   },
   data() {
     return {
@@ -63,6 +68,18 @@ export default {
 
       updateTimerId: window.setInterval(this.updateProgress.bind(this), 1000),
       pinnedMessage: null
+    }
+  },
+  computed: {
+    showContent() {
+      if (!this.pinnedMessage) {
+        return ''
+      }
+      if (this.pinnedMessage.type === constants.MESSAGE_TYPE_GIFT) {
+        return constants.getGiftShowContent(this.pinnedMessage, this.showGiftName)
+      } else {
+        return constants.getShowContent(this.pinnedMessage)
+      }
     }
   },
   beforeDestroy() {

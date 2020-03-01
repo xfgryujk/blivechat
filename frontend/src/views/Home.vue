@@ -16,8 +16,14 @@
         <el-form-item :label="$t('home.showGift')">
           <el-switch v-model="form.showGift"></el-switch>
         </el-form-item>
+        <el-form-item :label="$t('home.showGiftName')">
+          <el-switch v-model="form.showGiftName"></el-switch>
+        </el-form-item>
         <el-form-item :label="$t('home.mergeSimilarDanmaku')">
           <el-switch v-model="form.mergeSimilarDanmaku"></el-switch>
+        </el-form-item>
+        <el-form-item :label="$t('home.mergeGift')">
+          <el-switch v-model="form.mergeGift"></el-switch>
         </el-form-item>
         <el-form-item :label="$t('home.minGiftPrice')">
           <el-input v-model.number="form.minGiftPrice" type="number" min="0"></el-input>

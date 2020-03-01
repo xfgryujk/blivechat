@@ -14,7 +14,9 @@ export default {
     roomId: '房间ID',
     showDanmaku: '显示弹幕',
     showGift: '显示打赏和新舰长',
+    showGiftName: '显示礼物名',
     mergeSimilarDanmaku: '合并相似弹幕',
+    mergeGift: '合并礼物',
     minGiftPrice: '最低显示打赏价格（元）',
     maxNumber: '最大弹幕数',
 

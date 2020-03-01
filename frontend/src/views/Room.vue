@@ -1,5 +1,5 @@
 <template>
-  <chat-renderer ref="renderer" :maxNumber="config.maxNumber"></chat-renderer>
+  <chat-renderer ref="renderer" :maxNumber="config.maxNumber" :showGiftName="config.showGiftName"></chat-renderer>
 </template>
 
 <script>
@@ -65,9 +65,11 @@ export default {
       cfg = mergeConfig(cfg, config.DEFAULT_CONFIG)
 
       cfg.minGiftPrice = toInt(cfg.minGiftPrice, config.DEFAULT_CONFIG.minGiftPrice)
-      cfg.mergeSimilarDanmaku = toBool(cfg.mergeSimilarDanmaku)
       cfg.showDanmaku = toBool(cfg.showDanmaku)
       cfg.showGift = toBool(cfg.showGift)
+      cfg.showGiftName = toBool(cfg.showGiftName)
+      cfg.mergeSimilarDanmaku = toBool(cfg.mergeSimilarDanmaku)
+      cfg.mergeGift = toBool(cfg.mergeGift)
       cfg.maxNumber = toInt(cfg.maxNumber, config.DEFAULT_CONFIG.maxNumber)
       cfg.blockGiftDanmaku = toBool(cfg.blockGiftDanmaku)
       cfg.blockLevel = toInt(cfg.blockLevel, config.DEFAULT_CONFIG.blockLevel)
@@ -158,20 +160,21 @@ export default {
           break
         }
         let price = data.totalCoin / 1000
-        if (price < this.config.minGiftPrice) { // 丢人
+        if (this.mergeSimilarGift(data.authorName, price, data.giftName, data.num)) {
           break
         }
-        if (this.mergeSimilarGift(data.authorName, price)) {
+        if (price < this.config.minGiftPrice) { // 丢人
           break
         }
         message = {
           id: data.id,
-          type: constants.MESSAGE_TYPE_SUPER_CHAT,
+          type: constants.MESSAGE_TYPE_GIFT,
           avatarUrl: data.avatarUrl,
+          time: new Date(data.timestamp * 1000),
           authorName: data.authorName,
           price: price,
-          time: new Date(data.timestamp * 1000),
-          content: '' // 有了SC，礼物不需要内容了
+          giftName: data.giftName,
+          num: data.num
         }
         break
       }
@@ -262,11 +265,11 @@ export default {
       }
       return this.$refs.renderer.mergeSimilarText(content)
     },
-    mergeSimilarGift(authorName, price) {
-      if (!this.config.mergeSimilarDanmaku) {
+    mergeSimilarGift(authorName, price, giftName, num) {
+      if (!this.config.mergeGift) {
         return false
       }
-      return this.$refs.renderer.mergeSimilarGift(authorName, price)
+      return this.$refs.renderer.mergeSimilarGift(authorName, price, giftName, num)
     }
   }
 }
