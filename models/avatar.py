@@ -174,9 +174,8 @@ def update_avatar_cache(user_id, avatar_url):
 
 def _update_avatar_cache_in_memory(user_id, avatar_url):
     _avatar_url_cache[user_id] = avatar_url
-    if len(_avatar_url_cache) > 50000:
-        for _, key in zip(range(100), _avatar_url_cache):
-            del _avatar_url_cache[key]
+    while len(_avatar_url_cache) > 50000:
+        _avatar_url_cache.pop(next(iter(_avatar_url_cache)), None)
 
 
 def _update_avatar_cache_in_database(user_id, avatar_url):

@@ -113,7 +113,7 @@ class Room(blivedm.BLiveClient):
             try:
                 client.write_message(body)
             except tornado.websocket.WebSocketClosedError:
-                pass
+                room_manager.del_client(self.room_id, client)
 
     def send_message_if(self, can_send_func: Callable[['ChatHandler'], bool], cmd, data):
         body = json.dumps({'cmd': cmd, 'data': data})
@@ -121,7 +121,7 @@ class Room(blivedm.BLiveClient):
             try:
                 client.write_message(body)
             except tornado.websocket.WebSocketClosedError:
-                pass
+                room_manager.del_client(self.room_id, client)
 
     async def _on_receive_danmaku(self, danmaku: blivedm.DanmakuMessage):
         asyncio.ensure_future(self.__on_receive_danmaku(danmaku))
@@ -275,7 +275,10 @@ class RoomManager:
             if not await self._add_room(room_id):
                 client.close()
                 return
-        room = self._rooms[room_id]
+        room = self._rooms.get(room_id, None)
+        if room is None:
+            return
+
         room.clients.append(client)
         logger.info('%d clients in room %s', len(room.clients), room_id)
         if client.auto_translate:
@@ -285,13 +288,20 @@ class RoomManager:
             await client.send_test_message()
 
     def del_client(self, room_id, client: 'ChatHandler'):
-        if room_id not in self._rooms:
+        room = self._rooms.get(room_id, None)
+        if room is None:
             return
-        room = self._rooms[room_id]
-        room.clients.remove(client)
-        logger.info('%d clients in room %s', len(room.clients), room_id)
-        if client.auto_translate:
-            room.auto_translate_count -= 1
+
+        try:
+            room.clients.remove(client)
+        except ValueError:
+            # _add_room未完成，没有执行到room.clients.append
+            pass
+        else:
+            logger.info('%d clients in room %s', len(room.clients), room_id)
+            if client.auto_translate:
+                room.auto_translate_count = max(0, room.auto_translate_count - 1)
+
         if not room.clients:
             self._del_room(room_id)
 
@@ -299,24 +309,25 @@ class RoomManager:
         if room_id in self._rooms:
             return True
         logger.info('Creating room %d', room_id)
-        room = Room(room_id)
-        self._rooms[room_id] = room
+        self._rooms[room_id] = room = Room(room_id)
         if await room.init_room():
             room.start()
+            logger.info('%d rooms', len(self._rooms))
             return True
         else:
             self._del_room(room_id)
             return False
 
     def _del_room(self, room_id):
-        if room_id not in self._rooms:
+        room = self._rooms.get(room_id, None)
+        if room is None:
             return
         logger.info('Removing room %d', room_id)
-        room = self._rooms[room_id]
         for client in room.clients:
             client.close()
         room.stop_and_close()
-        del self._rooms[room_id]
+        self._rooms.pop(room_id, None)
+        logger.info('%d rooms', len(self._rooms))
 
 
 # noinspection PyAbstractClass
@@ -460,4 +471,4 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
         try:
             self.write_message(body)
         except tornado.websocket.WebSocketClosedError:
-            pass
+            self.on_close()

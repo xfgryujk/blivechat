@@ -103,9 +103,8 @@ def _on_translate_done(key, future):
     if res is None:
         return
     _translate_cache[key] = res
-    if len(_translate_cache) > 50000:
-        for _, key in zip(range(100), _translate_cache):
-            del _translate_cache[key]
+    while len(_translate_cache) > 50000:
+        _translate_cache.pop(next(iter(_translate_cache)), None)
 
 
 class TranslateProvider:
