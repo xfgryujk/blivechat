@@ -155,8 +155,8 @@ class TencentTranslate(TranslateProvider):
             return False
         qtk = m[1]
 
-        self._qtk = qtv
-        self._qtv = qtk
+        self._qtv = qtv
+        self._qtk = qtk
         self._reinit_future = asyncio.ensure_future(self._reinit_coroutine())
         return True
 
