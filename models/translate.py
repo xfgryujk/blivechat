@@ -121,13 +121,19 @@ class TranslateProvider:
 
 class TencentTranslate(TranslateProvider):
     def __init__(self):
+        # 过期时间1小时
         self._qtv = ''
         self._qtk = ''
+        self._reinit_future = None
         # 连续失败的次数
         self._fail_count = 0
         self._cool_down_future = None
 
     async def init(self):
+        if self._reinit_future is not None:
+            self._reinit_future.cancel()
+            self._reinit_future = None
+
         try:
             async with _http_session.get('https://fanyi.qq.com/') as r:
                 if r.status != 200:
@@ -142,13 +148,24 @@ class TencentTranslate(TranslateProvider):
         if m is None:
             logger.exception('TencentTranslate init failed: qtv not found')
             return False
-        self._qtv = m[1]
+        qtv = m[1]
         m = re.search(r"""\bqtk\s*=\s*['"](.+?)['"]""", html)
         if m is None:
             logger.exception('TencentTranslate init failed: qtk not found')
             return False
-        self._qtk = m[1]
+        qtk = m[1]
+
+        self._qtk = qtv
+        self._qtv = qtk
+        self._reinit_future = asyncio.ensure_future(self._reinit_coroutine())
         return True
+
+    async def _reinit_coroutine(self):
+        try:
+            await asyncio.sleep(55 * 60)
+            await self.init()
+        except asyncio.CancelledError:
+            pass
 
     @property
     def is_available(self):
@@ -194,7 +211,12 @@ class TencentTranslate(TranslateProvider):
         if data['errCode'] != 0:
             logger.warning('TencentTranslate failed: %d %s', data['errCode'], data['errMsg'])
             return None
-        return ''.join(record['targetText'] for record in data['translate']['records'])
+        res = ''.join(record['targetText'] for record in data['translate']['records'])
+        if res == '' and text.strip() != '':
+            # qtv、qtk过期
+            logger.warning('TencentTranslate result is empty %s', data)
+            return None
+        return res
 
     def _on_fail(self):
         self._fail_count += 1
@@ -209,7 +231,7 @@ class TencentTranslate(TranslateProvider):
             while True:
                 await asyncio.sleep(3 * 60)
                 try:
-                    is_success = self.init()
+                    is_success = await self.init()
                 except:
                     logger.exception('TencentTranslate init error:')
                     continue
@@ -319,7 +341,7 @@ class YoudaoTranslate(TranslateProvider):
             while True:
                 await asyncio.sleep(3 * 60)
                 try:
-                    is_success = self.init()
+                    is_success = await self.init()
                 except:
                     logger.exception('YoudaoTranslate init error:')
                     continue
