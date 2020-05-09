@@ -1,7 +1,7 @@
 <template>
   <el-container class="app-wrapper" :class="{mobile: isMobile}">
     <div v-show="isMobile && !hideSidebar" class="drawer-bg" @click="hideSidebar = true"></div>
-    <el-aside width="210px" class="sidebar-container" :class="{'hide-sidebar': hideSidebar}">
+    <el-aside width="230px" class="sidebar-container" :class="{'hide-sidebar': hideSidebar}">
       <div class="logo-container">
         <router-link to="/">
           <img src="@/assets/img/logo.png" class="sidebar-logo">
@@ -92,7 +92,7 @@ a, a:focus, a:hover {
 .app-wrapper.mobile .sidebar-container.hide-sidebar {
   pointer-events: none;
   transition-duration: 0.3s;
-  transform: translate3d(-210px, 0, 0);
+  transform: translate3d(-230px, 0, 0);
 }
 
 .sidebar-container .logo-container {

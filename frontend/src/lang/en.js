@@ -4,6 +4,7 @@ export default {
     stylegen: 'Style generator',
     help: 'Help',
     projectAddress: 'Project address',
+    giftRecordOfficial: 'Official Super Chat record',
     giftRecord: 'Super Chat record'
   },
   home: {

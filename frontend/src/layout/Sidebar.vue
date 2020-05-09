@@ -21,6 +21,11 @@
           <i class="el-icon-share"></i>{{$t('sidebar.projectAddress')}}
         </el-menu-item>
       </a>
+      <a href="http://link.bilibili.com/ctool/vtuber" target="_blank">
+        <el-menu-item>
+          <i class="el-icon-share"></i>{{$t('sidebar.giftRecordOfficial')}}
+        </el-menu-item>
+      </a>
       <a href="https://bilisc.com/" target="_blank">
         <el-menu-item>
           <i class="el-icon-share"></i>{{$t('sidebar.giftRecord')}}
