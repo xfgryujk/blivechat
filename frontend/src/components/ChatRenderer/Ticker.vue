@@ -66,6 +66,7 @@ export default {
     return {
       MESSAGE_TYPE_MEMBER: constants.MESSAGE_TYPE_MEMBER,
 
+      curTime: new Date(),
       updateTimerId: window.setInterval(this.updateProgress.bind(this), 1000),
       pinnedMessage: null
     }
@@ -108,7 +109,7 @@ export default {
         color2 = config.colors.headerBg
         pinTime = config.pinTime
       }
-      let progress = (1 - (new Date() - message.addTime) / (60 * 1000) / pinTime) * 100
+      let progress = (1 - (this.curTime - message.addTime) / (60 * 1000) / pinTime) * 100
       if (progress < 0) {
         progress = 0
       } else if (progress > 100) {
@@ -129,7 +130,7 @@ export default {
       return 'CN¥' + formatCurrency(message.price)
     },
     updateProgress() {
-      let curTime = new Date()
+      this.curTime = new Date()
       for (let i = 0; i < this.messages.length;) {
         let pinTime
         if (this.messages[i].type === constants.MESSAGE_TYPE_MEMBER) {
@@ -138,7 +139,7 @@ export default {
           let config = constants.getPriceConfig(this.messages[i].price)
           pinTime = config.pinTime
         }
-        if ((curTime - this.messages[i].addTime) / (60 * 1000) >= pinTime) {
+        if ((this.curTime - this.messages[i].addTime) / (60 * 1000) >= pinTime) {
           if (this.pinnedMessage == this.messages[i]) {
             this.pinnedMessage = null
           }
@@ -147,8 +148,6 @@ export default {
           i++
         }
       }
-
-      this.$forceUpdate()
     },
     onItemClick(message) {
       if (this.pinnedMessage == message) {

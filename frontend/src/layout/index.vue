@@ -15,7 +15,9 @@
     </el-aside>
     <el-main>
       <el-button v-show="isMobile" class="menu-button" icon="el-icon-s-unfold" @click="hideSidebar = false"></el-button>
-      <router-view></router-view>
+      <keep-alive>
+        <router-view></router-view>
+      </keep-alive>
     </el-main>
   </el-container>
 </template>

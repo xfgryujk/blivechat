@@ -514,7 +514,7 @@ export default {
         return true
       }
       // 防止在OBS中卡住，超过一定时间也可以自动滚动
-      return new Date() - this.cantScrollStartTime >= 10 * 1000
+      return new Date() - this.cantScrollStartTime >= 5 * 1000
     },
     refreshCantScrollStartTime() {
       // 有鼠标事件时刷新，防止用户看弹幕时自动滚动
