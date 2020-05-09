@@ -130,10 +130,10 @@ class TencentTranslate(TranslateProvider):
         self._cool_down_future = None
 
     async def init(self):
-        if self._reinit_future is not None:
-            self._reinit_future.cancel()
-            self._reinit_future = None
+        self._reinit_future = asyncio.ensure_future(self._reinit_coroutine())
+        return await self._do_init()
 
+    async def _do_init(self):
         try:
             async with _http_session.get('https://fanyi.qq.com/') as r:
                 if r.status != 200:
@@ -157,13 +157,20 @@ class TencentTranslate(TranslateProvider):
 
         self._qtv = qtv
         self._qtk = qtk
-        self._reinit_future = asyncio.ensure_future(self._reinit_coroutine())
         return True
 
     async def _reinit_coroutine(self):
         try:
-            await asyncio.sleep(55 * 60)
-            await self.init()
+            while True:
+                await asyncio.sleep(55 * 60)
+                while True:
+                    logger.info('TencentTranslate reinit')
+                    try:
+                        if await self._do_init():
+                            break
+                    except:
+                        logger.exception('TencentTranslate init error:')
+                    await asyncio.sleep(3 * 60)
         except asyncio.CancelledError:
             pass
 
@@ -230,14 +237,13 @@ class TencentTranslate(TranslateProvider):
         try:
             while True:
                 await asyncio.sleep(3 * 60)
+                logger.info('TencentTranslate reinit')
                 try:
-                    is_success = await self.init()
+                    if await self._do_init():
+                        self._fail_count = 0
+                        break
                 except:
                     logger.exception('TencentTranslate init error:')
-                    continue
-                if is_success:
-                    self._fail_count = 0
-                    break
         finally:
             logger.warning('TencentTranslate finished cooling down')
             self._cool_down_future = None
