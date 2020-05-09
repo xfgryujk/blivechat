@@ -6,9 +6,9 @@
     <div id="content" class="style-scope yt-live-chat-text-message-renderer">
       <span id="timestamp" class="style-scope yt-live-chat-text-message-renderer">{{timeText}}</span>
       <yt-live-chat-author-chip class="style-scope yt-live-chat-text-message-renderer">
-        <span id="author-name" dir="auto" class="style-scope yt-live-chat-author-chip" :type="authorTypeText">
-          {{authorName}}
-          <!-- 这里是已验证勋章 -->
+        <span id="author-name" dir="auto" class="style-scope yt-live-chat-author-chip" :type="authorTypeText">{{
+          authorName
+          }}<!-- 这里是已验证勋章 -->
           <span id="chip-badges" class="style-scope yt-live-chat-author-chip"></span>
         </span>
         <span id="chat-badges" class="style-scope yt-live-chat-author-chip">
@@ -17,9 +17,9 @@
           ></author-badge>
         </span>
       </yt-live-chat-author-chip>
-      <span id="message" class="style-scope yt-live-chat-text-message-renderer">
-        {{content}}
-        <el-badge :value="repeated" :max="99" v-show="repeated > 1" class="style-scope yt-live-chat-text-message-renderer"
+      <span id="message" class="style-scope yt-live-chat-text-message-renderer">{{
+        content
+        }}<el-badge :value="repeated" :max="99" v-show="repeated > 1" class="style-scope yt-live-chat-text-message-renderer"
           :style="{'--repeated-mark-color': repeatedMarkColor}"
         ></el-badge>
       </span>
@@ -80,7 +80,7 @@ export default {
 
 <style>
 yt-live-chat-text-message-renderer>#content>#message>.el-badge {
-  margin-left: 5px;
+  margin-left: 10px;
 }
 
 yt-live-chat-text-message-renderer>#content>#message>.el-badge .el-badge__content {
@@ -88,6 +88,7 @@ yt-live-chat-text-message-renderer>#content>#message>.el-badge .el-badge__conten
   line-height: 18px !important;
   text-shadow: none !important;
   font-family: sans-serif !important;
+  color: #FFF !important;
   background-color: var(--repeated-mark-color) !important;
   border: none;
 }
