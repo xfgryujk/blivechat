@@ -153,7 +153,7 @@ class Room(blivedm.BLiveClient):
             # 0: avatarUrl
             await models.avatar.get_avatar_url(danmaku.uid),
             # 1: timestamp
-            danmaku.timestamp,
+            int(danmaku.timestamp / 1000),
             # 2: authorName
             danmaku.uname,
             # 3: authorType
@@ -394,7 +394,7 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
     async def send_test_message(self):
         base_data = {
             'avatarUrl': await models.avatar.get_avatar_url(300474),
-            'timestamp': time.time(),
+            'timestamp': int(time.time()),
             'authorName': 'xfgryujk',
         }
         text_data = [
