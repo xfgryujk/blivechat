@@ -5,7 +5,6 @@ export default {
     help: 'Help',
     projectAddress: 'Project address',
     giftRecordOfficial: 'Official Super Chat record',
-    giftRecord: 'Super Chat record'
   },
   home: {
     roomIdEmpty: "Room ID can't be empty",

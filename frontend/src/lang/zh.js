@@ -5,7 +5,6 @@ export default {
     help: '帮助',
     projectAddress: '项目地址',
     giftRecordOfficial: '官方打赏记录',
-    giftRecord: '打赏记录'
   },
   home: {
     roomIdEmpty: '房间ID不能为空',

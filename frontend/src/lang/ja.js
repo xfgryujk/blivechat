@@ -5,7 +5,6 @@ export default {
     help: 'ヘルプ',
     projectAddress: 'プロジェクトアドレス',
     giftRecordOfficial: '公式スーパーチャット記録',
-    giftRecord: 'スーパーチャット記録'
   },
   home: {
     roomIdEmpty: 'ルームのIDを空白にすることはできません',
