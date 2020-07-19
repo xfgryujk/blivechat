@@ -26,11 +26,11 @@
       </div>
     </div>
     <template v-if="pinnedMessage">
-      <legacy-paid-message :key="pinnedMessage.id" v-if="pinnedMessage.type === MESSAGE_TYPE_MEMBER"
+      <membership-item :key="pinnedMessage.id" v-if="pinnedMessage.type === MESSAGE_TYPE_MEMBER"
         class="style-scope yt-live-chat-ticker-renderer"
-        :avatarUrl="pinnedMessage.avatarUrl" :title="pinnedMessage.title" :content="pinnedMessage.content"
-        :time="pinnedMessage.time"
-      ></legacy-paid-message>
+        :avatarUrl="pinnedMessage.avatarUrl" :authorName="pinnedMessage.authorName" :privilegeType="pinnedMessage.privilegeType"
+        :title="pinnedMessage.title" :time="pinnedMessage.time"
+      ></membership-item>
       <paid-message :key="pinnedMessage.id" v-else
         class="style-scope yt-live-chat-ticker-renderer"
         :price="pinnedMessage.price" :avatarUrl="pinnedMessage.avatarUrl" :authorName="pinnedMessage.authorName"
@@ -44,7 +44,7 @@
 import * as config from '@/api/config'
 import {formatCurrency} from '@/utils'
 import ImgShadow from './ImgShadow.vue'
-import LegacyPaidMessage from './LegacyPaidMessage.vue'
+import MembershipItem from './MembershipItem.vue'
 import PaidMessage from './PaidMessage.vue'
 import * as constants from './constants'
 
@@ -52,7 +52,7 @@ export default {
   name: 'Ticker',
   components: {
     ImgShadow,
-    LegacyPaidMessage,
+    MembershipItem,
     PaidMessage
   },
   props: {

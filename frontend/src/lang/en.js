@@ -52,6 +52,7 @@ export default {
     avatarSize: 'Avatar size',
 
     userNames: 'User names',
+    showUserNames: 'Show user names',
     font: 'Font',
     fontSize: 'Font size',
     lineHeight: 'Line height (0 for default)',

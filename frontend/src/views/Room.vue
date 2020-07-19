@@ -188,8 +188,8 @@ export default {
           avatarUrl: data.avatarUrl,
           time: new Date(data.timestamp * 1000),
           authorName: data.authorName,
-          title: 'NEW MEMBER!',
-          content: `Welcome ${data.authorName}!`
+          privilegeType: data.privilegeType,
+          title: 'New member'
         }
         break
       case COMMAND_ADD_SUPER_CHAT:

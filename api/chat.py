@@ -71,7 +71,7 @@ class Room(blivedm.BLiveClient):
     def __parse_buy_guard(self, command):
         data = command['data']
         return self._on_buy_guard(blivedm.GuardBuyMessage(
-            data['uid'], data['username'], None, None, None,
+            data['uid'], data['username'], data['guard_level'], None, None,
             None, None, data['start_time'], None
         ))
 
@@ -206,7 +206,8 @@ class Room(blivedm.BLiveClient):
             'id': id_,
             'avatarUrl': await models.avatar.get_avatar_url(message.uid),
             'timestamp': message.start_time,
-            'authorName': message.username
+            'authorName': message.username,
+            'privilegeType': message.guard_level
         })
 
     async def _on_super_chat(self, message: blivedm.SuperChatMessage):
@@ -427,7 +428,8 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
         ]
         member_data = {
             **base_data,
-            'id': uuid.uuid4().hex
+            'id': uuid.uuid4().hex,
+            'privilegeType': 3
         }
         gift_data = {
             **base_data,

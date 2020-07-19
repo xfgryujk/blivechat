@@ -54,7 +54,7 @@ export default {
   },
   computed: {
     timeText() {
-      return utils.getTimeTextMinSec(this.time)
+      return utils.getTimeTextHourMin(this.time)
     },
     authorTypeText() {
       return constants.AUTHOR_TYPE_TO_TEXT[this.authorType]

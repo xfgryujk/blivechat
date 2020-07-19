@@ -52,6 +52,7 @@ export default {
     avatarSize: 'アイコンのサイズ',
 
     userNames: 'ユーザー名',
+    showUserNames: 'ユーザー名を表示する',
     font: 'フォント',
     fontSize: 'フォントサイズ',
     lineHeight: '行の高さ（0はデフォルト）',

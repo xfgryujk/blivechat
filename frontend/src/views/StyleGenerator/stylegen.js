@@ -9,6 +9,7 @@ export const DEFAULT_CONFIG = {
   showAvatars: true,
   avatarSize: 24,
 
+  showUserNames: true,
   userNameFont: 'Changa One',
   userNameFontSize: 20,
   userNameLineHeight: 0,
@@ -109,11 +110,11 @@ yt-live-chat-renderer * {
   ${getShowOutlinesStyle(config)}
   font-family: "${config.messageFont}"${FALLBACK_FONTS};
   font-size: ${config.messageFontSize}px !important;
-  line-height: ${config.messageLineHeight}px !important;
+  line-height: ${config.messageLineHeight || config.messageFontSize}px !important;
 }
 
 yt-live-chat-text-message-renderer #content,
-yt-live-chat-legacy-paid-message-renderer #content {
+yt-live-chat-membership-item-renderer #content {
   overflow: initial !important;
 }
 
@@ -133,12 +134,7 @@ yt-live-chat-message-input-renderer {
 }
 
 /* Reduce side padding. */
-yt-live-chat-text-message-renderer,
-yt-live-chat-legacy-paid-message-renderer {
-  ${getPaddingStyle(config)}
-}
-
-yt-live-chat-paid-message-renderer #header {
+yt-live-chat-text-message-renderer {
   ${getPaddingStyle(config)}
 }
 
@@ -147,8 +143,8 @@ yt-live-chat-text-message-renderer #author-photo,
 yt-live-chat-text-message-renderer #author-photo img,
 yt-live-chat-paid-message-renderer #author-photo,
 yt-live-chat-paid-message-renderer #author-photo img,
-yt-live-chat-legacy-paid-message-renderer #author-photo,
-yt-live-chat-legacy-paid-message-renderer #author-photo img {
+yt-live-chat-membership-item-renderer #author-photo,
+yt-live-chat-membership-item-renderer #author-photo img {
   ${config.showAvatars ? '' : 'display: none !important;'}
   width: ${config.avatarSize}px !important;
   height: ${config.avatarSize}px !important;
@@ -189,6 +185,7 @@ yt-live-chat-text-message-renderer yt-live-chat-author-badge-renderer[type="memb
 
 /* Channel names. */
 yt-live-chat-text-message-renderer #author-name {
+  ${config.showUserNames ? '' : 'display: none !important;'}
   ${config.userNameColor ? `color: ${config.userNameColor} !important;` : ''}
   font-family: "${config.userNameFont}"${FALLBACK_FONTS};
   font-size: ${config.userNameFontSize}px !important;
@@ -213,8 +210,8 @@ ${!config.messageOnNewLine ? '' : `yt-live-chat-text-message-renderer #message {
 /* SuperChat/Fan Funding Messages. */
 yt-live-chat-paid-message-renderer #author-name,
 yt-live-chat-paid-message-renderer #author-name *,
-yt-live-chat-legacy-paid-message-renderer #event-text,
-yt-live-chat-legacy-paid-message-renderer #event-text * {
+yt-live-chat-membership-item-renderer #header-content-inner-column,
+yt-live-chat-membership-item-renderer #header-content-inner-column * {
   ${config.firstLineColor ? `color: ${config.firstLineColor} !important;` : ''}
   font-family: "${config.firstLineFont}"${FALLBACK_FONTS};
   font-size: ${config.firstLineFontSize}px !important;
@@ -223,8 +220,8 @@ yt-live-chat-legacy-paid-message-renderer #event-text * {
 
 yt-live-chat-paid-message-renderer #purchase-amount,
 yt-live-chat-paid-message-renderer #purchase-amount *,
-yt-live-chat-legacy-paid-message-renderer #detail-text,
-yt-live-chat-legacy-paid-message-renderer #detail-text * {
+yt-live-chat-membership-item-renderer #header-subtext,
+yt-live-chat-membership-item-renderer #header-subtext * {
   ${config.secondLineColor ? `color: ${config.secondLineColor} !important;` : ''}
   font-family: "${config.secondLineFont}"${FALLBACK_FONTS};
   font-size: ${config.secondLineFontSize}px !important;
@@ -243,17 +240,18 @@ yt-live-chat-paid-message-renderer {
   margin: 4px 0 !important;
 }
 
-yt-live-chat-legacy-paid-message-renderer #card {
+yt-live-chat-membership-item-renderer #card,
+yt-live-chat-membership-item-renderer #header {
   ${getShowNewMemberBgStyle(config)}
 }
 
 yt-live-chat-text-message-renderer a,
-yt-live-chat-legacy-paid-message-renderer a {
+yt-live-chat-membership-item-renderer a {
   text-decoration: none !important;
 }
 
 yt-live-chat-text-message-renderer[is-deleted],
-yt-live-chat-legacy-paid-message-renderer[is-deleted] {
+yt-live-chat-membership-item-renderer[is-deleted] {
   display: none !important;
 }
 
@@ -399,7 +397,8 @@ ${keyframes.join('\n')}
 }
 
 yt-live-chat-text-message-renderer,
-yt-live-chat-legacy-paid-message-renderer {
+yt-live-chat-membership-item-renderer,
+yt-live-chat-paid-message-renderer {
   animation: anim ${totalTime}ms;
   animation-fill-mode: both;
 }`
