@@ -53,7 +53,7 @@
           <el-input v-model="form.blockUsers" type="textarea" :rows="5" :placeholder="$t('home.onePerLine')"></el-input>
         </el-form-item>
         <el-form-item :label="$t('home.blockMedalLevel')">
-          <el-slider v-model="form.blockMedalLevel" show-input :min="0" :max="20"></el-slider>
+          <el-slider v-model="form.blockMedalLevel" show-input :min="0" :max="40"></el-slider>
         </el-form-item>
       </el-tab-pane>
 
