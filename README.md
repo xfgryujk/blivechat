@@ -16,7 +16,7 @@
 * 支持自动翻译弹幕、醒目留言到日语
 
 ## 使用方法
-### 本地使用
+### 一、本地使用
 1. 下载[发布版](https://github.com/xfgryujk/blivechat/releases)（仅提供x64 Windows版）
 2. 双击`blivechat.exe`运行服务器，或者用命令行可以指定host和端口号：
    ```bat
@@ -32,14 +32,22 @@
 * 本地使用时不要关闭blivechat.exe那个黑框，否则不能继续获取弹幕
 * 样式生成器没有列出所有本地字体，但是可以手动输入本地字体
 
-### 公共服务器
-请优先在本地使用，使用公共服务器会有更大的弹幕延迟，而且服务器故障时可能出现直播事故
+### 二、公共服务器
+请优先在本地使用，使用公共服务器会有更大的弹幕延迟，而且服务器故障时可能发生直播事故
 
 * [第三方公共服务器](http://chat.bilisc.com/)
 * [仅样式生成器](https://style.vtbs.moe/)
 
-### 源代码版
-1. 编译前端（需要安装Node.js和npm）：
+### 三、源代码版（自建服务器或在Windows以外平台）
+0. 由于使用了git子模块，clone时需要加上`--recursive`参数：
+   ```sh
+   git clone --recursive https://github.com/xfgryujk/blivechat.git
+   ```
+   如果已经clone，拉子模块的方法：
+   ```sh
+   git submodule update --init --recursive
+   ```
+1. 编译前端（需要安装Node.js）：
    ```sh
    cd frontend
    npm i
@@ -56,8 +64,70 @@
    ```
 3. 用浏览器打开[http://localhost:12450](http://localhost:12450)，以下略
 
-### Docker
+### 四、Docker（自建服务器）
 1. ```sh
    docker run -d -p 12450:12450 xfgryujk/blivechat:latest
    ```
 2. 用浏览器打开[http://localhost:12450](http://localhost:12450)，以下略
+
+### nginx配置（可选）
+自建服务器时使用，`sudo vim /etc/nginx/sites-enabled/blivechat.conf`
+
+```conf
+upstream blivechat {
+	# blivechat地址
+	server 127.0.0.1:12450;
+}
+
+# 强制HTTPS
+server {
+	listen 80;
+	listen [::]:80;
+	server_name YOUR.DOMAIN.NAME;
+
+	return 301 https://$server_name$request_uri;
+}
+
+server {
+	listen 443 ssl;
+	listen [::]:443 ssl;
+	server_name YOUR.DOMAIN.NAME;
+
+	# SSL
+	ssl_certificate /PATH/TO/CERT.crt;
+	ssl_certificate_key /PATH/TO/CERT_KEY.key;
+	ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+	ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;
+	ssl_prefer_server_ciphers on;
+
+	# 代理header
+	proxy_set_header Host $host;
+	proxy_set_header X-Real-IP $remote_addr;
+	proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+	# 静态文件
+	location / {
+		root /PATH/TO/BLIVECHAT/frontend/dist;
+		# 如果文件不存在，交给前端路由
+		try_files $uri $uri/ /index.html;
+	}
+	# 动态API
+	location = /server_info {
+		proxy_pass http://blivechat;
+	}
+	# websocket
+	location = /chat {
+		proxy_pass http://blivechat;
+
+		# 代理websocket必须设置
+		proxy_http_version 1.1;
+		proxy_set_header Upgrade $http_upgrade;
+		proxy_set_header Connection "Upgrade";
+		
+		# 由于这个块有proxy_set_header，这些不会自动继承
+		proxy_set_header Host $host;
+		proxy_set_header X-Real-IP $remote_addr;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+	}
+}
+```
