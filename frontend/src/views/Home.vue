@@ -66,7 +66,7 @@
 
     <el-divider></el-divider>
     <el-form-item :label="$t('home.roomUrl')">
-      <el-input ref="roomUrlInput" readonly :value="roomUrl" style="width: calc(100% - 8em); margin-right: 1em;"></el-input>
+      <el-input ref="roomUrlInput" readonly :value="loaderUrl" style="width: calc(100% - 8em); margin-right: 1em;"></el-input>
       <el-button type="primary" @click="copyUrl">{{$t('home.copy')}}</el-button>
     </el-form-item>
     <el-form-item>
@@ -107,6 +107,14 @@ export default {
       delete query.roomId
       let resolved = this.$router.resolve({name: 'room', params: {roomId: this.form.roomId}, query})
       return `${window.location.protocol}//${window.location.host}${resolved.href}`
+    },
+    loaderUrl() {
+      if (this.roomUrl === '') {
+        return ''
+      }
+      let url = new URL('https://xfgryujk.sinacloud.net/blivechat/loader.html')
+      url.searchParams.append('url', this.roomUrl)
+      return url.href
     }
   },
   watch: {

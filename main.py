@@ -24,9 +24,7 @@ routes = [
     (r'/server_info', api.main.ServerInfoHandler),
     (r'/chat', api.chat.ChatHandler),
 
-    (r'/((css|fonts|img|js|static)/.*)', tornado.web.StaticFileHandler, {'path': WEB_ROOT}),
-    (r'/(favicon\.ico)', tornado.web.StaticFileHandler, {'path': WEB_ROOT}),
-    (r'/.*', api.main.MainHandler, {'path': WEB_ROOT})
+    (r'/(.*)', api.main.MainHandler, {'path': WEB_ROOT, 'default_filename': 'index.html'})
 ]
 
 
