@@ -129,7 +129,7 @@ export default {
   methods: {
     async updateServerConfig() {
       try {
-        this.serverConfig = (await axios.get(`/server_info`)).data.config
+        this.serverConfig = (await axios.get('/api/server_info')).data.config
       } catch (e) {
         this.$message.error('Failed to fetch server information: ' + e)
       }

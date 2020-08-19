@@ -111,11 +111,11 @@ server {
 		try_files $uri $uri/ /index.html;
 	}
 	# 动态API
-	location = /server_info {
+	location /api {
 		proxy_pass http://blivechat;
 	}
 	# websocket
-	location = /chat {
+	location = /api/chat {
 		proxy_pass http://blivechat;
 
 		# 代理websocket必须设置

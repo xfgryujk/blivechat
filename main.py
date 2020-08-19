@@ -21,6 +21,10 @@ logger = logging.getLogger(__name__)
 WEB_ROOT = os.path.join(os.path.dirname(__file__), 'frontend', 'dist')
 
 routes = [
+    (r'/api/server_info', api.main.ServerInfoHandler),
+    (r'/api/chat', api.chat.ChatHandler),
+
+    # TODO 兼容旧版，下版本移除
     (r'/server_info', api.main.ServerInfoHandler),
     (r'/chat', api.chat.ChatHandler),
 
