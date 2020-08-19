@@ -28,7 +28,6 @@
 
 **注意事项：**
 
-* 应该先启动blivechat后启动OBS，否则网页会加载失败，这时应该刷新OBS的浏览器源，显示Loaded则加载成功
 * 本地使用时不要关闭blivechat.exe那个黑框，否则不能继续获取弹幕
 * 样式生成器没有列出所有本地字体，但是可以手动输入本地字体
 
@@ -75,6 +74,7 @@
 
 ```conf
 upstream blivechat {
+	keepalive 8;
 	# blivechat地址
 	server 127.0.0.1:12450;
 }
@@ -96,12 +96,11 @@ server {
 	# SSL
 	ssl_certificate /PATH/TO/CERT.crt;
 	ssl_certificate_key /PATH/TO/CERT_KEY.key;
-	ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-	ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;
-	ssl_prefer_server_ciphers on;
 
 	# 代理header
+	proxy_http_version 1.1;
 	proxy_set_header Host $host;
+	proxy_set_header Connection "";
 	proxy_set_header X-Real-IP $remote_addr;
 	proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
@@ -120,10 +119,9 @@ server {
 		proxy_pass http://blivechat;
 
 		# 代理websocket必须设置
-		proxy_http_version 1.1;
 		proxy_set_header Upgrade $http_upgrade;
 		proxy_set_header Connection "Upgrade";
-		
+
 		# 由于这个块有proxy_set_header，这些不会自动继承
 		proxy_set_header Host $host;
 		proxy_set_header X-Real-IP $remote_addr;
