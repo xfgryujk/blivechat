@@ -70,8 +70,13 @@ def run_server(host, port, debug):
         debug=debug,
         autoreload=False
     )
+    cfg = config.get_config()
     try:
-        app.listen(port, host)
+        app.listen(
+            port,
+            host,
+            xheaders=cfg.tornado_xheaders
+        )
     except OSError:
         logger.warning('Address is used %s:%d', host, port)
         return

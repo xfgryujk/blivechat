@@ -436,7 +436,7 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
                     int(time.time()),
                     'blivechat',
                     2,
-                    'Translation is not allowed in this room, please download to use translation',
+                    'Translation is not allowed in this room. Please download to use translation',
                     0,
                     False,
                     60,

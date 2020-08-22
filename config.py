@@ -38,20 +38,26 @@ class AppConfig:
         self.database_url = 'sqlite:///data/database.db'
         self.enable_translate = True
         self.allow_translate_rooms = {}
+        self.tornado_xheaders = False
 
     def load(self, path):
-        config = configparser.ConfigParser()
-        config.read(path)
         try:
+            config = configparser.ConfigParser()
+            config.read(path)
+
             app_section = config['app']
             self.database_url = app_section['database_url']
             self.enable_translate = app_section.getboolean('enable_translate')
+
             allow_translate_rooms = app_section['allow_translate_rooms'].strip()
             if allow_translate_rooms == '':
                 self.allow_translate_rooms = {}
             else:
                 allow_translate_rooms = allow_translate_rooms.split(',')
                 self.allow_translate_rooms = set(map(lambda id_: int(id_.strip()), allow_translate_rooms))
+
+            self.tornado_xheaders = app_section.getboolean('tornado_xheaders')
+
         except (KeyError, ValueError):
             logger.exception('Failed to load config:')
             return False
