@@ -17,7 +17,7 @@ export const DEFAULT_CONFIG = {
   ownerUserNameColor: '#ffd600',
   moderatorUserNameColor: '#5e84f1',
   memberUserNameColor: '#0f9d58',
-  showBadges: false,
+  showBadges: true,
   showColon: true,
 
   messageFont: 'Imprima',
