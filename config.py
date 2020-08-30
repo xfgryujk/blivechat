@@ -39,6 +39,7 @@ class AppConfig:
         self.enable_translate = True
         self.allow_translate_rooms = {}
         self.tornado_xheaders = False
+        self.loader_url = ''
 
     def load(self, path):
         try:
@@ -49,7 +50,7 @@ class AppConfig:
             self.database_url = app_section['database_url']
             self.enable_translate = app_section.getboolean('enable_translate')
 
-            allow_translate_rooms = app_section['allow_translate_rooms'].strip()
+            allow_translate_rooms = app_section['allow_translate_rooms']
             if allow_translate_rooms == '':
                 self.allow_translate_rooms = {}
             else:
@@ -57,6 +58,7 @@ class AppConfig:
                 self.allow_translate_rooms = set(map(lambda id_: int(id_.strip()), allow_translate_rooms))
 
             self.tornado_xheaders = app_section.getboolean('tornado_xheaders')
+            self.loader_url = app_section['loader_url']
 
         except (KeyError, ValueError):
             logger.exception('Failed to load config:')

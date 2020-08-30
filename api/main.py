@@ -26,6 +26,7 @@ class ServerInfoHandler(api.base.ApiHandler):
         self.write({
             'version': update.VERSION,
             'config': {
-                'enableTranslate': cfg.enable_translate
+                'enableTranslate': cfg.enable_translate,
+                'loaderUrl': cfg.loader_url
             }
         })
