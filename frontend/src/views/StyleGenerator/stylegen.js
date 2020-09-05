@@ -108,7 +108,7 @@ yt-live-chat-author-chip #author-name {
 /* Outlines */
 yt-live-chat-renderer * {
   ${getShowOutlinesStyle(config)}
-  font-family: "${config.messageFont}"${FALLBACK_FONTS};
+  font-family: "${cssEscapeStr(config.messageFont)}"${FALLBACK_FONTS};
   font-size: ${config.messageFontSize}px !important;
   line-height: ${config.messageLineHeight || config.messageFontSize}px !important;
 }
@@ -162,7 +162,7 @@ yt-live-chat-text-message-renderer #chat-badges {
 yt-live-chat-text-message-renderer #timestamp {
   display: ${config.showTime ? 'inline' : 'none'} !important;
   ${config.timeColor ? `color: ${config.timeColor} !important;` : ''}
-  font-family: "${config.timeFont}"${FALLBACK_FONTS};
+  font-family: "${cssEscapeStr(config.timeFont)}"${FALLBACK_FONTS};
   font-size: ${config.timeFontSize}px !important;
   line-height: ${config.timeLineHeight || config.timeFontSize}px !important;
 }
@@ -187,7 +187,7 @@ yt-live-chat-text-message-renderer yt-live-chat-author-badge-renderer[type="memb
 yt-live-chat-text-message-renderer #author-name {
   ${config.showUserNames ? '' : 'display: none !important;'}
   ${config.userNameColor ? `color: ${config.userNameColor} !important;` : ''}
-  font-family: "${config.userNameFont}"${FALLBACK_FONTS};
+  font-family: "${cssEscapeStr(config.userNameFont)}"${FALLBACK_FONTS};
   font-size: ${config.userNameFontSize}px !important;
   line-height: ${config.userNameLineHeight || config.userNameFontSize}px !important;
 }
@@ -198,7 +198,7 @@ ${getShowColonStyle(config)}
 yt-live-chat-text-message-renderer #message,
 yt-live-chat-text-message-renderer #message * {
   ${config.messageColor ? `color: ${config.messageColor} !important;` : ''}
-  font-family: "${config.messageFont}"${FALLBACK_FONTS};
+  font-family: "${cssEscapeStr(config.messageFont)}"${FALLBACK_FONTS};
   font-size: ${config.messageFontSize}px !important;
   line-height: ${config.messageLineHeight || config.messageFontSize}px !important;
 }
@@ -213,7 +213,7 @@ yt-live-chat-paid-message-renderer #author-name *,
 yt-live-chat-membership-item-renderer #header-content-inner-column,
 yt-live-chat-membership-item-renderer #header-content-inner-column * {
   ${config.firstLineColor ? `color: ${config.firstLineColor} !important;` : ''}
-  font-family: "${config.firstLineFont}"${FALLBACK_FONTS};
+  font-family: "${cssEscapeStr(config.firstLineFont)}"${FALLBACK_FONTS};
   font-size: ${config.firstLineFontSize}px !important;
   line-height: ${config.firstLineLineHeight || config.firstLineFontSize}px !important;
 }
@@ -223,7 +223,7 @@ yt-live-chat-paid-message-renderer #purchase-amount *,
 yt-live-chat-membership-item-renderer #header-subtext,
 yt-live-chat-membership-item-renderer #header-subtext * {
   ${config.secondLineColor ? `color: ${config.secondLineColor} !important;` : ''}
-  font-family: "${config.secondLineFont}"${FALLBACK_FONTS};
+  font-family: "${cssEscapeStr(config.secondLineFont)}"${FALLBACK_FONTS};
   font-size: ${config.secondLineFontSize}px !important;
   line-height: ${config.secondLineLineHeight || config.secondLineFontSize}px !important;
 }
@@ -231,7 +231,7 @@ yt-live-chat-membership-item-renderer #header-subtext * {
 yt-live-chat-paid-message-renderer #content,
 yt-live-chat-paid-message-renderer #content * {
   ${config.scContentColor ? `color: ${config.scContentColor} !important;` : ''}
-  font-family: "${config.scContentFont}"${FALLBACK_FONTS};
+  font-family: "${cssEscapeStr(config.scContentFont)}"${FALLBACK_FONTS};
   font-size: ${config.scContentFontSize}px !important;
   line-height: ${config.scContentLineHeight || config.scContentFontSize}px !important;
 }
@@ -273,7 +273,7 @@ yt-live-chat-ticker-paid-message-item-renderer *,
 yt-live-chat-ticker-sponsor-item-renderer,
 yt-live-chat-ticker-sponsor-item-renderer * {
   ${config.secondLineColor ? `color: ${config.secondLineColor} !important;` : ''}
-  font-family: "${config.secondLineFont}"${FALLBACK_FONTS};
+  font-family: "${cssEscapeStr(config.secondLineFont)}"${FALLBACK_FONTS};
 }
 
 yt-live-chat-mode-change-message-renderer, 
@@ -335,6 +335,31 @@ function getShowOutlinesStyle (config) {
     }
   }
   return `text-shadow: ${shadow.join(', ')};`
+}
+
+function cssEscapeStr (str) {
+  let res = []
+  for (let char of str) {
+    res.push(cssEscapeChar(char))
+  }
+  return res.join('')
+}
+
+function cssEscapeChar (char) {
+  if (!needEscapeChar(char)) {
+    return char
+  }
+  let hexCode = char.codePointAt(0).toString(16)
+  // https://drafts.csswg.org/cssom/#escape-a-character-as-code-point
+  return `\\${hexCode} `
+}
+
+function needEscapeChar (char) {
+  let code = char.codePointAt(0)
+  if (0x20 <= code && code <= 0x7E) {
+    return char === '"'
+  }
+  return true
 }
 
 function getPaddingStyle (config) {
