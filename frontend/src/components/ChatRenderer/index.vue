@@ -281,16 +281,25 @@ export default {
       if (this.estimatedEnqueueInterval) {
         estimatedNextEnqueueRemainTime = Math.max(this.lastEnqueueTime - new Date() + this.estimatedEnqueueInterval, 1)
       }
-      // 最快80ms/条，计算发送的消息数，保证在下次进队列之前消费完队列
+      // 最快80ms/条，计算发送的消息数，保证在下次进队列之前消费队列到最多剩3条消息，不消费完是为了防止消息速度变慢时突然停顿
+      const MIN_SLEEP_TIME = 80
+      const MAX_SLEEP_TIME = 1000
+      const MAX_REMAIN_GROUP_NUM = 3
+      // 下次进队列之前应该发多少条消息
+      let shouldEmitGroupNum = Math.max(this.smoothedMessageQueue.length - MAX_REMAIN_GROUP_NUM, 0)
+      // 下次进队列之前最多能发多少次
+      let maxCanEmitCount = estimatedNextEnqueueRemainTime / MIN_SLEEP_TIME
+      // 这次发多少条消息
       let groupNumToEmit
-      if (this.smoothedMessageQueue.length < estimatedNextEnqueueRemainTime / 80) {
-        // 队列中消息数很少，每次发1条也能发完
+      if (shouldEmitGroupNum < maxCanEmitCount) {
+        // 队列中消息数很少，每次发1条也能发到最多剩3条
         groupNumToEmit = 1
       } else {
-        // 每次发1条以上，保证按最快速度能发完
-        groupNumToEmit = Math.ceil(this.smoothedMessageQueue.length / (estimatedNextEnqueueRemainTime / 80))
+        // 每次发1条以上，保证按最快速度能发到最多剩3条
+        groupNumToEmit = Math.ceil(shouldEmitGroupNum / maxCanEmitCount)
       }
 
+      // 发消息
       let messageGroups = this.smoothedMessageQueue.splice(0, groupNumToEmit)
       let mergedGroup = []
       for (let messageGroup of messageGroups) {
@@ -303,19 +312,20 @@ export default {
       if (this.smoothedMessageQueue.length <= 0) {
         return
       }
+      // 消息没发完，计算下次发消息时间
       let sleepTime
-      if (groupNumToEmit == 1) {
-        // 队列中消息数很少，随便定个80-1000ms的时间
+      if (groupNumToEmit === 1) {
+        // 队列中消息数很少，随便定个[MIN_SLEEP_TIME, MAX_SLEEP_TIME]的时间
         sleepTime = estimatedNextEnqueueRemainTime / this.smoothedMessageQueue.length
         sleepTime *= 0.5 + Math.random()
-        if (sleepTime > 1000) {
-          sleepTime = 1000
-        } else if (sleepTime < 80) {
-          sleepTime = 80
+        if (sleepTime > MAX_SLEEP_TIME) {
+          sleepTime = MAX_SLEEP_TIME
+        } else if (sleepTime < MIN_SLEEP_TIME) {
+          sleepTime = MIN_SLEEP_TIME
         }
       } else {
         // 按最快速度发
-        sleepTime = 80
+        sleepTime = MIN_SLEEP_TIME
       }
       this.emitSmoothedMessageTimerId = window.setTimeout(this.emitSmoothedMessages, sleepTime)
     },
