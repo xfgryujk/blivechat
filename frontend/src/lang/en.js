@@ -5,7 +5,6 @@ export default {
     help: 'Help',
     projectAddress: 'Project address',
     giftRecordOfficial: 'Official Super Chat record',
-    giftRecord: 'Super Chat record'
   },
   home: {
     roomIdEmpty: "Room ID can't be empty",
@@ -53,6 +52,7 @@ export default {
     avatarSize: 'Avatar size',
 
     userNames: 'User names',
+    showUserNames: 'Show user names',
     font: 'Font',
     fontSize: 'Font size',
     lineHeight: 'Line height (0 for default)',

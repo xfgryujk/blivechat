@@ -22,6 +22,9 @@
         </el-form-item>
 
         <h3>{{$t('stylegen.userNames')}}</h3>
+        <el-form-item :label="$t('stylegen.showUserNames')">
+          <el-switch v-model="form.showUserNames"></el-switch>
+        </el-form-item>
         <el-form-item :label="$t('stylegen.font')">
           <el-autocomplete v-model="form.userNameFont" :fetch-suggestions="getFontSuggestions"></el-autocomplete>
         </el-form-item>
@@ -219,15 +222,15 @@ let textMessageTemplate = {
   repeated: 1,
   translation: ''
 }
-let legacyPaidMessageTemplate = {
+let membershipItemTemplate = {
   id: 0,
   addTime: time,
   type: constants.MESSAGE_TYPE_MEMBER,
   avatarUrl: 'https://static.hdslb.com/images/member/noface.gif',
   time: time,
   authorName: '',
-  title: 'NEW MEMBER!',
-  content: ''
+  privilegeType: 3,
+  title: 'New member'
 }
 let paidMessageTemplate = {
   id: 0,
@@ -266,15 +269,14 @@ const EXAMPLE_MESSAGES = [
     content: 'kksk'
   },
   {
-    ...legacyPaidMessageTemplate,
+    ...membershipItemTemplate,
     id: (nextId++).toString(),
-    authorName: '进击的冰糖',
-    content: 'Welcome 进击的冰糖!'
+    authorName: '艾米亚official'
   },
   {
     ...paidMessageTemplate,
     id: (nextId++).toString(),
-    authorName: '无火的残渣',
+    authorName: '愛里紗メイプル',
     price: 66600,
     content: 'Sent 小电视飞船x100'
   },
@@ -288,7 +290,7 @@ const EXAMPLE_MESSAGES = [
   {
     ...paidMessageTemplate,
     id: (nextId++).toString(),
-    authorName: '夏色祭保護協会会長',
+    authorName: 'AstralisUP',
     price: 30,
     content: '言いたいことがあるんだよ！'
   }

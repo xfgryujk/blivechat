@@ -84,7 +84,7 @@ export default {
       const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
       // 开发时使用localhost:12450
       const host = process.env.NODE_ENV === 'development' ? 'localhost:12450' : window.location.host
-      const url = `${protocol}://${host}/chat`
+      const url = `${protocol}://${host}/api/chat`
       this.websocket = new WebSocket(url)
       this.websocket.onopen = this.onWsOpen
       this.websocket.onclose = this.onWsClose
@@ -188,8 +188,8 @@ export default {
           avatarUrl: data.avatarUrl,
           time: new Date(data.timestamp * 1000),
           authorName: data.authorName,
-          title: 'NEW MEMBER!',
-          content: `Welcome ${data.authorName}!`
+          privilegeType: data.privilegeType,
+          title: 'New member'
         }
         break
       case COMMAND_ADD_SUPER_CHAT:

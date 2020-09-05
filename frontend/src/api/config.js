@@ -5,7 +5,7 @@ export const DEFAULT_CONFIG = {
   showDanmaku: true,
   showGift: true,
   showGiftName: false,
-  mergeSimilarDanmaku: true,
+  mergeSimilarDanmaku: false,
   mergeGift: true,
   maxNumber: 60,
 

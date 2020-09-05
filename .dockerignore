@@ -7,10 +7,15 @@ build/
 **/node_modules/
 
 # IDEs and editors
-/.idea
+.idea/
 
 # misc
 **/.git*
 *.spec
 screenshots/
 README.md
+
+# runtime data
+data/*
+!data/config.ini
+log/*

@@ -23,11 +23,11 @@
                 :price="message.price" :avatarUrl="message.avatarUrl" :authorName="message.authorName"
                 :time="message.time" :content="getGiftShowContent(message)"
               ></paid-message>
-              <legacy-paid-message :key="message.id" v-else-if="message.type === MESSAGE_TYPE_MEMBER"
+              <membership-item :key="message.id" v-else-if="message.type === MESSAGE_TYPE_MEMBER"
                 class="style-scope yt-live-chat-item-list-renderer"
-                :avatarUrl="message.avatarUrl" :title="message.title" :content="message.content"
-                :time="message.time"
-              ></legacy-paid-message>
+                :avatarUrl="message.avatarUrl" :authorName="message.authorName" :privilegeType="message.privilegeType"
+                :title="message.title" :time="message.time"
+              ></membership-item>
               <paid-message :key="message.id" v-else-if="message.type === MESSAGE_TYPE_SUPER_CHAT"
                 class="style-scope yt-live-chat-item-list-renderer"
                 :price="message.price" :avatarUrl="message.avatarUrl" :authorName="message.authorName"
@@ -45,7 +45,7 @@
 import * as config from '@/api/config'
 import Ticker from './Ticker.vue'
 import TextMessage from './TextMessage.vue'
-import LegacyPaidMessage from './LegacyPaidMessage.vue'
+import MembershipItem from './MembershipItem.vue'
 import PaidMessage from './PaidMessage.vue'
 import * as constants from './constants'
 
@@ -57,7 +57,7 @@ export default {
   components: {
     Ticker,
     TextMessage,
-    LegacyPaidMessage,
+    MembershipItem,
     PaidMessage
   },
   props: {
@@ -281,16 +281,25 @@ export default {
       if (this.estimatedEnqueueInterval) {
         estimatedNextEnqueueRemainTime = Math.max(this.lastEnqueueTime - new Date() + this.estimatedEnqueueInterval, 1)
       }
-      // 最快80ms/条，计算发送的消息数，保证在下次进队列之前消费完队列
+      // 最快80ms/条，计算发送的消息数，保证在下次进队列之前消费队列到最多剩3条消息，不消费完是为了防止消息速度变慢时突然停顿
+      const MIN_SLEEP_TIME = 80
+      const MAX_SLEEP_TIME = 1000
+      const MAX_REMAIN_GROUP_NUM = 3
+      // 下次进队列之前应该发多少条消息
+      let shouldEmitGroupNum = Math.max(this.smoothedMessageQueue.length - MAX_REMAIN_GROUP_NUM, 0)
+      // 下次进队列之前最多能发多少次
+      let maxCanEmitCount = estimatedNextEnqueueRemainTime / MIN_SLEEP_TIME
+      // 这次发多少条消息
       let groupNumToEmit
-      if (this.smoothedMessageQueue.length < estimatedNextEnqueueRemainTime / 80) {
-        // 队列中消息数很少，每次发1条也能发完
+      if (shouldEmitGroupNum < maxCanEmitCount) {
+        // 队列中消息数很少，每次发1条也能发到最多剩3条
         groupNumToEmit = 1
       } else {
-        // 每次发1条以上，保证按最快速度能发完
-        groupNumToEmit = Math.ceil(this.smoothedMessageQueue.length / (estimatedNextEnqueueRemainTime / 80))
+        // 每次发1条以上，保证按最快速度能发到最多剩3条
+        groupNumToEmit = Math.ceil(shouldEmitGroupNum / maxCanEmitCount)
       }
 
+      // 发消息
       let messageGroups = this.smoothedMessageQueue.splice(0, groupNumToEmit)
       let mergedGroup = []
       for (let messageGroup of messageGroups) {
@@ -303,19 +312,20 @@ export default {
       if (this.smoothedMessageQueue.length <= 0) {
         return
       }
+      // 消息没发完，计算下次发消息时间
       let sleepTime
-      if (groupNumToEmit == 1) {
-        // 队列中消息数很少，随便定个80-1000ms的时间
+      if (groupNumToEmit === 1) {
+        // 队列中消息数很少，随便定个[MIN_SLEEP_TIME, MAX_SLEEP_TIME]的时间
         sleepTime = estimatedNextEnqueueRemainTime / this.smoothedMessageQueue.length
         sleepTime *= 0.5 + Math.random()
-        if (sleepTime > 1000) {
-          sleepTime = 1000
-        } else if (sleepTime < 80) {
-          sleepTime = 80
+        if (sleepTime > MAX_SLEEP_TIME) {
+          sleepTime = MAX_SLEEP_TIME
+        } else if (sleepTime < MIN_SLEEP_TIME) {
+          sleepTime = MIN_SLEEP_TIME
         }
       } else {
         // 按最快速度发
-        sleepTime = 80
+        sleepTime = MIN_SLEEP_TIME
       }
       this.emitSmoothedMessageTimerId = window.setTimeout(this.emitSmoothedMessages, sleepTime)
     },
@@ -627,6 +637,288 @@ html:not(.style-scope) {
   --yt-pdg-paid-stickers-tab-selection-bar-color: #065FD4;
   --yt-pdg-paid-stickers-author-name-font-size: 13px;
   --yt-pdg-paid-stickers-margin-left: 38px;
+}
+
+html:not(.style-scope) {
+  --layout_-_display: flex;
+  ;
+
+  --layout-inline_-_display: inline-flex;
+  ;
+
+  --layout-horizontal_-_display: var(--layout_-_display);
+  --layout-horizontal_-_-ms-flex-direction: row;
+  --layout-horizontal_-_-webkit-flex-direction: row;
+  --layout-horizontal_-_flex-direction: row;
+  ;
+
+  --layout-horizontal-reverse_-_display: var(--layout_-_display);
+  --layout-horizontal-reverse_-_-ms-flex-direction: row-reverse;
+  --layout-horizontal-reverse_-_-webkit-flex-direction: row-reverse;
+  --layout-horizontal-reverse_-_flex-direction: row-reverse;
+  ;
+
+  --layout-vertical_-_display: var(--layout_-_display);
+  --layout-vertical_-_-ms-flex-direction: column;
+  --layout-vertical_-_-webkit-flex-direction: column;
+  --layout-vertical_-_flex-direction: column;
+  ;
+
+  --layout-vertical-reverse_-_display: var(--layout_-_display);
+  --layout-vertical-reverse_-_-ms-flex-direction: column-reverse;
+  --layout-vertical-reverse_-_-webkit-flex-direction: column-reverse;
+  --layout-vertical-reverse_-_flex-direction: column-reverse;
+  ;
+
+  --layout-wrap_-_-ms-flex-wrap: wrap;
+  --layout-wrap_-_-webkit-flex-wrap: wrap;
+  --layout-wrap_-_flex-wrap: wrap;
+  ;
+
+  --layout-wrap-reverse_-_-ms-flex-wrap: wrap-reverse;
+  --layout-wrap-reverse_-_-webkit-flex-wrap: wrap-reverse;
+  --layout-wrap-reverse_-_flex-wrap: wrap-reverse;
+  ;
+
+  --layout-flex-auto_-_-ms-flex: 1 1 auto;
+  --layout-flex-auto_-_-webkit-flex: 1 1 auto;
+  --layout-flex-auto_-_flex: 1 1 auto;
+  ;
+
+  --layout-flex-none_-_-ms-flex: none;
+  --layout-flex-none_-_-webkit-flex: none;
+  --layout-flex-none_-_flex: none;
+  ;
+
+  --layout-flex_-_-ms-flex: 1 1 0.000000001px;
+  --layout-flex_-_-webkit-flex: 1;
+  --layout-flex_-_flex: 1;
+  --layout-flex_-_-webkit-flex-basis: 0.000000001px;
+  --layout-flex_-_flex-basis: 0.000000001px;
+  ;
+
+  --layout-flex-2_-_-ms-flex: 2;
+  --layout-flex-2_-_-webkit-flex: 2;
+  --layout-flex-2_-_flex: 2;
+  ;
+
+  --layout-flex-3_-_-ms-flex: 3;
+  --layout-flex-3_-_-webkit-flex: 3;
+  --layout-flex-3_-_flex: 3;
+  ;
+
+  --layout-flex-4_-_-ms-flex: 4;
+  --layout-flex-4_-_-webkit-flex: 4;
+  --layout-flex-4_-_flex: 4;
+  ;
+
+  --layout-flex-5_-_-ms-flex: 5;
+  --layout-flex-5_-_-webkit-flex: 5;
+  --layout-flex-5_-_flex: 5;
+  ;
+
+  --layout-flex-6_-_-ms-flex: 6;
+  --layout-flex-6_-_-webkit-flex: 6;
+  --layout-flex-6_-_flex: 6;
+  ;
+
+  --layout-flex-7_-_-ms-flex: 7;
+  --layout-flex-7_-_-webkit-flex: 7;
+  --layout-flex-7_-_flex: 7;
+  ;
+
+  --layout-flex-8_-_-ms-flex: 8;
+  --layout-flex-8_-_-webkit-flex: 8;
+  --layout-flex-8_-_flex: 8;
+  ;
+
+  --layout-flex-9_-_-ms-flex: 9;
+  --layout-flex-9_-_-webkit-flex: 9;
+  --layout-flex-9_-_flex: 9;
+  ;
+
+  --layout-flex-10_-_-ms-flex: 10;
+  --layout-flex-10_-_-webkit-flex: 10;
+  --layout-flex-10_-_flex: 10;
+  ;
+
+  --layout-flex-11_-_-ms-flex: 11;
+  --layout-flex-11_-_-webkit-flex: 11;
+  --layout-flex-11_-_flex: 11;
+  ;
+
+  --layout-flex-12_-_-ms-flex: 12;
+  --layout-flex-12_-_-webkit-flex: 12;
+  --layout-flex-12_-_flex: 12;
+  ;
+
+
+
+  --layout-start_-_-ms-flex-align: start;
+  --layout-start_-_-webkit-align-items: flex-start;
+  --layout-start_-_align-items: flex-start;
+  ;
+
+  --layout-center_-_-ms-flex-align: center;
+  --layout-center_-_-webkit-align-items: center;
+  --layout-center_-_align-items: center;
+  ;
+
+  --layout-end_-_-ms-flex-align: end;
+  --layout-end_-_-webkit-align-items: flex-end;
+  --layout-end_-_align-items: flex-end;
+  ;
+
+  --layout-baseline_-_-ms-flex-align: baseline;
+  --layout-baseline_-_-webkit-align-items: baseline;
+  --layout-baseline_-_align-items: baseline;
+  ;
+
+
+
+  --layout-start-justified_-_-ms-flex-pack: start;
+  --layout-start-justified_-_-webkit-justify-content: flex-start;
+  --layout-start-justified_-_justify-content: flex-start;
+  ;
+
+  --layout-center-justified_-_-ms-flex-pack: center;
+  --layout-center-justified_-_-webkit-justify-content: center;
+  --layout-center-justified_-_justify-content: center;
+  ;
+
+  --layout-end-justified_-_-ms-flex-pack: end;
+  --layout-end-justified_-_-webkit-justify-content: flex-end;
+  --layout-end-justified_-_justify-content: flex-end;
+  ;
+
+  --layout-around-justified_-_-ms-flex-pack: distribute;
+  --layout-around-justified_-_-webkit-justify-content: space-around;
+  --layout-around-justified_-_justify-content: space-around;
+  ;
+
+  --layout-justified_-_-ms-flex-pack: justify;
+  --layout-justified_-_-webkit-justify-content: space-between;
+  --layout-justified_-_justify-content: space-between;
+  ;
+
+  --layout-center-center_-_-ms-flex-align: var(--layout-center_-_-ms-flex-align);
+  --layout-center-center_-_-webkit-align-items: var(--layout-center_-_-webkit-align-items);
+  --layout-center-center_-_align-items: var(--layout-center_-_align-items);
+  --layout-center-center_-_-ms-flex-pack: var(--layout-center-justified_-_-ms-flex-pack);
+  --layout-center-center_-_-webkit-justify-content: var(--layout-center-justified_-_-webkit-justify-content);
+  --layout-center-center_-_justify-content: var(--layout-center-justified_-_justify-content);
+  ;
+
+
+
+  --layout-self-start_-_-ms-align-self: flex-start;
+  --layout-self-start_-_-webkit-align-self: flex-start;
+  --layout-self-start_-_align-self: flex-start;
+  ;
+
+  --layout-self-center_-_-ms-align-self: center;
+  --layout-self-center_-_-webkit-align-self: center;
+  --layout-self-center_-_align-self: center;
+  ;
+
+  --layout-self-end_-_-ms-align-self: flex-end;
+  --layout-self-end_-_-webkit-align-self: flex-end;
+  --layout-self-end_-_align-self: flex-end;
+  ;
+
+  --layout-self-stretch_-_-ms-align-self: stretch;
+  --layout-self-stretch_-_-webkit-align-self: stretch;
+  --layout-self-stretch_-_align-self: stretch;
+  ;
+
+  --layout-self-baseline_-_-ms-align-self: baseline;
+  --layout-self-baseline_-_-webkit-align-self: baseline;
+  --layout-self-baseline_-_align-self: baseline;
+  ;
+
+
+
+  --layout-start-aligned_-_-ms-flex-line-pack: start;
+  --layout-start-aligned_-_-ms-align-content: flex-start;
+  --layout-start-aligned_-_-webkit-align-content: flex-start;
+  --layout-start-aligned_-_align-content: flex-start;
+  ;
+
+  --layout-end-aligned_-_-ms-flex-line-pack: end;
+  --layout-end-aligned_-_-ms-align-content: flex-end;
+  --layout-end-aligned_-_-webkit-align-content: flex-end;
+  --layout-end-aligned_-_align-content: flex-end;
+  ;
+
+  --layout-center-aligned_-_-ms-flex-line-pack: center;
+  --layout-center-aligned_-_-ms-align-content: center;
+  --layout-center-aligned_-_-webkit-align-content: center;
+  --layout-center-aligned_-_align-content: center;
+  ;
+
+  --layout-between-aligned_-_-ms-flex-line-pack: justify;
+  --layout-between-aligned_-_-ms-align-content: space-between;
+  --layout-between-aligned_-_-webkit-align-content: space-between;
+  --layout-between-aligned_-_align-content: space-between;
+  ;
+
+  --layout-around-aligned_-_-ms-flex-line-pack: distribute;
+  --layout-around-aligned_-_-ms-align-content: space-around;
+  --layout-around-aligned_-_-webkit-align-content: space-around;
+  --layout-around-aligned_-_align-content: space-around;
+  ;
+
+
+
+  --layout-block_-_display: block;
+  ;
+
+  --layout-invisible_-_visibility: hidden !important;
+  ;
+
+  --layout-relative_-_position: relative;
+  ;
+
+  --layout-fit_-_position: absolute;
+  --layout-fit_-_top: 0;
+  --layout-fit_-_right: 0;
+  --layout-fit_-_bottom: 0;
+  --layout-fit_-_left: 0;
+  ;
+
+  --layout-scroll_-_-webkit-overflow-scrolling: touch;
+  --layout-scroll_-_overflow: auto;
+  ;
+
+  --layout-fullbleed_-_margin: 0;
+  --layout-fullbleed_-_height: 100vh;
+  ;
+
+
+
+  --layout-fixed-top_-_position: fixed;
+  --layout-fixed-top_-_top: 0;
+  --layout-fixed-top_-_left: 0;
+  --layout-fixed-top_-_right: 0;
+  ;
+
+  --layout-fixed-right_-_position: fixed;
+  --layout-fixed-right_-_top: 0;
+  --layout-fixed-right_-_right: 0;
+  --layout-fixed-right_-_bottom: 0;
+  ;
+
+  --layout-fixed-bottom_-_position: fixed;
+  --layout-fixed-bottom_-_right: 0;
+  --layout-fixed-bottom_-_bottom: 0;
+  --layout-fixed-bottom_-_left: 0;
+  ;
+
+  --layout-fixed-left_-_position: fixed;
+  --layout-fixed-left_-_top: 0;
+  --layout-fixed-left_-_bottom: 0;
+  --layout-fixed-left_-_left: 0;
+  ;
 }
 </style>
 

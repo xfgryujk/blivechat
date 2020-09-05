@@ -53,7 +53,7 @@
           <el-input v-model="form.blockUsers" type="textarea" :rows="5" :placeholder="$t('home.onePerLine')"></el-input>
         </el-form-item>
         <el-form-item :label="$t('home.blockMedalLevel')">
-          <el-slider v-model="form.blockMedalLevel" show-input :min="0" :max="20"></el-slider>
+          <el-slider v-model="form.blockMedalLevel" show-input :min="0" :max="40"></el-slider>
         </el-form-item>
       </el-tab-pane>
 
@@ -66,7 +66,7 @@
 
     <el-divider></el-divider>
     <el-form-item :label="$t('home.roomUrl')">
-      <el-input ref="roomUrlInput" readonly :value="roomUrl" style="width: calc(100% - 8em); margin-right: 1em;"></el-input>
+      <el-input ref="roomUrlInput" readonly :value="obsRoomUrl" style="width: calc(100% - 8em); margin-right: 1em;"></el-input>
       <el-button type="primary" @click="copyUrl">{{$t('home.copy')}}</el-button>
     </el-form-item>
     <el-form-item>
@@ -90,7 +90,8 @@ export default {
   data() {
     return {
       serverConfig: {
-        enableTranslate: true
+        enableTranslate: true,
+        loaderUrl: ''
       },
       form: {
         roomId: parseInt(window.localStorage.roomId || '1'),
@@ -107,6 +108,17 @@ export default {
       delete query.roomId
       let resolved = this.$router.resolve({name: 'room', params: {roomId: this.form.roomId}, query})
       return `${window.location.protocol}//${window.location.host}${resolved.href}`
+    },
+    obsRoomUrl() {
+      if (this.roomUrl === '') {
+        return ''
+      }
+      if (this.serverConfig.loaderUrl === '') {
+        return this.roomUrl
+      }
+      let url = new URL(this.serverConfig.loaderUrl)
+      url.searchParams.append('url', this.roomUrl)
+      return url.href
     }
   },
   watch: {
@@ -121,7 +133,7 @@ export default {
   methods: {
     async updateServerConfig() {
       try {
-        this.serverConfig = (await axios.get(`/server_info`)).data.config
+        this.serverConfig = (await axios.get('/api/server_info')).data.config
       } catch (e) {
         this.$message.error('Failed to fetch server information: ' + e)
       }

@@ -5,7 +5,6 @@ export default {
     help: '帮助',
     projectAddress: '项目地址',
     giftRecordOfficial: '官方打赏记录',
-    giftRecord: '打赏记录'
   },
   home: {
     roomIdEmpty: '房间ID不能为空',
@@ -53,6 +52,7 @@ export default {
     avatarSize: '头像尺寸',
 
     userNames: '用户名',
+    showUserNames: '显示用户名',
     font: '字体',
     fontSize: '字体尺寸',
     lineHeight: '行高（0为默认）',

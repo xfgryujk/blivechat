@@ -5,7 +5,6 @@ export default {
     help: 'ヘルプ',
     projectAddress: 'プロジェクトアドレス',
     giftRecordOfficial: '公式スーパーチャット記録',
-    giftRecord: 'スーパーチャット記録'
   },
   home: {
     roomIdEmpty: 'ルームのIDを空白にすることはできません',
@@ -53,6 +52,7 @@ export default {
     avatarSize: 'アイコンのサイズ',
 
     userNames: 'ユーザー名',
+    showUserNames: 'ユーザー名を表示する',
     font: 'フォント',
     fontSize: 'フォントサイズ',
     lineHeight: '行の高さ（0はデフォルト）',

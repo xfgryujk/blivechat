@@ -56,7 +56,7 @@ export default {
       return 'CN¥' + utils.formatCurrency(this.price)
     },
     timeText() {
-      return utils.getTimeTextMinSec(this.time)
+      return utils.getTimeTextHourMin(this.time)
     }
   }
 }

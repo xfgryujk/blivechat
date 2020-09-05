@@ -71,7 +71,7 @@ class Room(blivedm.BLiveClient):
     def __parse_buy_guard(self, command):
         data = command['data']
         return self._on_buy_guard(blivedm.GuardBuyMessage(
-            data['uid'], data['username'], None, None, None,
+            data['uid'], data['username'], data['guard_level'], None, None,
             None, None, data['start_time'], None
         ))
 
@@ -149,34 +149,21 @@ class Room(blivedm.BLiveClient):
 
         id_ = uuid.uuid4().hex
         # 为了节省带宽用list而不是dict
-        self.send_message(Command.ADD_TEXT, [
-            # 0: avatarUrl
+        self.send_message(Command.ADD_TEXT, make_text_message(
             await models.avatar.get_avatar_url(danmaku.uid),
-            # 1: timestamp
             int(danmaku.timestamp / 1000),
-            # 2: authorName
             danmaku.uname,
-            # 3: authorType
             author_type,
-            # 4: content
             danmaku.msg,
-            # 5: privilegeType
             danmaku.privilege_type,
-            # 6: isGiftDanmaku
-            1 if danmaku.msg_type else 0,
-            # 7: authorLevel
+            danmaku.msg_type,
             danmaku.user_level,
-            # 8: isNewbie
-            1 if danmaku.urank < 10000 else 0,
-            # 9: isMobileVerified
-            1 if danmaku.mobile_verify else 0,
-            # 10: medalLevel
+            danmaku.urank < 10000,
+            danmaku.mobile_verify,
             0 if danmaku.room_id != self.room_id else danmaku.medal_level,
-            # 11: id
             id_,
-            # 12: translation
             translation
-        ])
+        ))
 
         if need_translate:
             await self._translate_and_response(danmaku.msg, id_)
@@ -206,7 +193,8 @@ class Room(blivedm.BLiveClient):
             'id': id_,
             'avatarUrl': await models.avatar.get_avatar_url(message.uid),
             'timestamp': message.start_time,
-            'authorName': message.username
+            'authorName': message.username,
+            'privilegeType': message.guard_level
         })
 
     async def _on_super_chat(self, message: blivedm.SuperChatMessage):
@@ -244,8 +232,10 @@ class Room(blivedm.BLiveClient):
         })
 
     def _need_translate(self, text):
+        cfg = config.get_config()
         return (
-            config.get_config().enable_translate
+            cfg.enable_translate
+            and (not cfg.allow_translate_rooms or self.room_id in cfg.allow_translate_rooms)
             and self.auto_translate_count > 0
             and models.translate.need_translate(text)
         )
@@ -266,6 +256,39 @@ class Room(blivedm.BLiveClient):
         )
 
 
+def make_text_message(avatar_url, timestamp, author_name, author_type, content, privilege_type,
+                      is_gift_danmaku, author_level, is_newbie, is_mobile_verified, medal_level,
+                      id_, translation):
+    return [
+        # 0: avatarUrl
+        avatar_url,
+        # 1: timestamp
+        timestamp,
+        # 2: authorName
+        author_name,
+        # 3: authorType
+        author_type,
+        # 4: content
+        content,
+        # 5: privilegeType
+        privilege_type,
+        # 6: isGiftDanmaku
+        1 if is_gift_danmaku else 0,
+        # 7: authorLevel
+        author_level,
+        # 8: isNewbie
+        1 if is_newbie else 0,
+        # 9: isMobileVerified
+        1 if is_mobile_verified else 0,
+        # 10: medalLevel
+        medal_level,
+        # 11: id
+        id_,
+        # 12: translation
+        translation
+    ]
+
+
 class RoomManager:
     def __init__(self):
         self._rooms: Dict[int, Room] = {}
@@ -284,8 +307,7 @@ class RoomManager:
         if client.auto_translate:
             room.auto_translate_count += 1
 
-        if client.application.settings['debug']:
-            await client.send_test_message()
+        await client.on_join_room()
 
     def del_client(self, room_id, client: 'ChatHandler'):
         room = self._rooms.get(room_id, None)
@@ -390,6 +412,41 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
             return True
         return super().check_origin(origin)
 
+    @property
+    def has_joined_room(self):
+        return self.room_id is not None
+
+    def send_message(self, cmd, data):
+        body = json.dumps({'cmd': cmd, 'data': data})
+        try:
+            self.write_message(body)
+        except tornado.websocket.WebSocketClosedError:
+            self.on_close()
+
+    async def on_join_room(self):
+        if self.application.settings['debug']:
+            await self.send_test_message()
+
+        # 不允许自动翻译的提示
+        if self.auto_translate:
+            cfg = config.get_config()
+            if cfg.allow_translate_rooms and self.room_id not in cfg.allow_translate_rooms:
+                self.send_message(Command.ADD_TEXT, make_text_message(
+                    models.avatar.DEFAULT_AVATAR_URL,
+                    int(time.time()),
+                    'blivechat',
+                    2,
+                    'Translation is not allowed in this room. Please download to use translation',
+                    0,
+                    False,
+                    60,
+                    False,
+                    True,
+                    0,
+                    uuid.uuid4().hex,
+                    ''
+                ))
+
     # 测试用
     async def send_test_message(self):
         base_data = {
@@ -397,37 +454,25 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
             'timestamp': int(time.time()),
             'authorName': 'xfgryujk',
         }
-        text_data = [
-            # 0: avatarUrl
+        text_data = make_text_message(
             base_data['avatarUrl'],
-            # 1: timestamp
             base_data['timestamp'],
-            # 2: authorName
             base_data['authorName'],
-            # 3: authorType
             0,
-            # 4: content
             '我能吞下玻璃而不伤身体',
-            # 5: privilegeType
             0,
-            # 6: isGiftDanmaku
-            0,
-            # 7: authorLevel
+            False,
             20,
-            # 8: isNewbie
+            False,
+            True,
             0,
-            # 9: isMobileVerified
-            1,
-            # 10: medalLevel
-            0,
-            # 11: id
             uuid.uuid4().hex,
-            # 12: translation
             ''
-        ]
+        )
         member_data = {
             **base_data,
-            'id': uuid.uuid4().hex
+            'id': uuid.uuid4().hex,
+            'privilegeType': 3
         }
         gift_data = {
             **base_data,
@@ -461,14 +506,3 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
         gift_data['totalCoin'] = 1245000
         gift_data['giftName'] = '小电视飞船'
         self.send_message(Command.ADD_GIFT, gift_data)
-
-    @property
-    def has_joined_room(self):
-        return self.room_id is not None
-
-    def send_message(self, cmd, data):
-        body = json.dumps({'cmd': cmd, 'data': data})
-        try:
-            self.write_message(body)
-        except tornado.websocket.WebSocketClosedError:
-            self.on_close()
