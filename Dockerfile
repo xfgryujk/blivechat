@@ -14,20 +14,22 @@ RUN wget https://nodejs.org/dist/v10.16.0/node-v10.16.0-linux-x64.tar.xz \
     && ln -s /node-v10.16.0-linux-x64/bin/npm /usr/local/bin/npm
 
 # 后端依赖
-COPY requirements.txt /blivechat/
-RUN pip3 install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple -r /blivechat/requirements.txt
+WORKDIR /blivechat
+COPY requirements.txt ./
+RUN pip3 install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
 
 # 前端依赖
-WORKDIR /blivechat/frontend
-COPY frontend/package*.json ./
+WORKDIR ./frontend
+COPY frontend/package.json frontend/package-lock.json ./
 RUN npm i --registry=https://registry.npm.taobao.org
 
-# 编译
-COPY . /blivechat
+# 编译前端
+COPY . ../
 RUN npm run build
 
 # 运行
-WORKDIR /blivechat
+WORKDIR ..
+VOLUME /blivechat/data /blivechat/log /blivechat/frontend/dist
 EXPOSE 12450
 ENTRYPOINT ["python3", "main.py"]
 CMD ["--host", "0.0.0.0", "--port", "12450"]

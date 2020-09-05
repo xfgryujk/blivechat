@@ -65,7 +65,11 @@
 
 ### 四、Docker（自建服务器）
 1. ```sh
-   docker run -d -p 12450:12450 xfgryujk/blivechat:latest
+   docker run --name blivechat -d -p 12450:12450 \
+     --mount source=blc-data,target=/blivechat/data \
+     --mount source=blc-log,target=/blivechat/log \
+     --mount source=blc-frontend,target=/blivechat/frontend/dist \
+     xfgryujk/blivechat:latest
    ```
 2. 用浏览器打开[http://localhost:12450](http://localhost:12450)，以下略
 
