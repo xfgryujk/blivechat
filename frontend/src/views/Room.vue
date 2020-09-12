@@ -5,17 +5,9 @@
 <script>
 import {mergeConfig, toBool, toInt} from '@/utils'
 import * as config from '@/api/config'
+import ChatClientRelay from '@/api/chat/ChatClientRelay'
 import ChatRenderer from '@/components/ChatRenderer'
 import * as constants from '@/components/ChatRenderer/constants'
-
-const COMMAND_HEARTBEAT = 0
-const COMMAND_JOIN_ROOM = 1
-const COMMAND_ADD_TEXT = 2
-const COMMAND_ADD_GIFT = 3
-const COMMAND_ADD_MEMBER = 4
-const COMMAND_ADD_SUPER_CHAT = 5
-const COMMAND_DEL_SUPER_CHAT = 6
-const COMMAND_UPDATE_TRANSLATION = 7
 
 export default {
   name: 'Room',
@@ -25,11 +17,7 @@ export default {
   data() {
     return {
       config: {...config.DEFAULT_CONFIG},
-
-      websocket: null,
-      retryCount: 0,
-      isDestroying: false,
-      heartbeatTimerId: null
+      chatClient: null
     }
   },
   computed: {
@@ -41,8 +29,8 @@ export default {
     }
   },
   created() {
-    this.updateConfig()
-    this.wsConnect()
+    this.initConfig()
+    this.initChatClient()
     // 提示用户已加载
     this.$message({
       message: 'Loaded',
@@ -50,11 +38,12 @@ export default {
     })
   },
   beforeDestroy() {
-    this.isDestroying = true
-    this.websocket.close()
+    if (this.chatClient) {
+      this.chatClient.stop()
+    }
   },
   methods: {
-    updateConfig() {
+    initConfig() {
       let cfg = {}
       // 留空的使用默认值
       for (let i in this.$route.query) {
@@ -80,155 +69,104 @@ export default {
 
       this.config = cfg
     },
-    wsConnect() {
-      const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
-      // 开发时使用localhost:12450
-      const host = process.env.NODE_ENV === 'development' ? 'localhost:12450' : window.location.host
-      const url = `${protocol}://${host}/api/chat`
-      this.websocket = new WebSocket(url)
-      this.websocket.onopen = this.onWsOpen
-      this.websocket.onclose = this.onWsClose
-      this.websocket.onmessage = this.onWsMessage
-      this.heartbeatTimerId = window.setInterval(this.sendHeartbeat, 10 * 1000)
+    initChatClient() {
+      let roomId = parseInt(this.$route.params.roomId)
+      this.chatClient = new ChatClientRelay(roomId, this.config.autoTranslate)
+      this.chatClient.onAddText = this.onAddText
+      this.chatClient.onAddGift = this.onAddGift
+      this.chatClient.onAddMember = this.onAddMember
+      this.chatClient.onAddSuperChat = this.onAddSuperChat
+      this.chatClient.onDelSuperChat = this.onDelSuperChat
+      this.chatClient.onUpdateTranslation = this.onUpdateTranslation
+      this.chatClient.start()
     },
-    sendHeartbeat() {
-      this.websocket.send(JSON.stringify({
-        cmd: COMMAND_HEARTBEAT
-      }))
-    },
-    onWsOpen() {
-      this.retryCount = 0
-      this.websocket.send(JSON.stringify({
-        cmd: COMMAND_JOIN_ROOM,
-        data: {
-          roomId: parseInt(this.$route.params.roomId),
-          config: {
-            autoTranslate: this.config.autoTranslate
-          }
-        }
-      }))
-    },
-    onWsClose() {
-      if (this.heartbeatTimerId) {
-        window.clearInterval(this.heartbeatTimerId)
-        this.heartbeatTimerId = null
-      }
-      if (this.isDestroying) {
+
+    onAddText(data) {
+      if (!this.config.showDanmaku || !this.filterTextMessage(data) || this.mergeSimilarText(data.content)) {
         return
       }
-      window.console.log(`掉线重连中${++this.retryCount}`)
-      this.wsConnect()
+      let message = {
+        id: data.id,
+        type: constants.MESSAGE_TYPE_TEXT,
+        avatarUrl: data.avatarUrl,
+        time: new Date(data.timestamp * 1000),
+        authorName: data.authorName,
+        authorType: data.authorType,
+        content: data.content,
+        privilegeType: data.privilegeType,
+        repeated: 1,
+        translation: data.translation
+      }
+      this.$refs.renderer.addMessage(message)
     },
-    onWsMessage(event) {
-      let {cmd, data} = JSON.parse(event.data)
-      let message = null
-      switch (cmd) {
-      case COMMAND_ADD_TEXT:
-        data = {
-          avatarUrl: data[0],
-          timestamp: data[1],
-          authorName: data[2],
-          authorType: data[3],
-          content: data[4],
-          privilegeType: data[5],
-          isGiftDanmaku: !!data[6],
-          authorLevel: data[7],
-          isNewbie: !!data[8],
-          isMobileVerified: !!data[9],
-          medalLevel: data[10],
-          id: data[11],
-          translation: data[12]
-        }
-        if (!this.config.showDanmaku || !this.filterTextMessage(data) || this.mergeSimilarText(data.content)) {
-          break
-        }
-        message = {
-          id: data.id,
-          type: constants.MESSAGE_TYPE_TEXT,
-          avatarUrl: data.avatarUrl,
-          time: new Date(data.timestamp * 1000),
-          authorName: data.authorName,
-          authorType: data.authorType,
-          content: data.content,
-          privilegeType: data.privilegeType,
-          repeated: 1,
-          translation: data.translation
-        }
-        break
-      case COMMAND_ADD_GIFT: {
-        if (!this.config.showGift) {
-          break
-        }
-        let price = data.totalCoin / 1000
-        if (this.mergeSimilarGift(data.authorName, price, data.giftName, data.num)) {
-          break
-        }
-        if (price < this.config.minGiftPrice) { // 丢人
-          break
-        }
-        message = {
-          id: data.id,
-          type: constants.MESSAGE_TYPE_GIFT,
-          avatarUrl: data.avatarUrl,
-          time: new Date(data.timestamp * 1000),
-          authorName: data.authorName,
-          price: price,
-          giftName: data.giftName,
-          num: data.num
-        }
-        break
+    onAddGift(data) {
+      if (!this.config.showGift) {
+        return
       }
-      case COMMAND_ADD_MEMBER:
-        if (!this.config.showGift || !this.filterNewMemberMessage(data)) {
-          break
-        }
-        message = {
-          id: data.id,
-          type: constants.MESSAGE_TYPE_MEMBER,
-          avatarUrl: data.avatarUrl,
-          time: new Date(data.timestamp * 1000),
-          authorName: data.authorName,
-          privilegeType: data.privilegeType,
-          title: 'New member'
-        }
-        break
-      case COMMAND_ADD_SUPER_CHAT:
-        if (!this.config.showGift || !this.filterSuperChatMessage(data)) {
-          break
-        }
-        if (data.price < this.config.minGiftPrice) { // 丢人
-          break
-        }
-        message = {
-          id: data.id,
-          type: constants.MESSAGE_TYPE_SUPER_CHAT,
-          avatarUrl: data.avatarUrl,
-          authorName: data.authorName,
-          price: data.price,
-          time: new Date(data.timestamp * 1000),
-          content: data.content.trim()
-        }
-        break
-      case COMMAND_DEL_SUPER_CHAT:
-        for (let id of data.ids) {
-          this.$refs.renderer.delMessage(id)
-        }
-        break
-      case COMMAND_UPDATE_TRANSLATION:
-        if (!this.config.autoTranslate) {
-          break
-        }
-        data = {
-          id: data[0],
-          translation: data[1]
-        }
-        this.$refs.renderer.updateMessage(data.id, {translation: data.translation})
-        break
+      let price = data.totalCoin / 1000
+      if (this.mergeSimilarGift(data.authorName, price, data.giftName, data.num)) {
+        return
       }
-      if (message) {
-        this.$refs.renderer.addMessage(message)
+      if (price < this.config.minGiftPrice) { // 丢人
+        return
+      }
+      let message = {
+        id: data.id,
+        type: constants.MESSAGE_TYPE_GIFT,
+        avatarUrl: data.avatarUrl,
+        time: new Date(data.timestamp * 1000),
+        authorName: data.authorName,
+        price: price,
+        giftName: data.giftName,
+        num: data.num
+      }
+      this.$refs.renderer.addMessage(message)
+    },
+    onAddMember(data) {
+      if (!this.config.showGift || !this.filterNewMemberMessage(data)) {
+        return
+      }
+      let message = {
+        id: data.id,
+        type: constants.MESSAGE_TYPE_MEMBER,
+        avatarUrl: data.avatarUrl,
+        time: new Date(data.timestamp * 1000),
+        authorName: data.authorName,
+        privilegeType: data.privilegeType,
+        title: 'New member'
+      }
+      this.$refs.renderer.addMessage(message)
+    },
+    onAddSuperChat(data) {
+      if (!this.config.showGift || !this.filterSuperChatMessage(data)) {
+        return
+      }
+      if (data.price < this.config.minGiftPrice) { // 丢人
+        return
+      }
+      let message = {
+        id: data.id,
+        type: constants.MESSAGE_TYPE_SUPER_CHAT,
+        avatarUrl: data.avatarUrl,
+        authorName: data.authorName,
+        price: data.price,
+        time: new Date(data.timestamp * 1000),
+        content: data.content.trim()
+      }
+      this.$refs.renderer.addMessage(message)
+    },
+    onDelSuperChat(data) {
+      for (let id of data.ids) {
+        this.$refs.renderer.delMessage(id)
       }
     },
+    onUpdateTranslation(data) {
+      if (!this.config.autoTranslate) {
+        return
+      }
+      this.$refs.renderer.updateMessage(data.id, {translation: data.translation})
+    },
+
     filterTextMessage(data) {
       if (this.config.blockGiftDanmaku && data.isGiftDanmaku) {
         return false
