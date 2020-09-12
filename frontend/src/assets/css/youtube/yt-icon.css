@@ -1,0 +1,30 @@
+canvas.yt-icon, caption.yt-icon, center.yt-icon, cite.yt-icon, code.yt-icon, dd.yt-icon, del.yt-icon, dfn.yt-icon, div.yt-icon, dl.yt-icon, dt.yt-icon, em.yt-icon, embed.yt-icon, fieldset.yt-icon, font.yt-icon, form.yt-icon, h1.yt-icon, h2.yt-icon, h3.yt-icon, h4.yt-icon, h5.yt-icon, h6.yt-icon, hr.yt-icon, i.yt-icon, iframe.yt-icon, img.yt-icon, ins.yt-icon, kbd.yt-icon, label.yt-icon, legend.yt-icon, li.yt-icon, menu.yt-icon, object.yt-icon, ol.yt-icon, p.yt-icon, pre.yt-icon, q.yt-icon, s.yt-icon, samp.yt-icon, small.yt-icon, span.yt-icon, strike.yt-icon, strong.yt-icon, sub.yt-icon, sup.yt-icon, table.yt-icon, tbody.yt-icon, td.yt-icon, tfoot.yt-icon, th.yt-icon, thead.yt-icon, tr.yt-icon, tt.yt-icon, u.yt-icon, ul.yt-icon, var.yt-icon {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.yt-icon[hidden] {
+  display: none !important;
+}
+
+yt-icon, .yt-icon-container.yt-icon {
+  display: inline-flex;
+  -ms-flex-align: center;
+  -webkit-align-items: center;
+  align-items: center;
+  -ms-flex-pack: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  position: relative;
+  vertical-align: middle;
+  fill: currentcolor;
+  stroke: none;
+  width: var(--iron-icon-width, 24px);
+  height: var(--iron-icon-height, 24px);
+}
+
+yt-icon.external-container {
+  display: none !important;
+}

@@ -1,0 +1,64 @@
+canvas.yt-live-chat-author-chip, caption.yt-live-chat-author-chip, center.yt-live-chat-author-chip, cite.yt-live-chat-author-chip, code.yt-live-chat-author-chip, dd.yt-live-chat-author-chip, del.yt-live-chat-author-chip, dfn.yt-live-chat-author-chip, div.yt-live-chat-author-chip, dl.yt-live-chat-author-chip, dt.yt-live-chat-author-chip, em.yt-live-chat-author-chip, embed.yt-live-chat-author-chip, fieldset.yt-live-chat-author-chip, font.yt-live-chat-author-chip, form.yt-live-chat-author-chip, h1.yt-live-chat-author-chip, h2.yt-live-chat-author-chip, h3.yt-live-chat-author-chip, h4.yt-live-chat-author-chip, h5.yt-live-chat-author-chip, h6.yt-live-chat-author-chip, hr.yt-live-chat-author-chip, i.yt-live-chat-author-chip, iframe.yt-live-chat-author-chip, img.yt-live-chat-author-chip, ins.yt-live-chat-author-chip, kbd.yt-live-chat-author-chip, label.yt-live-chat-author-chip, legend.yt-live-chat-author-chip, li.yt-live-chat-author-chip, menu.yt-live-chat-author-chip, object.yt-live-chat-author-chip, ol.yt-live-chat-author-chip, p.yt-live-chat-author-chip, pre.yt-live-chat-author-chip, q.yt-live-chat-author-chip, s.yt-live-chat-author-chip, samp.yt-live-chat-author-chip, small.yt-live-chat-author-chip, span.yt-live-chat-author-chip, strike.yt-live-chat-author-chip, strong.yt-live-chat-author-chip, sub.yt-live-chat-author-chip, sup.yt-live-chat-author-chip, table.yt-live-chat-author-chip, tbody.yt-live-chat-author-chip, td.yt-live-chat-author-chip, tfoot.yt-live-chat-author-chip, th.yt-live-chat-author-chip, thead.yt-live-chat-author-chip, tr.yt-live-chat-author-chip, tt.yt-live-chat-author-chip, u.yt-live-chat-author-chip, ul.yt-live-chat-author-chip, var.yt-live-chat-author-chip {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.yt-live-chat-author-chip[hidden] {
+  display: none !important;
+}
+
+yt-live-chat-author-chip {
+  display: inline-flex;
+  -ms-flex-align: baseline;
+  -webkit-align-items: baseline;
+  align-items: baseline;
+}
+
+#author-name.yt-live-chat-author-chip {
+  box-sizing: border-box;
+  border-radius: 2px;
+  color: var(--yt-live-chat-secondary-text-color);
+  font-weight: 500;
+}
+
+yt-live-chat-author-chip[is-highlighted] #author-name.yt-live-chat-author-chip {
+  padding: 2px 4px;
+  color: var(--yt-live-chat-author-chip-verified-text-color);
+  background-color: var(--yt-live-chat-author-chip-verified-background-color);
+}
+
+#author-name.yt-live-chat-author-chip[type='moderator'] {
+  color: var(--yt-live-chat-moderator-color);
+}
+
+yt-live-chat-author-chip[is-highlighted] #author-name.yt-live-chat-author-chip[type='owner'], #author-name.yt-live-chat-author-chip[type='owner'] {
+  background-color: #ffd600;
+  color: var(--yt-live-chat-author-chip-owner-text-color);
+}
+
+#author-name.yt-live-chat-author-chip[type='member'] {
+  color: var(--yt-live-chat-sponsor-color);
+}
+
+#chip-badges.yt-live-chat-author-chip:empty {
+  display: none;
+}
+
+yt-live-chat-author-chip[is-highlighted] #chat-badges.yt-live-chat-author-chip:not(:empty) {
+  margin-left: 1px;
+}
+
+yt-live-chat-author-badge-renderer.yt-live-chat-author-chip {
+  margin: 0 0 0 2px;
+  vertical-align: sub;
+}
+
+yt-live-chat-author-chip[is-highlighted] #chip-badges.yt-live-chat-author-chip yt-live-chat-author-badge-renderer.yt-live-chat-author-chip {
+  color: inherit;
+}
+
+#chip-badges.yt-live-chat-author-chip yt-live-chat-author-badge-renderer.yt-live-chat-author-chip:last-of-type {
+  margin-right: -2px;
+}

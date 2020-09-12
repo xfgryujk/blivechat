@@ -1,0 +1,80 @@
+canvas.yt-live-chat-ticker-paid-message-item-renderer, caption.yt-live-chat-ticker-paid-message-item-renderer, center.yt-live-chat-ticker-paid-message-item-renderer, cite.yt-live-chat-ticker-paid-message-item-renderer, code.yt-live-chat-ticker-paid-message-item-renderer, dd.yt-live-chat-ticker-paid-message-item-renderer, del.yt-live-chat-ticker-paid-message-item-renderer, dfn.yt-live-chat-ticker-paid-message-item-renderer, div.yt-live-chat-ticker-paid-message-item-renderer, dl.yt-live-chat-ticker-paid-message-item-renderer, dt.yt-live-chat-ticker-paid-message-item-renderer, em.yt-live-chat-ticker-paid-message-item-renderer, embed.yt-live-chat-ticker-paid-message-item-renderer, fieldset.yt-live-chat-ticker-paid-message-item-renderer, font.yt-live-chat-ticker-paid-message-item-renderer, form.yt-live-chat-ticker-paid-message-item-renderer, h1.yt-live-chat-ticker-paid-message-item-renderer, h2.yt-live-chat-ticker-paid-message-item-renderer, h3.yt-live-chat-ticker-paid-message-item-renderer, h4.yt-live-chat-ticker-paid-message-item-renderer, h5.yt-live-chat-ticker-paid-message-item-renderer, h6.yt-live-chat-ticker-paid-message-item-renderer, hr.yt-live-chat-ticker-paid-message-item-renderer, i.yt-live-chat-ticker-paid-message-item-renderer, iframe.yt-live-chat-ticker-paid-message-item-renderer, img.yt-live-chat-ticker-paid-message-item-renderer, ins.yt-live-chat-ticker-paid-message-item-renderer, kbd.yt-live-chat-ticker-paid-message-item-renderer, label.yt-live-chat-ticker-paid-message-item-renderer, legend.yt-live-chat-ticker-paid-message-item-renderer, li.yt-live-chat-ticker-paid-message-item-renderer, menu.yt-live-chat-ticker-paid-message-item-renderer, object.yt-live-chat-ticker-paid-message-item-renderer, ol.yt-live-chat-ticker-paid-message-item-renderer, p.yt-live-chat-ticker-paid-message-item-renderer, pre.yt-live-chat-ticker-paid-message-item-renderer, q.yt-live-chat-ticker-paid-message-item-renderer, s.yt-live-chat-ticker-paid-message-item-renderer, samp.yt-live-chat-ticker-paid-message-item-renderer, small.yt-live-chat-ticker-paid-message-item-renderer, span.yt-live-chat-ticker-paid-message-item-renderer, strike.yt-live-chat-ticker-paid-message-item-renderer, strong.yt-live-chat-ticker-paid-message-item-renderer, sub.yt-live-chat-ticker-paid-message-item-renderer, sup.yt-live-chat-ticker-paid-message-item-renderer, table.yt-live-chat-ticker-paid-message-item-renderer, tbody.yt-live-chat-ticker-paid-message-item-renderer, td.yt-live-chat-ticker-paid-message-item-renderer, tfoot.yt-live-chat-ticker-paid-message-item-renderer, th.yt-live-chat-ticker-paid-message-item-renderer, thead.yt-live-chat-ticker-paid-message-item-renderer, tr.yt-live-chat-ticker-paid-message-item-renderer, tt.yt-live-chat-ticker-paid-message-item-renderer, u.yt-live-chat-ticker-paid-message-item-renderer, ul.yt-live-chat-ticker-paid-message-item-renderer, var.yt-live-chat-ticker-paid-message-item-renderer {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.yt-live-chat-ticker-paid-message-item-renderer[hidden] {
+  display: none !important;
+}
+
+canvas.yt-live-chat-ticker-paid-message-item-renderer, caption.yt-live-chat-ticker-paid-message-item-renderer, center.yt-live-chat-ticker-paid-message-item-renderer, cite.yt-live-chat-ticker-paid-message-item-renderer, code.yt-live-chat-ticker-paid-message-item-renderer, dd.yt-live-chat-ticker-paid-message-item-renderer, del.yt-live-chat-ticker-paid-message-item-renderer, dfn.yt-live-chat-ticker-paid-message-item-renderer, div.yt-live-chat-ticker-paid-message-item-renderer, dl.yt-live-chat-ticker-paid-message-item-renderer, dt.yt-live-chat-ticker-paid-message-item-renderer, em.yt-live-chat-ticker-paid-message-item-renderer, embed.yt-live-chat-ticker-paid-message-item-renderer, fieldset.yt-live-chat-ticker-paid-message-item-renderer, font.yt-live-chat-ticker-paid-message-item-renderer, form.yt-live-chat-ticker-paid-message-item-renderer, h1.yt-live-chat-ticker-paid-message-item-renderer, h2.yt-live-chat-ticker-paid-message-item-renderer, h3.yt-live-chat-ticker-paid-message-item-renderer, h4.yt-live-chat-ticker-paid-message-item-renderer, h5.yt-live-chat-ticker-paid-message-item-renderer, h6.yt-live-chat-ticker-paid-message-item-renderer, hr.yt-live-chat-ticker-paid-message-item-renderer, i.yt-live-chat-ticker-paid-message-item-renderer, iframe.yt-live-chat-ticker-paid-message-item-renderer, img.yt-live-chat-ticker-paid-message-item-renderer, ins.yt-live-chat-ticker-paid-message-item-renderer, kbd.yt-live-chat-ticker-paid-message-item-renderer, label.yt-live-chat-ticker-paid-message-item-renderer, legend.yt-live-chat-ticker-paid-message-item-renderer, li.yt-live-chat-ticker-paid-message-item-renderer, menu.yt-live-chat-ticker-paid-message-item-renderer, object.yt-live-chat-ticker-paid-message-item-renderer, ol.yt-live-chat-ticker-paid-message-item-renderer, p.yt-live-chat-ticker-paid-message-item-renderer, pre.yt-live-chat-ticker-paid-message-item-renderer, q.yt-live-chat-ticker-paid-message-item-renderer, s.yt-live-chat-ticker-paid-message-item-renderer, samp.yt-live-chat-ticker-paid-message-item-renderer, small.yt-live-chat-ticker-paid-message-item-renderer, span.yt-live-chat-ticker-paid-message-item-renderer, strike.yt-live-chat-ticker-paid-message-item-renderer, strong.yt-live-chat-ticker-paid-message-item-renderer, sub.yt-live-chat-ticker-paid-message-item-renderer, sup.yt-live-chat-ticker-paid-message-item-renderer, table.yt-live-chat-ticker-paid-message-item-renderer, tbody.yt-live-chat-ticker-paid-message-item-renderer, td.yt-live-chat-ticker-paid-message-item-renderer, tfoot.yt-live-chat-ticker-paid-message-item-renderer, th.yt-live-chat-ticker-paid-message-item-renderer, thead.yt-live-chat-ticker-paid-message-item-renderer, tr.yt-live-chat-ticker-paid-message-item-renderer, tt.yt-live-chat-ticker-paid-message-item-renderer, u.yt-live-chat-ticker-paid-message-item-renderer, ul.yt-live-chat-ticker-paid-message-item-renderer, var.yt-live-chat-ticker-paid-message-item-renderer {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.yt-live-chat-ticker-paid-message-item-renderer[hidden] {
+  display: none !important;
+}
+
+yt-live-chat-ticker-paid-message-item-renderer {
+  display: inline-block;
+  font-size: 14px;
+  outline: none;
+  transition: width 0.2s;
+  vertical-align: top;
+  cursor: pointer;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#container.yt-live-chat-ticker-paid-message-item-renderer {
+  border-radius: 999px;
+  padding: 4px;
+}
+
+yt-live-chat-ticker-paid-message-item-renderer.sliding-down #container.yt-live-chat-ticker-paid-message-item-renderer {
+  opacity: 0.5;
+  transform: translateY(44px);
+  transition: opacity 0.2s, transform 0.2s cubic-bezier(0.4, 0.0, 1, 1);
+}
+
+yt-live-chat-ticker-paid-message-item-renderer.collapsing {
+  margin-right: 0;
+  transition: margin-right 0.2s cubic-bezier(0.4, 0.0, 0.2, 1), width 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+yt-live-chat-ticker-paid-message-item-renderer[dimmed] {
+  opacity: 0.5;
+}
+
+yt-img-shadow.yt-live-chat-ticker-paid-message-item-renderer {
+  margin-right: -4px;
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+#content.yt-live-chat-ticker-paid-message-item-renderer {
+  height: 24px;
+  display: flex;
+  -ms-flex-direction: row;
+  -webkit-flex-direction: row;
+  flex-direction: row;
+  -ms-flex-align: center;
+  -webkit-align-items: center;
+  align-items: center;
+}
+
+#text.yt-live-chat-ticker-paid-message-item-renderer {
+  margin: 0 8px;
+  font-weight: 500;
+}
+
+yt-live-chat-ticker-paid-message-item-renderer[is-deleted] #author-photo.yt-live-chat-ticker-paid-message-item-renderer {
+  display: none;
+}
