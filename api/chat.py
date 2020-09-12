@@ -246,13 +246,10 @@ class Room(blivedm.BLiveClient):
             return
         self.send_message_if(
             lambda client: client.auto_translate,
-            Command.UPDATE_TRANSLATION,
-            [
-                # 0: id
+            Command.UPDATE_TRANSLATION, make_translation_message(
                 msg_id,
-                # 1: translation
                 translation
-            ]
+            )
         )
 
 
@@ -285,6 +282,15 @@ def make_text_message(avatar_url, timestamp, author_name, author_type, content, 
         # 11: id
         id_,
         # 12: translation
+        translation
+    ]
+
+
+def make_translation_message(msg_id, translation):
+    return [
+        # 0: id
+        msg_id,
+        # 1: translation
         translation
     ]
 
