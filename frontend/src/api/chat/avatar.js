@@ -1,3 +1,5 @@
+import axios from 'axios'
+
 export const DEFAULT_AVATAR_URL = '//static.hdslb.com/images/member/noface.gif'
 
 export function processAvatarUrl (avatarUrl) {
@@ -13,7 +15,14 @@ export function processAvatarUrl (avatarUrl) {
   return avatarUrl
 }
 
-export async function getAvatarUrl () {
-  // TODO 请求后端
-  return DEFAULT_AVATAR_URL
+export async function getAvatarUrl (uid) {
+  let res
+  try {
+    res = (await axios.get('/api/avatar_url', {params: {
+      uid: uid
+    }})).data
+  } catch {
+    return DEFAULT_AVATAR_URL
+  }
+  return res.avatarUrl
 }

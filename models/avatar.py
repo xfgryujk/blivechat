@@ -34,16 +34,20 @@ def init():
 
 
 async def get_avatar_url(user_id):
+    avatar_url = await get_avatar_url_or_none(user_id)
+    if avatar_url is None:
+        avatar_url = DEFAULT_AVATAR_URL
+    return avatar_url
+
+
+async def get_avatar_url_or_none(user_id):
     avatar_url = get_avatar_url_from_memory(user_id)
     if avatar_url is not None:
         return avatar_url
     avatar_url = await get_avatar_url_from_database(user_id)
     if avatar_url is not None:
         return avatar_url
-    avatar_url = await get_avatar_url_from_web(user_id)
-    if avatar_url is not None:
-        return avatar_url
-    return DEFAULT_AVATAR_URL
+    return await get_avatar_url_from_web(user_id)
 
 
 def get_avatar_url_from_memory(user_id):

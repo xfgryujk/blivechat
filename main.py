@@ -26,6 +26,8 @@ LOG_FILE_NAME = os.path.join(BASE_PATH, 'log', 'blivechat.log')
 routes = [
     (r'/api/server_info', api.main.ServerInfoHandler),
     (r'/api/chat', api.chat.ChatHandler),
+    (r'/api/room_info', api.chat.RoomInfoHandler),
+    (r'/api/avatar_url', api.chat.AvatarHandler),
 
     # TODO 兼容旧版，下版本移除
     (r'/server_info', api.main.ServerInfoHandler),

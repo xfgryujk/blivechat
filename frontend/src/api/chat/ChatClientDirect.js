@@ -1,4 +1,6 @@
+import axios from 'axios'
 import {inflate} from 'pako'
+
 import {getUuid4Hex} from '@/utils'
 import * as avatar from './avatar'
 
@@ -68,7 +70,19 @@ export default class ChatClientDirect {
   }
 
   async initRoom () {
-    // TODO 请求后端
+    let res
+    try {
+      res = (await axios.get('/api/room_info', {params: {
+        roomId: this.roomId
+      }})).data
+    } catch {
+      return
+    }
+    this.roomId = res.roomId
+    this.roomOwnerUid = res.ownerUid
+    if (res.hostServerList.length !== 0) {
+      this.hostServerList = res.hostServerList
+    }
   }
 
   makePacket (data, operation) {
@@ -296,7 +310,7 @@ export default class ChatClientDirect {
 
     let data = command.data
     data = {
-      id: data.id,
+      id: data.id.toString(),
       avatarUrl: avatar.processAvatarUrl(data.user_info.face),
       timestamp: data.start_time,
       authorName: data.user_info.uname,
