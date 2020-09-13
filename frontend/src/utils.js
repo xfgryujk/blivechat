@@ -32,3 +32,12 @@ export function getTimeTextHourMin (date) {
   let min = ('00' + date.getMinutes()).slice(-2)
   return `${hour}:${min}`
 }
+
+export function getUuid4Hex () {
+  let chars = []
+  for (let i = 0; i < 32; i++) {
+    let char = Math.floor(Math.random() * 16).toString(16)
+    chars.push(char)
+  }
+  return chars.join('')
+}

@@ -5,7 +5,8 @@
 <script>
 import {mergeConfig, toBool, toInt} from '@/utils'
 import * as config from '@/api/config'
-import ChatClientRelay from '@/api/chat/ChatClientRelay'
+import ChatClientDirect from '@/api/chat/ChatClientDirect'
+// import ChatClientRelay from '@/api/chat/ChatClientRelay'
 import ChatRenderer from '@/components/ChatRenderer'
 import * as constants from '@/components/ChatRenderer/constants'
 
@@ -71,7 +72,11 @@ export default {
     },
     initChatClient() {
       let roomId = parseInt(this.$route.params.roomId)
-      this.chatClient = new ChatClientRelay(roomId, this.config.autoTranslate)
+      // if () {
+        this.chatClient = new ChatClientDirect(roomId)
+      // } else {
+      //   this.chatClient = new ChatClientRelay(roomId, this.config.autoTranslate)
+      // }
       this.chatClient.onAddText = this.onAddText
       this.chatClient.onAddGift = this.onAddGift
       this.chatClient.onAddMember = this.onAddMember

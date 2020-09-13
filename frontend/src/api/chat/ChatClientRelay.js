@@ -37,6 +37,9 @@ export default class ChatClientRelay {
   }
 
   wsConnect () {
+    if (this.isDestroying) {
+      return
+    }
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
     // 开发时使用localhost:12450
     const host = process.env.NODE_ENV === 'development' ? 'localhost:12450' : window.location.host
@@ -77,7 +80,7 @@ export default class ChatClientRelay {
       return
     }
     window.console.log(`掉线重连中${++this.retryCount}`)
-    this.wsConnect()
+    window.setTimeout(this.wsConnect.bind(this), 1000)
   }
 
   onWsMessage (event) {
