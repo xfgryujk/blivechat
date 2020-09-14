@@ -58,8 +58,11 @@
       </el-tab-pane>
 
       <el-tab-pane :label="$t('home.advanced')">
+        <el-form-item :label="$t('home.relayMessagesByServer')">
+          <el-switch v-model="form.relayMessagesByServer"></el-switch>
+        </el-form-item>
         <el-form-item :label="$t('home.autoTranslate')">
-          <el-switch v-model="form.autoTranslate" :disabled="!serverConfig.enableTranslate"></el-switch>
+          <el-switch v-model="form.autoTranslate" :disabled="!serverConfig.enableTranslate || !form.relayMessagesByServer"></el-switch>
         </el-form-item>
       </el-tab-pane>
     </el-tabs>
@@ -83,7 +86,7 @@ import axios from 'axios'
 import download from 'downloadjs'
 
 import {mergeConfig} from '@/utils'
-import * as config from '@/api/config'
+import * as chatConfig from '@/api/chatConfig'
 
 export default {
   name: 'Home',
@@ -95,7 +98,7 @@ export default {
       },
       form: {
         roomId: parseInt(window.localStorage.roomId || '1'),
-        ...config.getLocalConfig()
+        ...chatConfig.getLocalConfig()
       }
     }
   },
@@ -124,7 +127,7 @@ export default {
   watch: {
     roomUrl: _.debounce(function() {
       window.localStorage.roomId = this.form.roomId
-      config.setLocalConfig(this.form)
+      chatConfig.setLocalConfig(this.form)
     }, 500)
   },
   mounted() {
@@ -146,7 +149,7 @@ export default {
       document.execCommand('Copy')
     },
     exportConfig() {
-      let cfg = mergeConfig(this.form, config.DEFAULT_CONFIG)
+      let cfg = mergeConfig(this.form, chatConfig.DEFAULT_CONFIG)
       download(JSON.stringify(cfg, null, 2), 'blivechat.json', 'application/json')
     },
     importConfig() {
@@ -163,7 +166,7 @@ export default {
             this.$message.error(this.$t('home.failedToParseConfig') + e)
             return
           }
-          cfg = mergeConfig(cfg, config.DEFAULT_CONFIG)
+          cfg = mergeConfig(cfg, chatConfig.DEFAULT_CONFIG)
           this.form = {roomId: this.form.roomId, ...cfg}
         }
         reader.readAsText(input.files[0])

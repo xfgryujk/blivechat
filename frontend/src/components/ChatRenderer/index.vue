@@ -42,7 +42,7 @@
 </template>
 
 <script>
-import * as config from '@/api/config'
+import * as chatConfig from '@/api/chatConfig'
 import Ticker from './Ticker.vue'
 import TextMessage from './TextMessage.vue'
 import MembershipItem from './MembershipItem.vue'
@@ -64,11 +64,11 @@ export default {
     css: String,
     maxNumber: {
       type: Number,
-      default: config.DEFAULT_CONFIG.maxNumber
+      default: chatConfig.DEFAULT_CONFIG.maxNumber
     },
     showGiftName: {
       type: Boolean,
-      default: config.DEFAULT_CONFIG.showGiftName
+      default: chatConfig.DEFAULT_CONFIG.showGiftName
     }
   },
   data() {

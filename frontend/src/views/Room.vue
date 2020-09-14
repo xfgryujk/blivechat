@@ -4,9 +4,9 @@
 
 <script>
 import {mergeConfig, toBool, toInt} from '@/utils'
-import * as config from '@/api/config'
+import * as chatConfig from '@/api/chatConfig'
 import ChatClientDirect from '@/api/chat/ChatClientDirect'
-// import ChatClientRelay from '@/api/chat/ChatClientRelay'
+import ChatClientRelay from '@/api/chat/ChatClientRelay'
 import ChatRenderer from '@/components/ChatRenderer'
 import * as constants from '@/components/ChatRenderer/constants'
 
@@ -17,7 +17,7 @@ export default {
   },
   data() {
     return {
-      config: {...config.DEFAULT_CONFIG},
+      config: {...chatConfig.DEFAULT_CONFIG},
       chatClient: null
     }
   },
@@ -52,31 +52,32 @@ export default {
           cfg[i] = this.$route.query[i]
         }
       }
-      cfg = mergeConfig(cfg, config.DEFAULT_CONFIG)
+      cfg = mergeConfig(cfg, chatConfig.DEFAULT_CONFIG)
 
-      cfg.minGiftPrice = toInt(cfg.minGiftPrice, config.DEFAULT_CONFIG.minGiftPrice)
+      cfg.minGiftPrice = toInt(cfg.minGiftPrice, chatConfig.DEFAULT_CONFIG.minGiftPrice)
       cfg.showDanmaku = toBool(cfg.showDanmaku)
       cfg.showGift = toBool(cfg.showGift)
       cfg.showGiftName = toBool(cfg.showGiftName)
       cfg.mergeSimilarDanmaku = toBool(cfg.mergeSimilarDanmaku)
       cfg.mergeGift = toBool(cfg.mergeGift)
-      cfg.maxNumber = toInt(cfg.maxNumber, config.DEFAULT_CONFIG.maxNumber)
+      cfg.maxNumber = toInt(cfg.maxNumber, chatConfig.DEFAULT_CONFIG.maxNumber)
       cfg.blockGiftDanmaku = toBool(cfg.blockGiftDanmaku)
-      cfg.blockLevel = toInt(cfg.blockLevel, config.DEFAULT_CONFIG.blockLevel)
+      cfg.blockLevel = toInt(cfg.blockLevel, chatConfig.DEFAULT_CONFIG.blockLevel)
       cfg.blockNewbie = toBool(cfg.blockNewbie)
       cfg.blockNotMobileVerified = toBool(cfg.blockNotMobileVerified)
-      cfg.blockMedalLevel = toInt(cfg.blockMedalLevel, config.DEFAULT_CONFIG.blockMedalLevel)
+      cfg.blockMedalLevel = toInt(cfg.blockMedalLevel, chatConfig.DEFAULT_CONFIG.blockMedalLevel)
+      cfg.relayMessagesByServer = toBool(cfg.relayMessagesByServer)
       cfg.autoTranslate = toBool(cfg.autoTranslate)
 
       this.config = cfg
     },
     initChatClient() {
       let roomId = parseInt(this.$route.params.roomId)
-      // if () {
+      if (!this.config.relayMessagesByServer) {
         this.chatClient = new ChatClientDirect(roomId)
-      // } else {
-      //   this.chatClient = new ChatClientRelay(roomId, this.config.autoTranslate)
-      // }
+      } else {
+        this.chatClient = new ChatClientRelay(roomId, this.config.autoTranslate)
+      }
       this.chatClient.onAddText = this.onAddText
       this.chatClient.onAddGift = this.onAddGift
       this.chatClient.onAddMember = this.onAddMember

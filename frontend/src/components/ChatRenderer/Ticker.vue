@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import * as config from '@/api/config'
+import * as chatConfig from '@/api/chatConfig'
 import {formatCurrency} from '@/utils'
 import ImgShadow from './ImgShadow.vue'
 import MembershipItem from './MembershipItem.vue'
@@ -59,7 +59,7 @@ export default {
     messages: Array,
     showGiftName: {
       type: Boolean,
-      default: config.DEFAULT_CONFIG.showGiftName
+      default: chatConfig.DEFAULT_CONFIG.showGiftName
     }
   },
   data() {

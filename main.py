@@ -72,6 +72,9 @@ def init_logging(debug):
         handlers=[stream_handler, file_handler]
     )
 
+    # 屏蔽访问日志
+    logging.getLogger('tornado.access').setLevel(logging.WARNING)
+
 
 def run_server(host, port, debug):
     app = tornado.web.Application(
