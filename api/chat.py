@@ -101,6 +101,10 @@ class Room(blivedm.BLiveClient):
         self.clients: List['ChatHandler'] = []
         self.auto_translate_count = 0
 
+    async def init_room(self):
+        await super().init_room()
+        return True
+
     def stop_and_close(self):
         if self.is_running:
             future = self.stop()
