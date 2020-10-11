@@ -12,6 +12,7 @@ from typing import *
 import aiohttp
 import tornado.websocket
 
+import api.base
 import blivedm.blivedm as blivedm
 import config
 import models.avatar
@@ -99,6 +100,10 @@ class Room(blivedm.BLiveClient):
         super().__init__(room_id, session=_http_session, heartbeat_interval=10)
         self.clients: List['ChatHandler'] = []
         self.auto_translate_count = 0
+
+    async def init_room(self):
+        await super().init_room()
+        return True
 
     def stop_and_close(self):
         if self.is_running:
@@ -246,13 +251,10 @@ class Room(blivedm.BLiveClient):
             return
         self.send_message_if(
             lambda client: client.auto_translate,
-            Command.UPDATE_TRANSLATION,
-            [
-                # 0: id
+            Command.UPDATE_TRANSLATION, make_translation_message(
                 msg_id,
-                # 1: translation
                 translation
-            ]
+            )
         )
 
 
@@ -285,6 +287,15 @@ def make_text_message(avatar_url, timestamp, author_name, author_type, content, 
         # 11: id
         id_,
         # 12: translation
+        translation
+    ]
+
+
+def make_translation_message(msg_id, translation):
+    return [
+        # 0: id
+        msg_id,
+        # 1: translation
         translation
     ]
 
@@ -506,3 +517,92 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
         gift_data['totalCoin'] = 1245000
         gift_data['giftName'] = '小电视飞船'
         self.send_message(Command.ADD_GIFT, gift_data)
+
+
+# noinspection PyAbstractClass
+class RoomInfoHandler(api.base.ApiHandler):
+    _host_server_list_cache = blivedm.DEFAULT_DANMAKU_SERVER_LIST
+
+    async def get(self):
+        room_id = int(self.get_query_argument('roomId'))
+        logger.info('Client %s is getting room info %d', self.request.remote_ip, room_id)
+        room_id, owner_uid = await self._get_room_info(room_id)
+        host_server_list = await self._get_server_host_list(room_id)
+        if owner_uid == 0:
+            # 缓存3分钟
+            self.set_header('Cache-Control', 'private, max-age=180')
+        else:
+            # 缓存1天
+            self.set_header('Cache-Control', 'private, max-age=86400')
+        self.write({
+            'roomId': room_id,
+            'ownerUid': owner_uid,
+            'hostServerList': host_server_list
+        })
+
+    @staticmethod
+    async def _get_room_info(room_id):
+        try:
+            async with _http_session.get(blivedm.ROOM_INIT_URL, params={'room_id': room_id}
+                                         ) as res:
+                if res.status != 200:
+                    logger.warning('room %d _get_room_info failed: %d %s', room_id,
+                                   res.status, res.reason)
+                    return room_id, 0
+                data = await res.json()
+        except aiohttp.ClientConnectionError:
+            logger.exception('room %d _get_room_info failed', room_id)
+            return room_id, 0
+
+        if data['code'] != 0:
+            logger.warning('room %d _get_room_info failed: %s', room_id, data['msg'])
+            return room_id, 0
+
+        room_info = data['data']['room_info']
+        return room_info['room_id'], room_info['uid']
+
+    @classmethod
+    async def _get_server_host_list(cls, _room_id):
+        return cls._host_server_list_cache
+
+        # 连接其他host必须要key
+        # try:
+        #     async with _http_session.get(blivedm.DANMAKU_SERVER_CONF_URL, params={'id': room_id, 'type': 0}
+        #                                  ) as res:
+        #         if res.status != 200:
+        #             logger.warning('room %d _get_server_host_list failed: %d %s', room_id,
+        #                            res.status, res.reason)
+        #             return cls._host_server_list_cache
+        #         data = await res.json()
+        # except aiohttp.ClientConnectionError:
+        #     logger.exception('room %d _get_server_host_list failed', room_id)
+        #     return cls._host_server_list_cache
+        #
+        # if data['code'] != 0:
+        #     logger.warning('room %d _get_server_host_list failed: %s', room_id, data['msg'])
+        #     return cls._host_server_list_cache
+        #
+        # host_server_list = data['data']['host_list']
+        # if not host_server_list:
+        #     logger.warning('room %d _get_server_host_list failed: host_server_list is empty')
+        #     return cls._host_server_list_cache
+        #
+        # cls._host_server_list_cache = host_server_list
+        # return host_server_list
+
+
+# noinspection PyAbstractClass
+class AvatarHandler(api.base.ApiHandler):
+    async def get(self):
+        uid = int(self.get_query_argument('uid'))
+        avatar_url = await models.avatar.get_avatar_url_or_none(uid)
+        if avatar_url is None:
+            avatar_url = models.avatar.DEFAULT_AVATAR_URL
+            # 缓存3分钟
+            self.set_header('Cache-Control', 'private, max-age=180')
+        else:
+            # 缓存1天
+            self.set_header('Cache-Control', 'private, max-age=86400')
+        self.write({
+            'avatarUrl': avatar_url
+        })

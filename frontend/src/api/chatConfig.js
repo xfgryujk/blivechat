@@ -17,6 +17,7 @@ export const DEFAULT_CONFIG = {
   blockUsers: '',
   blockMedalLevel: 0,
 
+  relayMessagesByServer: false,
   autoTranslate: false
 }
 

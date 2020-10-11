@@ -9,7 +9,7 @@
         </router-link>
       </div>
       <div class="version">
-        v1.4.5
+        v1.5.0
       </div>
       <sidebar></sidebar>
     </el-aside>
@@ -53,7 +53,7 @@ export default {
 
 <style>
 html {
-  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "\5FAE\8F6F\96C5\9ED1", "微软雅黑", Arial, sans-serif;
 }
 
 html, body, #app, .app-wrapper, .sidebar-container {

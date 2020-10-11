@@ -1,0 +1,36 @@
+canvas.yt-live-chat-author-badge-renderer, caption.yt-live-chat-author-badge-renderer, center.yt-live-chat-author-badge-renderer, cite.yt-live-chat-author-badge-renderer, code.yt-live-chat-author-badge-renderer, dd.yt-live-chat-author-badge-renderer, del.yt-live-chat-author-badge-renderer, dfn.yt-live-chat-author-badge-renderer, div.yt-live-chat-author-badge-renderer, dl.yt-live-chat-author-badge-renderer, dt.yt-live-chat-author-badge-renderer, em.yt-live-chat-author-badge-renderer, embed.yt-live-chat-author-badge-renderer, fieldset.yt-live-chat-author-badge-renderer, font.yt-live-chat-author-badge-renderer, form.yt-live-chat-author-badge-renderer, h1.yt-live-chat-author-badge-renderer, h2.yt-live-chat-author-badge-renderer, h3.yt-live-chat-author-badge-renderer, h4.yt-live-chat-author-badge-renderer, h5.yt-live-chat-author-badge-renderer, h6.yt-live-chat-author-badge-renderer, hr.yt-live-chat-author-badge-renderer, i.yt-live-chat-author-badge-renderer, iframe.yt-live-chat-author-badge-renderer, img.yt-live-chat-author-badge-renderer, ins.yt-live-chat-author-badge-renderer, kbd.yt-live-chat-author-badge-renderer, label.yt-live-chat-author-badge-renderer, legend.yt-live-chat-author-badge-renderer, li.yt-live-chat-author-badge-renderer, menu.yt-live-chat-author-badge-renderer, object.yt-live-chat-author-badge-renderer, ol.yt-live-chat-author-badge-renderer, p.yt-live-chat-author-badge-renderer, pre.yt-live-chat-author-badge-renderer, q.yt-live-chat-author-badge-renderer, s.yt-live-chat-author-badge-renderer, samp.yt-live-chat-author-badge-renderer, small.yt-live-chat-author-badge-renderer, span.yt-live-chat-author-badge-renderer, strike.yt-live-chat-author-badge-renderer, strong.yt-live-chat-author-badge-renderer, sub.yt-live-chat-author-badge-renderer, sup.yt-live-chat-author-badge-renderer, table.yt-live-chat-author-badge-renderer, tbody.yt-live-chat-author-badge-renderer, td.yt-live-chat-author-badge-renderer, tfoot.yt-live-chat-author-badge-renderer, th.yt-live-chat-author-badge-renderer, thead.yt-live-chat-author-badge-renderer, tr.yt-live-chat-author-badge-renderer, tt.yt-live-chat-author-badge-renderer, u.yt-live-chat-author-badge-renderer, ul.yt-live-chat-author-badge-renderer, var.yt-live-chat-author-badge-renderer {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.yt-live-chat-author-badge-renderer[hidden] {
+  display: none !important;
+}
+
+yt-live-chat-author-badge-renderer {
+  display: inline-block;
+}
+
+yt-live-chat-author-badge-renderer[type='moderator'] {
+  color: var(--yt-live-chat-moderator-color, #5e84f1);
+}
+
+yt-live-chat-author-badge-renderer[type='owner'] {
+  color: var(--yt-live-chat-owner-color, #ffd600);
+}
+
+yt-live-chat-author-badge-renderer[type='member'] {
+  color: var(--yt-live-chat-sponsor-color, #107516);
+}
+
+yt-live-chat-author-badge-renderer[type='verified'] {
+  color: #999;
+}
+
+img.yt-live-chat-author-badge-renderer, yt-icon.yt-live-chat-author-badge-renderer {
+  display: block;
+  width: 16px;
+  height: 16px;
+}

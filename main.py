@@ -26,10 +26,8 @@ LOG_FILE_NAME = os.path.join(BASE_PATH, 'log', 'blivechat.log')
 routes = [
     (r'/api/server_info', api.main.ServerInfoHandler),
     (r'/api/chat', api.chat.ChatHandler),
-
-    # TODO 兼容旧版，下版本移除
-    (r'/server_info', api.main.ServerInfoHandler),
-    (r'/chat', api.chat.ChatHandler),
+    (r'/api/room_info', api.chat.RoomInfoHandler),
+    (r'/api/avatar_url', api.chat.AvatarHandler),
 
     (r'/(.*)', api.main.MainHandler, {'path': WEB_ROOT, 'default_filename': 'index.html'})
 ]
@@ -69,6 +67,9 @@ def init_logging(debug):
         level=logging.INFO if not debug else logging.DEBUG,
         handlers=[stream_handler, file_handler]
     )
+
+    # 屏蔽访问日志
+    logging.getLogger('tornado.access').setLevel(logging.WARNING)
 
 
 def run_server(host, port, debug):

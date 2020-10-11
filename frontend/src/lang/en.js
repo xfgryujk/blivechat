@@ -31,7 +31,8 @@ export default {
     blockMedalLevel: 'Block medal level lower than',
 
     advanced: 'Advanced',
-    autoTranslate: 'Auto translate messages to Japanese',
+    relayMessagesByServer: 'Relay messages by server',
+    autoTranslate: 'Auto translate messages to Japanese (requires relay messages by server)',
 
     roomUrl: 'Room URL',
     copy: 'Copy',

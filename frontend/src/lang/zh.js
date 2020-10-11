@@ -31,7 +31,8 @@ export default {
     blockMedalLevel: '屏蔽当前直播间勋章等级低于',
 
     advanced: '高级',
-    autoTranslate: '自动翻译弹幕到日语',
+    relayMessagesByServer: '通过服务器转发消息',
+    autoTranslate: '自动翻译弹幕到日语（需要通过服务器转发消息）',
 
     roomUrl: '房间URL',
     copy: '复制',

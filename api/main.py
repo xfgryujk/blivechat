@@ -7,6 +7,7 @@ import config
 import update
 
 
+# noinspection PyAbstractClass
 class MainHandler(tornado.web.StaticFileHandler):
     """为了使用Vue Router的history模式，把不存在的文件请求转发到index.html"""
     async def get(self, path, include_body=True):

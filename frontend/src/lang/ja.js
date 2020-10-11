@@ -31,7 +31,8 @@ export default {
     blockMedalLevel: 'ブロック勲章等級がx未満',
 
     advanced: 'アドバンスド',
-    autoTranslate: '自動翻訳コメントから日本語へ',
+    relayMessagesByServer: 'サーバを介してメッセージを転送する',
+    autoTranslate: 'コメントを日本語に翻訳する（サーバを介してメッセージを転送する必要）',
 
     roomUrl: 'ルームのURL',
     copy: 'コピー',

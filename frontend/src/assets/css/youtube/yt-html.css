@@ -1,0 +1,362 @@
+html:not(.style-scope) {
+  --yt-live-chat-background-color: hsl(0, 0%, 100%);
+  --yt-live-chat-action-panel-background-color: hsla(0, 0%, 93.3%, .4);
+  --yt-live-chat-action-panel-background-color-transparent: hsla(0, 0%, 97%, .8);
+  --yt-live-chat-mode-change-background-color: hsla(0, 0%, 93.3%, .4);
+  --yt-live-chat-primary-text-color: hsl(0, 0%, 6.7%);
+  --yt-live-chat-secondary-text-color: hsla(0, 0%, 6.7%, .6);
+  --yt-live-chat-tertiary-text-color: hsla(0, 0%, 6.7%, .4);
+  --yt-live-chat-text-input-field-inactive-underline-color: #b8b8b8;
+  --yt-live-chat-text-input-field-placeholder-color: hsla(0, 0%, 6.7%, .6);
+  --yt-live-chat-icon-button-color: hsla(0, 0%, 6.7%, .4);
+  --yt-live-chat-enabled-send-button-color: #4285f4;
+  --yt-live-chat-disabled-icon-button-color: hsla(0, 0%, 6.7%, .2);
+  --yt-live-chat-picker-button-color: hsla(0, 0%, 6.7%, .4);
+  --yt-live-chat-picker-button-active-color: hsla(0, 0%, 6.7%, .8);
+  --yt-live-chat-picker-button-disabled-color: var(--yt-live-chat-disabled-icon-button-color);
+  --yt-live-chat-picker-button-hover-color: hsla(0, 0%, 6.7%, .6);
+  --yt-live-chat-mention-background-color: #ff5722;
+  --yt-live-chat-mention-text-color: hsl(0, 0%, 100%);
+  --yt-live-chat-deleted-message-color: rgba(0, 0, 0, .5);
+  --yt-live-chat-deleted-message-bar-color: rgba(11, 11, 11, .2);
+  --yt-live-chat-disabled-button-background-color: hsl(0, 0%, 93.3%);
+  --yt-live-chat-disabled-button-text-color: hsla(0, 0%, 6.7%, .4);
+  --yt-live-chat-sub-panel-background-color: hsl(0, 0%, 93.3%);
+  --yt-live-chat-sub-panel-background-color-transparent: hsla(0, 0%, 93%, .7);
+  --yt-live-chat-header-background-color: hsla(0, 0%, 93.3%, .4);
+  --yt-live-chat-header-button-color: hsl(0, 0%, 6.7%);
+  --yt-live-chat-error-message-color: hsl(10, 51%, 49%);
+  --yt-live-chat-reconnect-message-color: hsla(0, 0%, 7%, 0.2);
+  --yt-live-chat-moderator-color: hsl(225, 84%, 66%);
+  --yt-live-chat-owner-color: hsl(40, 76%, 55%);
+  --yt-live-chat-author-chip-owner-text-color: rgba(0,0,0,0.87);
+  --yt-live-chat-author-chip-verified-background-color: #CCCCCC;
+  --yt-live-chat-author-chip-verified-text-color: #606060;
+  --yt-live-chat-message-highlight-background-color: #f8f8f8;
+  --yt-live-chat-sponsor-color: #107516;
+  --yt-live-chat-overlay-color: hsla(0, 0%, 0%, 0.6);
+  --yt-live-chat-dialog-background-color: hsl(0, 0%, 100%);
+  --yt-live-chat-dialog-text-color: hsla(0, 0%, 6.7%, .6);
+  --yt-live-chat-poll-choice-text-color: var(--yt-spec-text-secondary);
+  --yt-live-chat-poll-choice-border-color: var(--yt-spec-10-percent-layer);
+  --yt-live-chat-poll-choice-vote-bar-background-color: hsla(0, 0%, 93.3%, .8);
+  --yt-live-chat-poll-choice-vote-bar-background-color-selected: #F2F8FF;
+  --yt-live-chat-poll-choice-color-selected: #065FD4;
+  --yt-live-chat-moderation-mode-hover-background-color: hsla(0, 0%, 6.7%, .2);
+  --yt-live-chat-additional-inline-action-button-color: hsl(0, 0%, 100%);
+  --yt-live-chat-additional-inline-action-button-background-color: hsla(0, 0%, 26%, 0.8);
+  --yt-live-chat-additional-inline-action-button-background-color-hover: hsla(0, 0%, 26%, 1.0);
+  --yt-formatted-string-emoji-size: 24px;
+  --yt-live-chat-emoji-size: 24px;
+  --yt-live-chat-text-input-field-suggestion-background-color: hsl(0, 0%, 100%);
+  --yt-live-chat-text-input-field-suggestion-background-color-hover: #eee;
+  --yt-live-chat-text-input-field-suggestion-text-color: #666;
+  --yt-live-chat-text-input-field-suggestion-text-color-hover: #333;
+  --yt-live-chat-ticker-arrow-background: hsl(0, 0%, 97.3%);
+  --yt-emoji-picker-category-background-color: var(--yt-live-chat-action-panel-background-color-transparent);
+  --yt-emoji-picker-category-color: var(--yt-live-chat-secondary-text-color);
+  --yt-emoji-picker-category-button-color: var(--yt-live-chat-picker-button-color);
+  --yt-emoji-picker-search-background-color: hsla(0, 0%, 100%, .6);
+  --yt-emoji-picker-search-color: hsla(0, 0%, 6.7%, .8);
+  --yt-emoji-picker-search-placeholder-color: hsla(0, 0%, 6.7%, .6);
+  --yt-live-chat-slider-active-color: #2196f3;
+  --yt-live-chat-slider-container-color: #c8c8c8;
+  --yt-live-chat-slider-markers-color: #505050;
+  --yt-live-chat-toast-background-color: hsl(0, 0%, 20%);
+  --yt-live-chat-toast-text-color: hsl(0, 0%, 100%);
+  --yt-live-chat-automod-button-background-color: hsl(0, 0%, 93.3%);
+  --yt-live-chat-automod-button-background-color-hover: hsla(0, 0%, 6.7%, .2);
+  --yt-live-chat-countdown-opacity: 0.3;
+  --yt-live-chat-shimmer-background-color: rgba(136, 136, 136, 0.2);
+  --yt-live-chat-shimmer-linear-gradient: linear-gradient(0deg, rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0.5) 50%, rgba(255, 255, 255, 0) 65%);
+  --yt-live-chat-vem-background-color: hsl(0, 0%, 93.3%);
+  --yt-live-chat-upsell-dialog-renderer-button-padding: 10px 16px;
+  --yt-live-chat-product-picker-icon-color: rgba(17, 17, 17, 0.6);
+  --yt-live-chat-product-picker-hover-color: rgba(17, 17, 16, 0.1);
+  --yt-live-chat-product-picker-disabled-icon-color: rgba(17, 17, 17, 0.4);
+  --yt-pdg-paid-stickers-tab-selection-bar-color: #065FD4;
+  --yt-pdg-paid-stickers-author-name-font-size: 13px;
+  --yt-pdg-paid-stickers-margin-left: 38px;
+}
+
+html:not(.style-scope) {
+  --layout_-_display: flex;
+  ;
+
+  --layout-inline_-_display: inline-flex;
+  ;
+
+  --layout-horizontal_-_display: var(--layout_-_display);
+  --layout-horizontal_-_-ms-flex-direction: row;
+  --layout-horizontal_-_-webkit-flex-direction: row;
+  --layout-horizontal_-_flex-direction: row;
+  ;
+
+  --layout-horizontal-reverse_-_display: var(--layout_-_display);
+  --layout-horizontal-reverse_-_-ms-flex-direction: row-reverse;
+  --layout-horizontal-reverse_-_-webkit-flex-direction: row-reverse;
+  --layout-horizontal-reverse_-_flex-direction: row-reverse;
+  ;
+
+  --layout-vertical_-_display: var(--layout_-_display);
+  --layout-vertical_-_-ms-flex-direction: column;
+  --layout-vertical_-_-webkit-flex-direction: column;
+  --layout-vertical_-_flex-direction: column;
+  ;
+
+  --layout-vertical-reverse_-_display: var(--layout_-_display);
+  --layout-vertical-reverse_-_-ms-flex-direction: column-reverse;
+  --layout-vertical-reverse_-_-webkit-flex-direction: column-reverse;
+  --layout-vertical-reverse_-_flex-direction: column-reverse;
+  ;
+
+  --layout-wrap_-_-ms-flex-wrap: wrap;
+  --layout-wrap_-_-webkit-flex-wrap: wrap;
+  --layout-wrap_-_flex-wrap: wrap;
+  ;
+
+  --layout-wrap-reverse_-_-ms-flex-wrap: wrap-reverse;
+  --layout-wrap-reverse_-_-webkit-flex-wrap: wrap-reverse;
+  --layout-wrap-reverse_-_flex-wrap: wrap-reverse;
+  ;
+
+  --layout-flex-auto_-_-ms-flex: 1 1 auto;
+  --layout-flex-auto_-_-webkit-flex: 1 1 auto;
+  --layout-flex-auto_-_flex: 1 1 auto;
+  ;
+
+  --layout-flex-none_-_-ms-flex: none;
+  --layout-flex-none_-_-webkit-flex: none;
+  --layout-flex-none_-_flex: none;
+  ;
+
+  --layout-flex_-_-ms-flex: 1 1 0.000000001px;
+  --layout-flex_-_-webkit-flex: 1;
+  --layout-flex_-_flex: 1;
+  --layout-flex_-_-webkit-flex-basis: 0.000000001px;
+  --layout-flex_-_flex-basis: 0.000000001px;
+  ;
+
+  --layout-flex-2_-_-ms-flex: 2;
+  --layout-flex-2_-_-webkit-flex: 2;
+  --layout-flex-2_-_flex: 2;
+  ;
+
+  --layout-flex-3_-_-ms-flex: 3;
+  --layout-flex-3_-_-webkit-flex: 3;
+  --layout-flex-3_-_flex: 3;
+  ;
+
+  --layout-flex-4_-_-ms-flex: 4;
+  --layout-flex-4_-_-webkit-flex: 4;
+  --layout-flex-4_-_flex: 4;
+  ;
+
+  --layout-flex-5_-_-ms-flex: 5;
+  --layout-flex-5_-_-webkit-flex: 5;
+  --layout-flex-5_-_flex: 5;
+  ;
+
+  --layout-flex-6_-_-ms-flex: 6;
+  --layout-flex-6_-_-webkit-flex: 6;
+  --layout-flex-6_-_flex: 6;
+  ;
+
+  --layout-flex-7_-_-ms-flex: 7;
+  --layout-flex-7_-_-webkit-flex: 7;
+  --layout-flex-7_-_flex: 7;
+  ;
+
+  --layout-flex-8_-_-ms-flex: 8;
+  --layout-flex-8_-_-webkit-flex: 8;
+  --layout-flex-8_-_flex: 8;
+  ;
+
+  --layout-flex-9_-_-ms-flex: 9;
+  --layout-flex-9_-_-webkit-flex: 9;
+  --layout-flex-9_-_flex: 9;
+  ;
+
+  --layout-flex-10_-_-ms-flex: 10;
+  --layout-flex-10_-_-webkit-flex: 10;
+  --layout-flex-10_-_flex: 10;
+  ;
+
+  --layout-flex-11_-_-ms-flex: 11;
+  --layout-flex-11_-_-webkit-flex: 11;
+  --layout-flex-11_-_flex: 11;
+  ;
+
+  --layout-flex-12_-_-ms-flex: 12;
+  --layout-flex-12_-_-webkit-flex: 12;
+  --layout-flex-12_-_flex: 12;
+  ;
+
+
+
+  --layout-start_-_-ms-flex-align: start;
+  --layout-start_-_-webkit-align-items: flex-start;
+  --layout-start_-_align-items: flex-start;
+  ;
+
+  --layout-center_-_-ms-flex-align: center;
+  --layout-center_-_-webkit-align-items: center;
+  --layout-center_-_align-items: center;
+  ;
+
+  --layout-end_-_-ms-flex-align: end;
+  --layout-end_-_-webkit-align-items: flex-end;
+  --layout-end_-_align-items: flex-end;
+  ;
+
+  --layout-baseline_-_-ms-flex-align: baseline;
+  --layout-baseline_-_-webkit-align-items: baseline;
+  --layout-baseline_-_align-items: baseline;
+  ;
+
+
+
+  --layout-start-justified_-_-ms-flex-pack: start;
+  --layout-start-justified_-_-webkit-justify-content: flex-start;
+  --layout-start-justified_-_justify-content: flex-start;
+  ;
+
+  --layout-center-justified_-_-ms-flex-pack: center;
+  --layout-center-justified_-_-webkit-justify-content: center;
+  --layout-center-justified_-_justify-content: center;
+  ;
+
+  --layout-end-justified_-_-ms-flex-pack: end;
+  --layout-end-justified_-_-webkit-justify-content: flex-end;
+  --layout-end-justified_-_justify-content: flex-end;
+  ;
+
+  --layout-around-justified_-_-ms-flex-pack: distribute;
+  --layout-around-justified_-_-webkit-justify-content: space-around;
+  --layout-around-justified_-_justify-content: space-around;
+  ;
+
+  --layout-justified_-_-ms-flex-pack: justify;
+  --layout-justified_-_-webkit-justify-content: space-between;
+  --layout-justified_-_justify-content: space-between;
+  ;
+
+  --layout-center-center_-_-ms-flex-align: var(--layout-center_-_-ms-flex-align);
+  --layout-center-center_-_-webkit-align-items: var(--layout-center_-_-webkit-align-items);
+  --layout-center-center_-_align-items: var(--layout-center_-_align-items);
+  --layout-center-center_-_-ms-flex-pack: var(--layout-center-justified_-_-ms-flex-pack);
+  --layout-center-center_-_-webkit-justify-content: var(--layout-center-justified_-_-webkit-justify-content);
+  --layout-center-center_-_justify-content: var(--layout-center-justified_-_justify-content);
+  ;
+
+
+
+  --layout-self-start_-_-ms-align-self: flex-start;
+  --layout-self-start_-_-webkit-align-self: flex-start;
+  --layout-self-start_-_align-self: flex-start;
+  ;
+
+  --layout-self-center_-_-ms-align-self: center;
+  --layout-self-center_-_-webkit-align-self: center;
+  --layout-self-center_-_align-self: center;
+  ;
+
+  --layout-self-end_-_-ms-align-self: flex-end;
+  --layout-self-end_-_-webkit-align-self: flex-end;
+  --layout-self-end_-_align-self: flex-end;
+  ;
+
+  --layout-self-stretch_-_-ms-align-self: stretch;
+  --layout-self-stretch_-_-webkit-align-self: stretch;
+  --layout-self-stretch_-_align-self: stretch;
+  ;
+
+  --layout-self-baseline_-_-ms-align-self: baseline;
+  --layout-self-baseline_-_-webkit-align-self: baseline;
+  --layout-self-baseline_-_align-self: baseline;
+  ;
+
+
+
+  --layout-start-aligned_-_-ms-flex-line-pack: start;
+  --layout-start-aligned_-_-ms-align-content: flex-start;
+  --layout-start-aligned_-_-webkit-align-content: flex-start;
+  --layout-start-aligned_-_align-content: flex-start;
+  ;
+
+  --layout-end-aligned_-_-ms-flex-line-pack: end;
+  --layout-end-aligned_-_-ms-align-content: flex-end;
+  --layout-end-aligned_-_-webkit-align-content: flex-end;
+  --layout-end-aligned_-_align-content: flex-end;
+  ;
+
+  --layout-center-aligned_-_-ms-flex-line-pack: center;
+  --layout-center-aligned_-_-ms-align-content: center;
+  --layout-center-aligned_-_-webkit-align-content: center;
+  --layout-center-aligned_-_align-content: center;
+  ;
+
+  --layout-between-aligned_-_-ms-flex-line-pack: justify;
+  --layout-between-aligned_-_-ms-align-content: space-between;
+  --layout-between-aligned_-_-webkit-align-content: space-between;
+  --layout-between-aligned_-_align-content: space-between;
+  ;
+
+  --layout-around-aligned_-_-ms-flex-line-pack: distribute;
+  --layout-around-aligned_-_-ms-align-content: space-around;
+  --layout-around-aligned_-_-webkit-align-content: space-around;
+  --layout-around-aligned_-_align-content: space-around;
+  ;
+
+
+
+  --layout-block_-_display: block;
+  ;
+
+  --layout-invisible_-_visibility: hidden !important;
+  ;
+
+  --layout-relative_-_position: relative;
+  ;
+
+  --layout-fit_-_position: absolute;
+  --layout-fit_-_top: 0;
+  --layout-fit_-_right: 0;
+  --layout-fit_-_bottom: 0;
+  --layout-fit_-_left: 0;
+  ;
+
+  --layout-scroll_-_-webkit-overflow-scrolling: touch;
+  --layout-scroll_-_overflow: auto;
+  ;
+
+  --layout-fullbleed_-_margin: 0;
+  --layout-fullbleed_-_height: 100vh;
+  ;
+
+
+
+  --layout-fixed-top_-_position: fixed;
+  --layout-fixed-top_-_top: 0;
+  --layout-fixed-top_-_left: 0;
+  --layout-fixed-top_-_right: 0;
+  ;
+
+  --layout-fixed-right_-_position: fixed;
+  --layout-fixed-right_-_top: 0;
+  --layout-fixed-right_-_right: 0;
+  --layout-fixed-right_-_bottom: 0;
+  ;
+
+  --layout-fixed-bottom_-_position: fixed;
+  --layout-fixed-bottom_-_right: 0;
+  --layout-fixed-bottom_-_bottom: 0;
+  --layout-fixed-bottom_-_left: 0;
+  ;
+
+  --layout-fixed-left_-_position: fixed;
+  --layout-fixed-left_-_top: 0;
+  --layout-fixed-left_-_bottom: 0;
+  --layout-fixed-left_-_left: 0;
+  ;
+}
