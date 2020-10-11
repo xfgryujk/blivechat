@@ -29,10 +29,6 @@ routes = [
     (r'/api/room_info', api.chat.RoomInfoHandler),
     (r'/api/avatar_url', api.chat.AvatarHandler),
 
-    # TODO 兼容旧版，下版本移除
-    (r'/server_info', api.main.ServerInfoHandler),
-    (r'/chat', api.chat.ChatHandler),
-
     (r'/(.*)', api.main.MainHandler, {'path': WEB_ROOT, 'default_filename': 'index.html'})
 ]
 

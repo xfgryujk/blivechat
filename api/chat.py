@@ -521,12 +521,11 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
 
 # noinspection PyAbstractClass
 class RoomInfoHandler(api.base.ApiHandler):
-    _host_server_list_cache = [
-        {'host': "broadcastlv.chat.bilibili.com", 'port': 2243, 'wss_port': 443, 'ws_port': 2244}
-    ]
+    _host_server_list_cache = blivedm.DEFAULT_DANMAKU_SERVER_LIST
 
     async def get(self):
         room_id = int(self.get_query_argument('roomId'))
+        logger.info('Client %s is getting room info %d', self.request.remote_ip, room_id)
         room_id, owner_uid = await self._get_room_info(room_id)
         host_server_list = await self._get_server_host_list(room_id)
         if owner_uid == 0:
