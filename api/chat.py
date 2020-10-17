@@ -555,7 +555,7 @@ class RoomInfoHandler(api.base.ApiHandler):
             return room_id, 0
 
         if data['code'] != 0:
-            logger.warning('room %d _get_room_info failed: %s', room_id, data['msg'])
+            logger.warning('room %d _get_room_info failed: %s', room_id, data['message'])
             return room_id, 0
 
         room_info = data['data']['room_info']
@@ -579,7 +579,7 @@ class RoomInfoHandler(api.base.ApiHandler):
         #     return cls._host_server_list_cache
         #
         # if data['code'] != 0:
-        #     logger.warning('room %d _get_server_host_list failed: %s', room_id, data['msg'])
+        #     logger.warning('room %d _get_server_host_list failed: %s', room_id, data['message'])
         #     return cls._host_server_list_cache
         #
         # host_server_list = data['data']['host_list']
