@@ -125,7 +125,7 @@ async def _get_avatar_url_from_web_consumer():
 
             # 限制频率，防止被B站ban
             await asyncio.sleep(0.2)
-        except:
+        except Exception:
             logger.exception('_get_avatar_url_from_web_consumer error:')
 
 

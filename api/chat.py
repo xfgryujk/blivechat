@@ -406,7 +406,7 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
                 self._close_on_timeout_future = None
             else:
                 logger.warning('Unknown cmd, client: %s, cmd: %d, body: %s', self.request.remote_ip, cmd, body)
-        except:
+        except Exception:
             logger.exception('on_message error, client: %s, message: %s', self.request.remote_ip, message)
 
     def on_close(self):
