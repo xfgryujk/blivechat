@@ -135,7 +135,19 @@ class TencentTranslate(TranslateProvider):
 
     async def _do_init(self):
         try:
-            async with _http_session.post('https://fanyi.qq.com/api/reaauth') as r:
+            async with _http_session.get('https://fanyi.qq.com/') as r:
+                if r.status != 200:
+                    logger.warning('TencentTranslate init request failed: status=%d %s', r.status, r.reason)
+                    return False
+                html = await r.text()
+
+            m = re.search(r"""\breauthuri\s*=\s*['"](.+?)['"]""", html)
+            if m is None:
+                logger.exception('TencentTranslate init failed: reauthuri not found')
+                return False
+            reauthuri = m[1]
+
+            async with _http_session.post('https://fanyi.qq.com/api/' + reauthuri) as r:
                 if r.status != 200:
                     logger.warning('TencentTranslate init request failed: status=%d %s', r.status, r.reason)
                     return False
@@ -160,9 +172,9 @@ class TencentTranslate(TranslateProvider):
     async def _reinit_coroutine(self):
         try:
             while True:
-                await asyncio.sleep(55 * 60)
+                await asyncio.sleep(30)
                 while True:
-                    logger.info('TencentTranslate reinit')
+                    logger.debug('TencentTranslate reinit')
                     try:
                         if await self._do_init():
                             break
