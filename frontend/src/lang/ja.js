@@ -33,6 +33,10 @@ export default {
     advanced: 'アドバンスド',
     relayMessagesByServer: 'サーバを介してメッセージを転送する',
     autoTranslate: 'コメントを日本語に翻訳する（サーバを介してメッセージを転送する必要）',
+    giftUsernamePronunciation: 'スーパーチャットのユーザー名の発音',
+    dontShow: '非表示',
+    pinyin: 'ピンイン',
+    kana: '仮名',
 
     roomUrl: 'ルームのURL',
     copy: 'コピー',

@@ -18,17 +18,17 @@
               ></text-message>
               <paid-message :key="message.id" v-else-if="message.type === MESSAGE_TYPE_GIFT"
                 class="style-scope yt-live-chat-item-list-renderer"
-                :price="message.price" :avatarUrl="message.avatarUrl" :authorName="message.authorName"
+                :price="message.price" :avatarUrl="message.avatarUrl" :authorName="getShowAuthorName(message)"
                 :time="message.time" :content="getGiftShowContent(message)"
               ></paid-message>
               <membership-item :key="message.id" v-else-if="message.type === MESSAGE_TYPE_MEMBER"
                 class="style-scope yt-live-chat-item-list-renderer"
-                :avatarUrl="message.avatarUrl" :authorName="message.authorName" :privilegeType="message.privilegeType"
+                :avatarUrl="message.avatarUrl" :authorName="getShowAuthorName(message)" :privilegeType="message.privilegeType"
                 :title="message.title" :time="message.time"
               ></membership-item>
               <paid-message :key="message.id" v-else-if="message.type === MESSAGE_TYPE_SUPER_CHAT"
                 class="style-scope yt-live-chat-item-list-renderer"
-                :price="message.price" :avatarUrl="message.avatarUrl" :authorName="message.authorName"
+                :price="message.price" :avatarUrl="message.avatarUrl" :authorName="getShowAuthorName(message)"
                 :time="message.time" :content="getShowContent(message)"
               ></paid-message>
             </template>
@@ -132,6 +132,7 @@ export default {
       return constants.getGiftShowContent(message, this.showGiftName)
     },
     getShowContent: constants.getShowContent,
+    getShowAuthorName: constants.getShowAuthorName,
 
     addMessage(message) {
       this.addMessages([message])

@@ -24,12 +24,12 @@
     <template v-if="pinnedMessage">
       <membership-item :key="pinnedMessage.id" v-if="pinnedMessage.type === MESSAGE_TYPE_MEMBER"
         class="style-scope yt-live-chat-ticker-renderer"
-        :avatarUrl="pinnedMessage.avatarUrl" :authorName="pinnedMessage.authorName" :privilegeType="pinnedMessage.privilegeType"
+        :avatarUrl="pinnedMessage.avatarUrl" :authorName="getShowAuthorName(pinnedMessage)" :privilegeType="pinnedMessage.privilegeType"
         :title="pinnedMessage.title" :time="pinnedMessage.time"
       ></membership-item>
       <paid-message :key="pinnedMessage.id" v-else
         class="style-scope yt-live-chat-ticker-renderer"
-        :price="pinnedMessage.price" :avatarUrl="pinnedMessage.avatarUrl" :authorName="pinnedMessage.authorName"
+        :price="pinnedMessage.price" :avatarUrl="pinnedMessage.avatarUrl" :authorName="getShowAuthorName(pinnedMessage)"
         :time="pinnedMessage.time" :content="pinnedMessageShowContent"
       ></paid-message>
     </template>
@@ -98,6 +98,7 @@ export default {
     window.clearInterval(this.updateTimerId)
   },
   methods: {
+    getShowAuthorName: constants.getShowAuthorName,
     needToShow(message) {
       let pinTime = this.getPinTime(message)
       return (new Date() - message.addTime) / (60 * 1000) < pinTime

@@ -18,7 +18,8 @@ export const DEFAULT_CONFIG = {
   blockMedalLevel: 0,
 
   relayMessagesByServer: false,
-  autoTranslate: false
+  autoTranslate: false,
+  giftUsernamePronunciation: ''
 }
 
 export function setLocalConfig (config) {

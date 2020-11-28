@@ -36,7 +36,7 @@ export default {
       hideSidebar: true
     }
   },
-  created() {
+  mounted() {
     window.addEventListener('resize', this.onResize)
     this.onResize()
   },

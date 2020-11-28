@@ -1,5 +1,5 @@
 import axios from 'axios'
-import {inflate} from 'pako'
+import * as pako from 'pako'
 
 import {getUuid4Hex} from '@/utils'
 import * as avatar from './avatar'
@@ -172,7 +172,7 @@ export default class ChatClientDirect {
       case OP_SEND_MSG_REPLY: {
         let body = new Uint8Array(data.buffer, offset + HEADER_SIZE, packLen - HEADER_SIZE)
         if (ver == WS_BODY_PROTOCOL_VERSION_DEFLATE) {
-          body = inflate(body)
+          body = pako.inflate(body)
           this.handlerMessage(body)
         } else {
           try {

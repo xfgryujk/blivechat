@@ -33,6 +33,10 @@ export default {
     advanced: 'Advanced',
     relayMessagesByServer: 'Relay messages by server',
     autoTranslate: 'Auto translate messages to Japanese (requires relay messages by server)',
+    giftUsernamePronunciation: 'Pronunciation of gift username',
+    dontShow: 'None',
+    pinyin: 'Pinyin',
+    kana: 'Kana',
 
     roomUrl: 'Room URL',
     copy: 'Copy',

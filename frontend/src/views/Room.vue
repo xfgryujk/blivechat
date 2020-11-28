@@ -4,6 +4,7 @@
 
 <script>
 import {mergeConfig, toBool, toInt} from '@/utils'
+import * as pronunciation from '@/utils/pronunciation'
 import * as chatConfig from '@/api/chatConfig'
 import ChatClientDirect from '@/api/chat/ChatClientDirect'
 import ChatClientRelay from '@/api/chat/ChatClientRelay'
@@ -18,7 +19,8 @@ export default {
   data() {
     return {
       config: {...chatConfig.DEFAULT_CONFIG},
-      chatClient: null
+      chatClient: null,
+      pronunciationConverter: null
     }
   },
   computed: {
@@ -29,9 +31,14 @@ export default {
       return this.config.blockUsers.split('\n').filter(val => val)
     }
   },
-  created() {
+  mounted() {
     this.initConfig()
     this.initChatClient()
+    if (this.config.giftUsernamePronunciation !== '') {
+      this.pronunciationConverter = new pronunciation.PronunciationConverter()
+      this.pronunciationConverter.loadDict(this.config.giftUsernamePronunciation)
+    }
+
     // 提示用户已加载
     this.$message({
       message: 'Loaded',
@@ -122,6 +129,7 @@ export default {
         avatarUrl: data.avatarUrl,
         time: new Date(data.timestamp * 1000),
         authorName: data.authorName,
+        authorNamePronunciation: this.getPronunciation(data.authorName),
         price: price,
         giftName: data.giftName,
         num: data.num
@@ -138,6 +146,7 @@ export default {
         avatarUrl: data.avatarUrl,
         time: new Date(data.timestamp * 1000),
         authorName: data.authorName,
+        authorNamePronunciation: this.getPronunciation(data.authorName),
         privilegeType: data.privilegeType,
         title: 'New member'
       }
@@ -155,9 +164,11 @@ export default {
         type: constants.MESSAGE_TYPE_SUPER_CHAT,
         avatarUrl: data.avatarUrl,
         authorName: data.authorName,
+        authorNamePronunciation: this.getPronunciation(data.authorName),
         price: data.price,
         time: new Date(data.timestamp * 1000),
-        content: data.content.trim()
+        content: data.content.trim(),
+        translation: data.translation
       }
       this.$refs.renderer.addMessage(message)
     },
@@ -214,6 +225,12 @@ export default {
         return false
       }
       return this.$refs.renderer.mergeSimilarGift(authorName, price, giftName, num)
+    },
+    getPronunciation(text) {
+      if (this.pronunciationConverter === null) {
+        return ''
+      }
+      return this.pronunciationConverter.getPronunciation(text)
     }
   }
 }
