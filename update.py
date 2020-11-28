@@ -4,7 +4,7 @@ import asyncio
 
 import aiohttp
 
-VERSION = 'v1.5.0'
+VERSION = 'v1.5.1'
 
 
 def check_update():
