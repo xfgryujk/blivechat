@@ -44,7 +44,7 @@ class AppConfig:
     def load(self, path):
         try:
             config = configparser.ConfigParser()
-            config.read(path)
+            config.read(path, 'utf-8')
 
             app_section = config['app']
             self.database_url = app_section['database_url']
