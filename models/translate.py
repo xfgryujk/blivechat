@@ -149,7 +149,8 @@ class TencentTranslate(TranslateProvider):
 
             async with _http_session.post('https://fanyi.qq.com/api/' + reauthuri) as r:
                 if r.status != 200:
-                    logger.warning('TencentTranslate init request failed: status=%d %s', r.status, r.reason)
+                    logger.warning('TencentTranslate init request failed: reauthuri=%s, status=%d %s',
+                                   reauthuri, r.status, r.reason)
                     return False
                 data = await r.json()
         except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
@@ -412,8 +413,10 @@ class BilibiliTranslate(TranslateProvider):
             async with _http_session.get(
                 'https://api.live.bilibili.com/av/v1/SuperChat/messageTranslate',
                 params={
-                    'parent_area_id': '1',
-                    'area_id': '199',
+                    'room_id': '21396545',
+                    'ruid': '407106379',
+                    'parent_area_id': '9',
+                    'area_id': '371',
                     'msg': text
                 }
             ) as r:
