@@ -64,6 +64,13 @@
         <el-form-item :label="$t('home.autoTranslate')">
           <el-switch v-model="form.autoTranslate" :disabled="!serverConfig.enableTranslate || !form.relayMessagesByServer"></el-switch>
         </el-form-item>
+        <el-form-item :label="$t('home.giftUsernamePronunciation')">
+          <el-radio-group v-model="form.giftUsernamePronunciation">
+            <el-radio label="">{{$t('home.dontShow')}}</el-radio>
+            <el-radio label="pinyin">{{$t('home.pinyin')}}</el-radio>
+            <el-radio label="kana">{{$t('home.kana')}}</el-radio>
+          </el-radio-group>
+        </el-form-item>
       </el-tab-pane>
     </el-tabs>
 

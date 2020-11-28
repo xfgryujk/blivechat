@@ -4,7 +4,7 @@ import asyncio
 
 import aiohttp
 
-VERSION = 'v1.5.0'
+VERSION = 'v1.5.1'
 
 
 def check_update():
@@ -24,3 +24,5 @@ async def _do_check_update():
                     print('---------------------------------------------')
     except aiohttp.ClientConnectionError:
         print('Failed to check update: connection failed')
+    except asyncio.TimeoutError:
+        print('Failed to check update: timeout')

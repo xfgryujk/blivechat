@@ -9,7 +9,7 @@
         </router-link>
       </div>
       <div class="version">
-        v1.5.0
+        v1.5.1
       </div>
       <sidebar></sidebar>
     </el-aside>
@@ -36,7 +36,7 @@ export default {
       hideSidebar: true
     }
   },
-  created() {
+  mounted() {
     window.addEventListener('resize', this.onResize)
     this.onResize()
   },

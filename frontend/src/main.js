@@ -3,7 +3,8 @@ import VueRouter from 'vue-router'
 import VueI18n from 'vue-i18n'
 import {
   Aside, Autocomplete, Badge, Button, Col, ColorPicker, Container, Divider, Form, FormItem, Image,
-  Input, Main, Menu, MenuItem, Message, Row, Scrollbar, Slider, Submenu, Switch, TabPane, Tabs, Tooltip
+  Input, Main, Menu, MenuItem, Message, Radio, RadioGroup, Row, Scrollbar, Slider, Submenu, Switch,
+  TabPane, Tabs, Tooltip
 } from 'element-ui'
 import axios from 'axios'
 
@@ -42,6 +43,8 @@ Vue.use(Input)
 Vue.use(Main)
 Vue.use(Menu)
 Vue.use(MenuItem)
+Vue.use(Radio)
+Vue.use(RadioGroup)
 Vue.use(Row)
 Vue.use(Scrollbar)
 Vue.use(Slider)

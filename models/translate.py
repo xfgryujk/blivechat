@@ -98,7 +98,7 @@ def _on_translate_done(key, future):
     # 缓存
     try:
         res = future.result()
-    except:
+    except Exception:
         return
     if res is None:
         return
@@ -140,20 +140,31 @@ class TencentTranslate(TranslateProvider):
                     logger.warning('TencentTranslate init request failed: status=%d %s', r.status, r.reason)
                     return False
                 html = await r.text()
+
+            m = re.search(r"""\breauthuri\s*=\s*['"](.+?)['"]""", html)
+            if m is None:
+                logger.exception('TencentTranslate init failed: reauthuri not found')
+                return False
+            reauthuri = m[1]
+
+            async with _http_session.post('https://fanyi.qq.com/api/' + reauthuri) as r:
+                if r.status != 200:
+                    logger.warning('TencentTranslate init request failed: reauthuri=%s, status=%d %s',
+                                   reauthuri, r.status, r.reason)
+                    return False
+                data = await r.json()
         except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
             logger.exception('TencentTranslate init error:')
             return False
 
-        m = re.search(r"""\bqtv\s*=\s*['"](.+?)['"]""", html)
-        if m is None:
-            logger.exception('TencentTranslate init failed: qtv not found')
+        qtv = data.get('qtv', None)
+        if qtv is None:
+            logger.warning('TencentTranslate init failed: qtv not found')
             return False
-        qtv = m[1]
-        m = re.search(r"""\bqtk\s*=\s*['"](.+?)['"]""", html)
-        if m is None:
-            logger.exception('TencentTranslate init failed: qtk not found')
+        qtk = data.get('qtk', None)
+        if qtk is None:
+            logger.warning('TencentTranslate init failed: qtk not found')
             return False
-        qtk = m[1]
 
         self._qtv = qtv
         self._qtk = qtk
@@ -162,13 +173,13 @@ class TencentTranslate(TranslateProvider):
     async def _reinit_coroutine(self):
         try:
             while True:
-                await asyncio.sleep(55 * 60)
+                await asyncio.sleep(30)
                 while True:
-                    logger.info('TencentTranslate reinit')
+                    logger.debug('TencentTranslate reinit')
                     try:
                         if await self._do_init():
                             break
-                    except:
+                    except Exception:
                         logger.exception('TencentTranslate init error:')
                     await asyncio.sleep(3 * 60)
         except asyncio.CancelledError:
@@ -232,7 +243,7 @@ class TencentTranslate(TranslateProvider):
             self._cool_down_future = asyncio.ensure_future(self._cool_down())
 
     async def _cool_down(self):
-        logger.warning('TencentTranslate is cooling down')
+        logger.info('TencentTranslate is cooling down')
         self._qtv = self._qtk = ''
         try:
             while True:
@@ -242,10 +253,10 @@ class TencentTranslate(TranslateProvider):
                     if await self._do_init():
                         self._fail_count = 0
                         break
-                except:
+                except Exception:
                     logger.exception('TencentTranslate init error:')
         finally:
-            logger.warning('TencentTranslate finished cooling down')
+            logger.info('TencentTranslate finished cooling down')
             self._cool_down_future = None
 
 
@@ -341,20 +352,20 @@ class YoudaoTranslate(TranslateProvider):
         }
 
     async def _cool_down(self):
-        logger.warning('YoudaoTranslate is cooling down')
+        logger.info('YoudaoTranslate is cooling down')
         self._has_init = False
         try:
             while True:
                 await asyncio.sleep(3 * 60)
                 try:
                     is_success = await self.init()
-                except:
+                except Exception:
                     logger.exception('YoudaoTranslate init error:')
                     continue
                 if is_success:
                     break
         finally:
-            logger.warning('YoudaoTranslate finished cooling down')
+            logger.info('YoudaoTranslate finished cooling down')
             self._cool_down_future = None
 
 
@@ -385,7 +396,7 @@ class BilibiliTranslate(TranslateProvider):
                 asyncio.ensure_future(self._translate_coroutine(text, future))
                 # 频率限制一分钟20次
                 await asyncio.sleep(3.1)
-            except:
+            except Exception:
                 logger.exception('BilibiliTranslate error:')
 
     async def _translate_coroutine(self, text, future):
@@ -402,8 +413,10 @@ class BilibiliTranslate(TranslateProvider):
             async with _http_session.get(
                 'https://api.live.bilibili.com/av/v1/SuperChat/messageTranslate',
                 params={
-                    'parent_area_id': '1',
-                    'area_id': '199',
+                    'room_id': '21396545',
+                    'ruid': '407106379',
+                    'parent_area_id': '9',
+                    'area_id': '371',
                     'msg': text
                 }
             ) as r:

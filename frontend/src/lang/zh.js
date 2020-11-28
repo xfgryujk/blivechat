@@ -33,6 +33,10 @@ export default {
     advanced: '高级',
     relayMessagesByServer: '通过服务器转发消息',
     autoTranslate: '自动翻译弹幕到日语（需要通过服务器转发消息）',
+    giftUsernamePronunciation: '标注打赏用户名读音',
+    dontShow: '不显示',
+    pinyin: '拼音',
+    kana: '日文假名',
 
     roomUrl: '房间URL',
     copy: '复制',

@@ -122,16 +122,23 @@ export function getPriceConfig (price) {
   return PRICE_CONFIGS[PRICE_CONFIGS.length - 1]
 }
 
-export function getShowContent(message) {
+export function getShowContent (message) {
   if (message.translation) {
     return `${message.content}（${message.translation}）`
   }
   return message.content
 }
 
-export function getGiftShowContent(message, showGiftName) {
+export function getGiftShowContent (message, showGiftName) {
   if (!showGiftName) {
     return ''
   }
   return `Sent ${message.giftName}x${message.num}`
+}
+
+export function getShowAuthorName (message) {
+  if (message.authorNamePronunciation) {
+    return `${message.authorName}(${message.authorNamePronunciation})`
+  }
+  return message.authorName
 }
