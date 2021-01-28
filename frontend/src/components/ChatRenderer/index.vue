@@ -379,7 +379,7 @@ export default {
         }
       }
 
-      this.maybeResizeScrollContainer(),
+      this.maybeResizeScrollContainer()
       this.flushMessagesBuffer()
       this.$nextTick(this.maybeScrollToBottom)
     },

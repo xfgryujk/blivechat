@@ -54,7 +54,7 @@ def need_translate(text):
     if any(0x3040 <= ord(c) <= 0x30FF for c in text):
         return False
     # 弹幕同传
-    if text.startswith('【'):
+    if '【' in text:
         return False
     # 中日双语
     if text in NO_TRANSLATE_TEXTS:

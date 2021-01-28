@@ -11,8 +11,8 @@ export const DEFAULT_CONFIG = {
 
   blockGiftDanmaku: true,
   blockLevel: 0,
-  blockNewbie: true,
-  blockNotMobileVerified: true,
+  blockNewbie: false,
+  blockNotMobileVerified: false,
   blockKeywords: '',
   blockUsers: '',
   blockMedalLevel: 0,
