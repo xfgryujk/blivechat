@@ -7,6 +7,9 @@ const COMMAND_ADD_SUPER_CHAT = 5
 const COMMAND_DEL_SUPER_CHAT = 6
 const COMMAND_UPDATE_TRANSLATION = 7
 
+const HEARTBEAT_INTERVAL = 10 * 1000
+const RECEIVE_TIMEOUT = HEARTBEAT_INTERVAL + 5 * 1000
+
 export default class ChatClientRelay {
   constructor (roomId, autoTranslate) {
     this.roomId = roomId
@@ -23,6 +26,7 @@ export default class ChatClientRelay {
     this.retryCount = 0
     this.isDestroying = false
     this.heartbeatTimerId = null
+    this.receiveTimeoutTimerId = null
   }
 
   start () {
@@ -48,13 +52,6 @@ export default class ChatClientRelay {
     this.websocket.onopen = this.onWsOpen.bind(this)
     this.websocket.onclose = this.onWsClose.bind(this)
     this.websocket.onmessage = this.onWsMessage.bind(this)
-    this.heartbeatTimerId = window.setInterval(this.sendHeartbeat.bind(this), 10 * 1000)
-  }
-
-  sendHeartbeat () {
-    this.websocket.send(JSON.stringify({
-      cmd: COMMAND_HEARTBEAT
-    }))
   }
 
   onWsOpen () {
@@ -68,6 +65,27 @@ export default class ChatClientRelay {
         }
       }
     }))
+    this.heartbeatTimerId = window.setInterval(this.sendHeartbeat.bind(this), HEARTBEAT_INTERVAL)
+    this.refreshReceiveTimeoutTimer()
+  }
+
+  sendHeartbeat () {
+    this.websocket.send(JSON.stringify({
+      cmd: COMMAND_HEARTBEAT
+    }))
+  }
+
+  refreshReceiveTimeoutTimer() {
+    if (this.receiveTimeoutTimerId) {
+      window.clearTimeout(this.receiveTimeoutTimerId)
+    }
+    this.receiveTimeoutTimerId = window.setTimeout(this.onReceiveTimeout.bind(this), RECEIVE_TIMEOUT)
+  }
+
+  onReceiveTimeout() {
+    window.console.warn('接收消息超时')
+    this.receiveTimeoutTimerId = null
+    this.websocket.close()
   }
 
   onWsClose () {
@@ -76,16 +94,26 @@ export default class ChatClientRelay {
       window.clearInterval(this.heartbeatTimerId)
       this.heartbeatTimerId = null
     }
+    if (this.receiveTimeoutTimerId) {
+      window.clearTimeout(this.receiveTimeoutTimerId)
+      this.receiveTimeoutTimerId = null
+    }
+
     if (this.isDestroying) {
       return
     }
-    window.console.log(`掉线重连中${++this.retryCount}`)
+    window.console.warn(`掉线重连中${++this.retryCount}`)
     window.setTimeout(this.wsConnect.bind(this), 1000)
   }
 
   onWsMessage (event) {
+    this.refreshReceiveTimeoutTimer()
+
     let {cmd, data} = JSON.parse(event.data)
     switch (cmd) {
+    case COMMAND_HEARTBEAT: {
+      break
+    }
     case COMMAND_ADD_TEXT: {
       if (!this.onAddText) {
         break
