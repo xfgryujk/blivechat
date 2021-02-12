@@ -1,7 +1,9 @@
 <template>
   <yt-live-chat-ticker-renderer :hidden="showMessages.length === 0">
     <div id="container" dir="ltr" class="style-scope yt-live-chat-ticker-renderer">
-      <div id="items" class="style-scope yt-live-chat-ticker-renderer">
+      <transition-group tag="div" :css="false" @enter="onTickerItemEnter" @leave="onTickerItemLeave"
+        id="items" class="style-scope yt-live-chat-ticker-renderer"
+      >
         <yt-live-chat-ticker-paid-message-item-renderer v-for="message in showMessages" :key="message.raw.id"
           tabindex="0" class="style-scope yt-live-chat-ticker-renderer" style="overflow: hidden;"
           @click="onItemClick(message.raw)"
@@ -19,7 +21,7 @@
             </div>
           </div>
         </yt-live-chat-ticker-paid-message-item-renderer>
-      </div>
+      </transition-group>
     </div>
     <template v-if="pinnedMessage">
       <membership-item :key="pinnedMessage.id" v-if="pinnedMessage.type === MESSAGE_TYPE_MEMBER"
@@ -98,6 +100,27 @@ export default {
     window.clearInterval(this.updateTimerId)
   },
   methods: {
+    async onTickerItemEnter(el, done) {
+      let width = el.clientWidth
+      el.style.width = 0
+      await this.$nextTick()
+      el.style.width = `${width}px`
+      window.setTimeout(done, 200)
+    },
+    onTickerItemLeave(el, done) {
+      el.classList.add('sliding-down')
+      window.setTimeout(() => {
+        el.classList.add('collapsing')
+        el.style.width = 0
+        window.setTimeout(() => {
+          el.classList.remove('sliding-down')
+          el.classList.remove('collapsing')
+          el.style.width = 'auto'
+          done()
+        }, 200)
+      }, 200)
+    },
+
     getShowAuthorName: constants.getShowAuthorName,
     needToShow(message) {
       let pinTime = this.getPinTime(message)
