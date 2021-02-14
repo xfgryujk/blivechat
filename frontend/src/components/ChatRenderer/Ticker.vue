@@ -102,6 +102,11 @@ export default {
   methods: {
     async onTickerItemEnter(el, done) {
       let width = el.clientWidth
+      if (width === 0) {
+        // CSS指定了不显示固定栏
+        done()
+        return
+      }
       el.style.width = 0
       await this.$nextTick()
       el.style.width = `${width}px`
