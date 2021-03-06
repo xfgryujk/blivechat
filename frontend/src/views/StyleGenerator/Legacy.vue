@@ -181,6 +181,8 @@
 </template>
 
 <script>
+import _ from 'lodash'
+
 import * as stylegen from './stylegen'
 import * as fonts from './fonts'
 
@@ -205,6 +207,7 @@ export default {
   watch: {
     result(val) {
       this.$emit('input', val)
+      this.saveResult()
     }
   },
   created() {
@@ -221,6 +224,9 @@ export default {
       }
       callback(res)
     },
+    saveResult: _.debounce(function() {
+      stylegen.setLocalConfig(this.form)
+    }, 500),
     resetConfig() {
       this.form = {...stylegen.DEFAULT_CONFIG}
     }

@@ -1,12 +1,12 @@
 <template>
   <el-row :gutter="20">
     <el-col :span="12">
-      <legacy ref="legacy" v-model="results.legacy" @playAnimation="playAnimation"></legacy>
+      <legacy ref="legacy" v-model="subComponentResults.legacy" @playAnimation="playAnimation"></legacy>
 
       <el-form label-width="150px" size="mini">
         <h3>{{$t('stylegen.result')}}</h3>
         <el-form-item label="CSS">
-          <el-input v-model="debouncedResult" ref="result" type="textarea" :rows="20"></el-input>
+          <el-input v-model="inputResult" ref="result" type="textarea" :rows="20"></el-input>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="copyResult">{{$t('stylegen.copy')}}</el-button>
@@ -126,32 +126,40 @@ export default {
     Legacy, ChatRenderer
   },
   data() {
+    // 数据流：
+    //                                                   输入框 --\
+    // 子组件 -> subComponentResults -> subComponentResult -> inputResult -> 防抖延迟0.5s后 -> debounceResult -> exampleCss
     return {
       // 子组件的结果
-      results: {
+      subComponentResults: {
         legacy: ''
       },
-      // 延迟变化的结果
-      debouncedResult: ''
+      // 输入框的结果
+      inputResult: '',
+      // 防抖后延迟变化的结果
+      debounceResult: ''
     }
   },
   computed: {
-    // 实时变化的结果
-    computedResult() {
-      return this.results.legacy
+    // 子组件的结果
+    subComponentResult() {
+      return this.subComponentResults.legacy
     },
     // 应用到预览上的CSS
     exampleCss() {
-      return this.debouncedResult.replace(/^body\b/gm, '#fakebody')
+      return this.debounceResult.replace(/^body\b/gm, '#fakebody')
     }
   },
   watch: {
-    computedResult: _.debounce(function(val) {
-      this.debouncedResult = val
+    subComponentResult(val) {
+      this.inputResult = val
+    },
+    inputResult: _.debounce(function(val) {
+      this.debounceResult = val
     }, 500)
   },
   mounted() {
-    this.debouncedResult = this.computedResult
+    this.debounceResult = this.inputResult = this.subComponentResult
 
     this.$refs.renderer.addMessages(EXAMPLE_MESSAGES)
 
@@ -170,6 +178,7 @@ export default {
     },
     resetConfig() {
       this.$refs.legacy.resetConfig()
+      this.inputResult = this.subComponentResult
     }
   }
 }
