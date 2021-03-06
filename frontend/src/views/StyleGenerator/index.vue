@@ -162,9 +162,6 @@ export default {
     this.debounceResult = this.inputResult = this.subComponentResult
 
     this.$refs.renderer.addMessages(EXAMPLE_MESSAGES)
-
-    let observer = new MutationObserver(() => this.$refs.renderer.scrollToBottom())
-    observer.observe(this.$refs.exampleContainer, {attributes: true})
   },
   methods: {
     async playAnimation() {
