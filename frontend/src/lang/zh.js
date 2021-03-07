@@ -77,7 +77,7 @@ export default {
 
     backgrounds: '背景',
     bgColor: '背景色',
-    useBarsInsteadOfBg: '用条代替背景',
+    useBarsInsteadOfBg: '用条代替消息背景',
     messageBgColor: '消息背景色',
     ownerMessageBgColor: '主播消息背景色',
     moderatorMessageBgColor: '房管消息背景色',

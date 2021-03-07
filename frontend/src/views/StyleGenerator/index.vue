@@ -1,22 +1,24 @@
 <template>
   <el-row :gutter="20">
-    <el-col :span="12">
+    <el-col :sm="24" :md="16">
       <legacy ref="legacy" v-model="subComponentResults.legacy" @playAnimation="playAnimation"></legacy>
 
       <el-form label-width="150px" size="mini">
         <h3>{{$t('stylegen.result')}}</h3>
-        <el-form-item label="CSS">
-          <el-input v-model="inputResult" ref="result" type="textarea" :rows="20"></el-input>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="copyResult">{{$t('stylegen.copy')}}</el-button>
-          <el-button @click="resetConfig">{{$t('stylegen.resetConfig')}}</el-button>
-        </el-form-item>
+        <el-card shadow="never">
+          <el-form-item label="CSS">
+            <el-input v-model="inputResult" ref="result" type="textarea" :rows="20"></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="copyResult">{{$t('stylegen.copy')}}</el-button>
+            <el-button @click="resetConfig">{{$t('stylegen.resetConfig')}}</el-button>
+          </el-form-item>
+        </el-card>
       </el-form>
     </el-col>
 
-    <el-col :span="12">
-      <div ref="exampleContainer" id="example-container">
+    <el-col :sm="24" :md="8">
+      <div id="example-container" :style="{top: `${exampleTop}px`}">
         <div id="fakebody">
           <chat-renderer ref="renderer" :css="exampleCss"></chat-renderer>
         </div>
@@ -137,7 +139,9 @@ export default {
       // 输入框的结果
       inputResult: '',
       // 防抖后延迟变化的结果
-      debounceResult: ''
+      debounceResult: '',
+
+      exampleTop: 0
     }
   },
   computed: {
@@ -162,8 +166,20 @@ export default {
     this.debounceResult = this.inputResult = this.subComponentResult
 
     this.$refs.renderer.addMessages(EXAMPLE_MESSAGES)
+
+    this.$parent.$el.addEventListener('scroll', this.onParentScroll)
+  },
+  beforeDestroy() {
+    this.$parent.$el.removeEventListener('scroll', this.onParentScroll)
   },
   methods: {
+    onParentScroll(event) {
+      if (document.body.clientWidth <= 992) {
+        this.exampleTop = 0
+      } else {
+        this.exampleTop = event.target.scrollTop
+      }
+    },
     async playAnimation() {
       this.$refs.renderer.clearMessages()
       await this.$nextTick()
@@ -183,10 +199,7 @@ export default {
 
 <style scoped>
 #example-container {
-  position: fixed;
-  top: 30px;
-  left: calc(210px + 40px + (100vw - 210px - 40px) / 2);
-  width: calc((100vw - 210px - 40px) / 2 - 40px - 30px);
+  position: relative;
   height: calc(100vh - 110px);
 
   background-color: #444;
@@ -201,20 +214,16 @@ export default {
     -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.75, transparent), color-stop(.75, #333)),
     -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.75, transparent), color-stop(.75, #333));
 
-  -moz-background-size:32px 32px;
-  background-size:32px 32px;
-  -webkit-background-size:32px 32px;
+  -moz-background-size: 32px 32px;
+  background-size: 32px 32px;
+  -webkit-background-size: 32px 32px;
 
-  background-position:0 0, 16px 0, 16px -16px, 0px 16px;
+  background-position: 0 0, 16px 0, 16px -16px, 0px 16px;
 
   padding: 25px;
 
   resize: both;
   overflow: hidden;
-}
-
-.app-wrapper.mobile #example-container {
-  display: none;
 }
 
 #fakebody {

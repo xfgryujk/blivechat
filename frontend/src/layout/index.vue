@@ -62,6 +62,7 @@ html, body, #app, .app-wrapper, .sidebar-container {
 
 body {
   margin: 0;
+  background-color: #f6f8fa;
 }
 
 a, a:focus, a:hover {

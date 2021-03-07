@@ -23,7 +23,7 @@
       </a>
       <a href="http://link.bilibili.com/ctool/vtuber" target="_blank">
         <el-menu-item>
-          <i class="el-icon-share"></i>{{$t('sidebar.giftRecordOfficial')}}
+          <i class="el-icon-link"></i>{{$t('sidebar.giftRecordOfficial')}}
         </el-menu-item>
       </a>
       <el-submenu index="null">
