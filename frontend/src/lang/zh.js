@@ -47,6 +47,9 @@ export default {
     failedToParseConfig: '配置解析失败：'
   },
   stylegen: {
+    legacy: '经典',
+    lineLike: '仿微信',
+
     outlines: '描边',
     showOutlines: '显示描边',
     outlineSize: '描边尺寸',
@@ -104,7 +107,7 @@ export default {
     animateIn: '进入动画',
     fadeInTime: '淡入时间（毫秒）',
     animateOut: '移除旧消息',
-    animateOutWaitTime: '等待时间（秒）',
+    animateOutWaitTime: '移除前等待时间（秒）',
     fadeOutTime: '淡出时间（毫秒）',
     slide: '滑动',
     reverseSlide: '反向滑动',

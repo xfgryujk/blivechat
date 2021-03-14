@@ -47,6 +47,9 @@ export default {
     failedToParseConfig: 'コンフィグ解析に失敗しました'
   },
   stylegen: {
+    legacy: '古典',
+    lineLike: 'Line風',
+
     outlines: 'アウトライン',
     showOutlines: 'アウトラインを表示する',
     outlineSize: 'アウトラインのサイズ',

@@ -1,7 +1,14 @@
 <template>
   <el-row :gutter="20">
     <el-col :sm="24" :md="16">
-      <legacy ref="legacy" v-model="subComponentResults.legacy" @playAnimation="playAnimation"></legacy>
+      <el-tabs v-model="activeTab">
+        <el-tab-pane :label="$t('stylegen.legacy')" name="legacy">
+          <legacy ref="legacy" v-model="subComponentResults.legacy" @playAnimation="playAnimation"></legacy>
+        </el-tab-pane>
+        <el-tab-pane :label="$t('stylegen.lineLike')" name="lineLike">
+          <line-like ref="lineLike" v-model="subComponentResults.lineLike" @playAnimation="playAnimation"></line-like>
+        </el-tab-pane>
+      </el-tabs>
 
       <el-form label-width="150px" size="mini">
         <h3>{{$t('stylegen.result')}}</h3>
@@ -31,6 +38,7 @@
 import _ from 'lodash'
 
 import Legacy from './Legacy'
+import LineLike from './LineLike'
 import ChatRenderer from '@/components/ChatRenderer'
 import * as constants from '@/components/ChatRenderer/constants'
 
@@ -97,12 +105,12 @@ const EXAMPLE_MESSAGES = [
   {
     ...membershipItemTemplate,
     id: (nextId++).toString(),
-    authorName: '艾米亚official'
+    authorName: 'xfgryujk'
   },
   {
     ...paidMessageTemplate,
     id: (nextId++).toString(),
-    authorName: '愛里紗メイプル',
+    authorName: '小陈',
     price: 66600,
     content: 'Sent 小电视飞船x100'
   },
@@ -116,7 +124,7 @@ const EXAMPLE_MESSAGES = [
   {
     ...paidMessageTemplate,
     id: (nextId++).toString(),
-    authorName: 'AstralisUP',
+    authorName: '叔叔 / おじさん',
     price: 30,
     content: '言いたいことがあるんだよ！'
   }
@@ -125,7 +133,7 @@ const EXAMPLE_MESSAGES = [
 export default {
   name: 'StyleGenerator',
   components: {
-    Legacy, ChatRenderer
+    Legacy, LineLike, ChatRenderer
   },
   data() {
     // 数据流：
@@ -134,8 +142,10 @@ export default {
     return {
       // 子组件的结果
       subComponentResults: {
-        legacy: ''
+        legacy: '',
+        lineLike: ''
       },
+      activeTab: 'legacy',
       // 输入框的结果
       inputResult: '',
       // 防抖后延迟变化的结果
@@ -147,7 +157,7 @@ export default {
   computed: {
     // 子组件的结果
     subComponentResult() {
-      return this.subComponentResults.legacy
+      return this.subComponentResults[this.activeTab]
     },
     // 应用到预览上的CSS
     exampleCss() {
@@ -190,7 +200,7 @@ export default {
       document.execCommand('Copy')
     },
     resetConfig() {
-      this.$refs.legacy.resetConfig()
+      this.$refs[this.activeTab].resetConfig()
       this.inputResult = this.subComponentResult
     }
   }

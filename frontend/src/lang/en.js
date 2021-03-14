@@ -47,6 +47,9 @@ export default {
     failedToParseConfig: 'Failed to parse config: '
   },
   stylegen: {
+    legacy: 'Classic',
+    lineLike: 'Line-like',
+
     outlines: 'Outlines',
     showOutlines: 'Show outlines',
     outlineSize: 'Outline size',
