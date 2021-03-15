@@ -50,6 +50,9 @@ export default {
     legacy: 'Classic',
     lineLike: 'Line-like',
 
+    light: 'light',
+    dark: 'dark',
+
     outlines: 'Outlines',
     showOutlines: 'Show outlines',
     outlineSize: 'Outline size',

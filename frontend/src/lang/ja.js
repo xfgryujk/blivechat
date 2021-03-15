@@ -50,6 +50,9 @@ export default {
     legacy: '古典',
     lineLike: 'Line風',
 
+    light: '明るい',
+    dark: '暗い',
+
     outlines: 'アウトライン',
     showOutlines: 'アウトラインを表示する',
     outlineSize: 'アウトラインのサイズ',

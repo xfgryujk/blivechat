@@ -85,13 +85,13 @@ yt-live-chat-membership-item-renderer #author-photo img {
 
 export function getTimeStyle (config) {
   return `/* Timestamps */
-  yt-live-chat-text-message-renderer #timestamp {
-    display: ${config.showTime ? 'inline' : 'none'} !important;
-    ${config.timeColor ? `color: ${config.timeColor} !important;` : ''}
-    font-family: "${cssEscapeStr(config.timeFont)}"${FALLBACK_FONTS};
-    font-size: ${config.timeFontSize}px !important;
-    line-height: ${config.timeLineHeight || config.timeFontSize}px !important;
-  }`
+yt-live-chat-text-message-renderer #timestamp {
+  display: ${config.showTime ? 'inline' : 'none'} !important;
+  ${config.timeColor ? `color: ${config.timeColor} !important;` : ''}
+  font-family: "${cssEscapeStr(config.timeFont)}"${FALLBACK_FONTS};
+  font-size: ${config.timeFontSize}px !important;
+  line-height: ${config.timeLineHeight || config.timeFontSize}px !important;
+}`
 }
 
 export function getAnimationStyle (config) {
@@ -131,8 +131,8 @@ ${keyframes.join('\n')}
 yt-live-chat-text-message-renderer,
 yt-live-chat-membership-item-renderer,
 yt-live-chat-paid-message-renderer {
-animation: anim ${totalTime}ms;
-animation-fill-mode: both;
+  animation: anim ${totalTime}ms;
+  animation-fill-mode: both;
 }`
 }
 

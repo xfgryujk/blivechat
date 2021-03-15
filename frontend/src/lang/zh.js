@@ -50,6 +50,9 @@ export default {
     legacy: '经典',
     lineLike: '仿微信',
 
+    light: '明亮',
+    dark: '黑暗',
+
     outlines: '描边',
     showOutlines: '显示描边',
     outlineSize: '描边尺寸',

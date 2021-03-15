@@ -25,9 +25,14 @@
     </el-col>
 
     <el-col :sm="24" :md="8">
-      <div id="example-container" :style="{top: `${exampleTop}px`}">
-        <div id="fakebody">
-          <chat-renderer ref="renderer" :css="exampleCss"></chat-renderer>
+      <div :style="{position: 'relative', top: `${exampleTop}px`}">
+        <p>
+          <el-switch v-model="exampleBgLight" :active-text="$t('stylegen.light')" :inactive-text="$t('stylegen.dark')"></el-switch>
+        </p>
+        <div id="example-container" :class="{light: exampleBgLight}">
+          <div id="fakebody">
+            <chat-renderer ref="renderer" :css="exampleCss"></chat-renderer>
+          </div>
         </div>
       </div>
     </el-col>
@@ -151,7 +156,8 @@ export default {
       // 防抖后延迟变化的结果
       debounceResult: '',
 
-      exampleTop: 0
+      exampleTop: 0,
+      exampleBgLight: false
     }
   },
   computed: {
@@ -209,8 +215,7 @@ export default {
 
 <style scoped>
 #example-container {
-  position: relative;
-  height: calc(100vh - 110px);
+  height: calc(100vh - 150px);
 
   background-color: #444;
   background-image:
@@ -234,6 +239,20 @@ export default {
 
   resize: both;
   overflow: hidden;
+}
+
+#example-container.light {
+  background-color: #ddd;
+  background-image:
+    -moz-linear-gradient(45deg, #eee 25%, transparent 25%),
+    -moz-linear-gradient(-45deg, #eee 25%, transparent 25%),
+    -moz-linear-gradient(45deg, transparent 75%, #eee 75%),
+    -moz-linear-gradient(-45deg, transparent 75%, #eee 75%);
+  background-image:
+    -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.25, #eee), color-stop(.25, transparent)),
+    -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.25, #eee), color-stop(.25, transparent)),
+    -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.75, transparent), color-stop(.75, #eee)),
+    -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.75, transparent), color-stop(.75, #eee));
 }
 
 #fakebody {
