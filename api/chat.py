@@ -32,7 +32,7 @@ class Command(enum.IntEnum):
     UPDATE_TRANSLATION = 7
 
 
-_http_session = aiohttp.ClientSession()
+_http_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
 
 room_manager: Optional['RoomManager'] = None
 
@@ -576,7 +576,7 @@ class RoomInfoHandler(api.base.ApiHandler):
                                    res.status, res.reason)
                     return room_id, 0
                 data = await res.json()
-        except aiohttp.ClientConnectionError:
+        except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
             logger.exception('room %d _get_room_info failed', room_id)
             return room_id, 0
 
@@ -600,7 +600,7 @@ class RoomInfoHandler(api.base.ApiHandler):
         #                            res.status, res.reason)
         #             return cls._host_server_list_cache
         #         data = await res.json()
-        # except aiohttp.ClientConnectionError:
+        # except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
         #     logger.exception('room %d _get_server_host_list failed', room_id)
         #     return cls._host_server_list_cache
         #

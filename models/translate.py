@@ -21,7 +21,7 @@ NO_TRANSLATE_TEXTS = {
 }
 
 _main_event_loop = asyncio.get_event_loop()
-_http_session = aiohttp.ClientSession()
+_http_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
 _translate_providers: List['TranslateProvider'] = []
 # text -> res
 _translate_cache: Dict[str, str] = {}
@@ -127,7 +127,6 @@ class TencentTranslate(TranslateProvider):
         self._reinit_future = None
         # 连续失败的次数
         self._fail_count = 0
-        self._cool_down_future = None
 
     async def init(self):
         self._reinit_future = asyncio.ensure_future(self._reinit_coroutine())
@@ -174,14 +173,13 @@ class TencentTranslate(TranslateProvider):
         try:
             while True:
                 await asyncio.sleep(30)
-                while True:
-                    logger.debug('TencentTranslate reinit')
-                    try:
-                        if await self._do_init():
-                            break
-                    except Exception:
-                        logger.exception('TencentTranslate init error:')
-                    await asyncio.sleep(3 * 60)
+                logger.debug('TencentTranslate reinit')
+                try:
+                    await self._do_init()
+                except asyncio.CancelledError:
+                    raise
+                except Exception:
+                    logger.exception('TencentTranslate init error:')
         except asyncio.CancelledError:
             pass
 
@@ -238,26 +236,14 @@ class TencentTranslate(TranslateProvider):
 
     def _on_fail(self):
         self._fail_count += 1
-        # 目前没有测试出被ban的情况，为了可靠性，连续失败20次时冷却并重新init
-        if self._fail_count >= 20 and self._cool_down_future is None:
-            self._cool_down_future = asyncio.ensure_future(self._cool_down())
+        # 目前没有测试出被ban的情况，为了可靠性，连续失败20次时冷却直到下次重新init
+        if self._fail_count >= 20:
+            self._cool_down()
 
-    async def _cool_down(self):
+    def _cool_down(self):
         logger.info('TencentTranslate is cooling down')
         self._qtv = self._qtk = ''
-        try:
-            while True:
-                await asyncio.sleep(3 * 60)
-                logger.info('TencentTranslate reinit')
-                try:
-                    if await self._do_init():
-                        self._fail_count = 0
-                        break
-                except Exception:
-                    logger.exception('TencentTranslate init error:')
-        finally:
-            logger.info('TencentTranslate finished cooling down')
-            self._cool_down_future = None
+        self._fail_count = 0
 
 
 class YoudaoTranslate(TranslateProvider):

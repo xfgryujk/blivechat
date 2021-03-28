@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_AVATAR_URL = '//static.hdslb.com/images/member/noface.gif'
 
 _main_event_loop = asyncio.get_event_loop()
-_http_session = aiohttp.ClientSession()
+_http_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
 # user_id -> avatar_url
 _avatar_url_cache: Dict[int, str] = {}
 # 正在获取头像的Future，user_id -> Future
