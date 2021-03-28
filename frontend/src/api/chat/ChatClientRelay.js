@@ -85,7 +85,11 @@ export default class ChatClientRelay {
   onReceiveTimeout() {
     window.console.warn('接收消息超时')
     this.receiveTimeoutTimerId = null
+
+    // 直接丢弃阻塞的websocket，不等onclose回调了
+    this.websocket.onopen = this.websocket.onclose = this.websocket.onmessage = null
     this.websocket.close()
+    this.onWsClose()
   }
 
   onWsClose () {
