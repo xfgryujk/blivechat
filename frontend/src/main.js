@@ -76,7 +76,7 @@ const router = new VueRouter({
         {path: 'help', name: 'help', component: Help}
       ]
     },
-    {path: '/room/test', name: 'test_room', component: Room},
+    {path: '/room/test', name: 'test_room', component: Room, props: route => ({strConfig: route.query})},
     {
       path: '/room/:roomId',
       name: 'room',

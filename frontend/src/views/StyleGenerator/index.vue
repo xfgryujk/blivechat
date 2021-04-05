@@ -26,11 +26,11 @@
 
     <el-col :sm="24" :md="8">
       <div :style="{position: 'relative', top: `${exampleTop}px`}">
-        <el-form inline style="height: 40px">
-          <el-form-item :label="$t('stylegen.playAnimation')">
+        <el-form inline style="line-height: 40px">
+          <el-form-item :label="$t('stylegen.playAnimation')" style="margin: 0">
             <el-switch v-model="playAnimation" @change="onPlayAnimationChange"></el-switch>
           </el-form-item>
-          <el-form-item :label="$t('stylegen.backgrounds')" style="margin-left: 20px">
+          <el-form-item :label="$t('stylegen.backgrounds')" style="margin: 0 0 0 30px">
             <el-switch v-model="exampleBgLight" :active-text="$t('stylegen.light')" :inactive-text="$t('stylegen.dark')"></el-switch>
           </el-form-item>
         </el-form>
