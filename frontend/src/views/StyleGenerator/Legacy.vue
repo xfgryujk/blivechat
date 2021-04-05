@@ -340,9 +340,6 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item>
-          <el-button type="primary" @click="$emit('playAnimation')">{{$t('stylegen.playAnimation')}}</el-button>
-        </el-form-item>
       </el-card>
     </el-form>
   </div>

@@ -73,7 +73,6 @@ export default {
     PaidMessage
   },
   props: {
-    css: String,
     maxNumber: {
       type: Number,
       default: chatConfig.DEFAULT_CONFIG.maxNumber
@@ -84,15 +83,12 @@ export default {
     }
   },
   data() {
-    let styleElement = document.createElement('style')
-    document.head.appendChild(styleElement)
     return {
       MESSAGE_TYPE_TEXT: constants.MESSAGE_TYPE_TEXT,
       MESSAGE_TYPE_GIFT: constants.MESSAGE_TYPE_GIFT,
       MESSAGE_TYPE_MEMBER: constants.MESSAGE_TYPE_MEMBER,
       MESSAGE_TYPE_SUPER_CHAT: constants.MESSAGE_TYPE_SUPER_CHAT,
 
-      styleElement,
       messages: [],                        // 显示的消息
       paidMessages: [],                    // 固定在上方的消息
 
@@ -122,19 +118,14 @@ export default {
     }
   },
   watch: {
-    css(val) {
-      this.styleElement.innerText = val
-    },
     canScrollToBottom(val) {
       this.cantScrollStartTime = val ? null : new Date()
     }
   },
   mounted() {
-    this.styleElement.innerText = this.css
     this.scrollToBottom()
   },
   beforeDestroy() {
-    document.head.removeChild(this.styleElement)
     if (this.emitSmoothedMessageTimerId) {
       window.clearTimeout(this.emitSmoothedMessageTimerId)
       this.emitSmoothedMessageTimerId = null

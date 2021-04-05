@@ -3,10 +3,10 @@
     <el-col :sm="24" :md="16">
       <el-tabs v-model="activeTab">
         <el-tab-pane :label="$t('stylegen.legacy')" name="legacy">
-          <legacy ref="legacy" v-model="subComponentResults.legacy" @playAnimation="playAnimation"></legacy>
+          <legacy ref="legacy" v-model="subComponentResults.legacy"></legacy>
         </el-tab-pane>
         <el-tab-pane :label="$t('stylegen.lineLike')" name="lineLike">
-          <line-like ref="lineLike" v-model="subComponentResults.lineLike" @playAnimation="playAnimation"></line-like>
+          <line-like ref="lineLike" v-model="subComponentResults.lineLike"></line-like>
         </el-tab-pane>
       </el-tabs>
 
@@ -26,12 +26,17 @@
 
     <el-col :sm="24" :md="8">
       <div :style="{position: 'relative', top: `${exampleTop}px`}">
-        <p>
-          <el-switch v-model="exampleBgLight" :active-text="$t('stylegen.light')" :inactive-text="$t('stylegen.dark')"></el-switch>
-        </p>
+        <el-form inline style="height: 40px">
+          <el-form-item :label="$t('stylegen.playAnimation')">
+            <el-switch v-model="playAnimation" @change="onPlayAnimationChange"></el-switch>
+          </el-form-item>
+          <el-form-item :label="$t('stylegen.backgrounds')" style="margin-left: 20px">
+            <el-switch v-model="exampleBgLight" :active-text="$t('stylegen.light')" :inactive-text="$t('stylegen.dark')"></el-switch>
+          </el-form-item>
+        </el-form>
         <div id="example-container" :class="{light: exampleBgLight}">
           <div id="fakebody">
-            <chat-renderer ref="renderer" :css="exampleCss"></chat-renderer>
+            <room ref="room"></room>
           </div>
         </div>
       </div>
@@ -44,103 +49,16 @@ import _ from 'lodash'
 
 import Legacy from './Legacy'
 import LineLike from './LineLike'
-import ChatRenderer from '@/components/ChatRenderer'
-import * as constants from '@/components/ChatRenderer/constants'
-
-let time = new Date()
-let textMessageTemplate = {
-  id: 0,
-  addTime: time,
-  type: constants.MESSAGE_TYPE_TEXT,
-  avatarUrl: 'https://static.hdslb.com/images/member/noface.gif',
-  time: time,
-  authorName: '',
-  authorType: constants.AUTHRO_TYPE_NORMAL,
-  content: '',
-  privilegeType: 0,
-  repeated: 1,
-  translation: ''
-}
-let membershipItemTemplate = {
-  id: 0,
-  addTime: time,
-  type: constants.MESSAGE_TYPE_MEMBER,
-  avatarUrl: 'https://static.hdslb.com/images/member/noface.gif',
-  time: time,
-  authorName: '',
-  privilegeType: 3,
-  title: 'New member'
-}
-let paidMessageTemplate = {
-  id: 0,
-  addTime: time,
-  type: constants.MESSAGE_TYPE_SUPER_CHAT,
-  avatarUrl: 'https://static.hdslb.com/images/member/noface.gif',
-  authorName: '',
-  price: 0,
-  time: time,
-  content: '',
-  translation: ''
-}
-let nextId = 0
-const EXAMPLE_MESSAGES = [
-  {
-    ...textMessageTemplate,
-    id: (nextId++).toString(),
-    authorName: 'mob路人',
-    content: '8888888888',
-    repeated: 12
-  },
-  {
-    ...textMessageTemplate,
-    id: (nextId++).toString(),
-    authorName: 'member舰长',
-    authorType:  constants.AUTHRO_TYPE_MEMBER,
-    content: '草',
-    privilegeType: 3,
-    repeated: 3
-  },
-  {
-    ...textMessageTemplate,
-    id: (nextId++).toString(),
-    authorName: 'admin房管',
-    authorType: constants.AUTHRO_TYPE_ADMIN,
-    content: 'kksk'
-  },
-  {
-    ...membershipItemTemplate,
-    id: (nextId++).toString(),
-    authorName: 'xfgryujk'
-  },
-  {
-    ...paidMessageTemplate,
-    id: (nextId++).toString(),
-    authorName: '小陈',
-    price: 66600,
-    content: 'Sent 小电视飞船x100'
-  },
-  {
-    ...textMessageTemplate,
-    id: (nextId++).toString(),
-    authorName: 'streamer主播',
-    authorType: constants.AUTHRO_TYPE_OWNER,
-    content: '老板大气，老板身体健康'
-  },
-  {
-    ...paidMessageTemplate,
-    id: (nextId++).toString(),
-    authorName: '叔叔 / おじさん',
-    price: 30,
-    content: '言いたいことがあるんだよ！'
-  }
-]
+import Room from '@/views/Room'
 
 export default {
   name: 'StyleGenerator',
   components: {
-    Legacy, LineLike, ChatRenderer
+    Legacy, LineLike, Room
   },
   data() {
+    let styleElement = document.createElement('style')
+    document.head.appendChild(styleElement)
     // 数据流：
     //                                                   输入框 --\
     // 子组件 -> subComponentResults -> subComponentResult -> inputResult -> 防抖延迟0.5s后 -> debounceResult -> exampleCss
@@ -156,7 +74,9 @@ export default {
       // 防抖后延迟变化的结果
       debounceResult: '',
 
+      styleElement,
       exampleTop: 0,
+      playAnimation: true,
       exampleBgLight: false
     }
   },
@@ -176,17 +96,20 @@ export default {
     },
     inputResult: _.debounce(function(val) {
       this.debounceResult = val
-    }, 500)
+    }, 500),
+    exampleCss(val) {
+      this.styleElement.innerText = val
+    }
   },
   mounted() {
     this.debounceResult = this.inputResult = this.subComponentResult
-
-    this.$refs.renderer.addMessages(EXAMPLE_MESSAGES)
 
     this.$parent.$el.addEventListener('scroll', this.onParentScroll)
   },
   beforeDestroy() {
     this.$parent.$el.removeEventListener('scroll', this.onParentScroll)
+
+    document.head.removeChild(this.styleElement)
   },
   methods: {
     onParentScroll(event) {
@@ -196,10 +119,12 @@ export default {
         this.exampleTop = event.target.scrollTop
       }
     },
-    async playAnimation() {
-      this.$refs.renderer.clearMessages()
-      await this.$nextTick()
-      this.$refs.renderer.addMessages(EXAMPLE_MESSAGES)
+    onPlayAnimationChange(value) {
+      if (value) {
+        this.$refs.room.start()
+      } else {
+        this.$refs.room.stop()
+      }
     },
     copyResult() {
       this.$refs.result.select()

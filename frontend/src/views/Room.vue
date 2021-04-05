@@ -18,7 +18,14 @@ export default {
     ChatRenderer
   },
   props: {
-    roomId: Number
+    roomId: {
+      type: Number,
+      default: null
+    },
+    strConfig: {
+      type: Object,
+      default: () => ({})
+    }
   },
   data() {
     return {
@@ -58,9 +65,9 @@ export default {
     initConfig() {
       let cfg = {}
       // 留空的使用默认值
-      for (let i in this.$route.query) {
-        if (this.$route.query[i] !== '') {
-          cfg[i] = this.$route.query[i]
+      for (let i in this.strConfig) {
+        if (this.strConfig[i] !== '') {
+          cfg[i] = this.strConfig[i]
         }
       }
       cfg = mergeConfig(cfg, chatConfig.DEFAULT_CONFIG)
@@ -99,6 +106,13 @@ export default {
       this.chatClient.onDelSuperChat = this.onDelSuperChat
       this.chatClient.onUpdateTranslation = this.onUpdateTranslation
       this.chatClient.start()
+    },
+
+    start() {
+      this.chatClient.start()
+    },
+    stop() {
+      this.chatClient.stop()
     },
 
     onAddText(data) {

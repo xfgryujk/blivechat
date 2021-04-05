@@ -76,7 +76,7 @@ const router = new VueRouter({
         {path: 'help', name: 'help', component: Help}
       ]
     },
-    {path: '/room/test', name: 'test_room', component: Room, props: {roomId: null}},
+    {path: '/room/test', name: 'test_room', component: Room},
     {
       path: '/room/:roomId',
       name: 'room',
@@ -86,7 +86,7 @@ const router = new VueRouter({
         if (isNaN(roomId)) {
           roomId = null
         }
-        return {roomId}
+        return {roomId, strConfig: route.query}
       }
     },
     {path: '*', component: NotFound}
