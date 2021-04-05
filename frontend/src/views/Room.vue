@@ -6,6 +6,7 @@
 import {mergeConfig, toBool, toInt} from '@/utils'
 import * as pronunciation from '@/utils/pronunciation'
 import * as chatConfig from '@/api/chatConfig'
+import ChatClientTest from '@/api/chat/ChatClientTest'
 import ChatClientDirect from '@/api/chat/ChatClientDirect'
 import ChatClientRelay from '@/api/chat/ChatClientRelay'
 import ChatRenderer from '@/components/ChatRenderer'
@@ -15,6 +16,9 @@ export default {
   name: 'Room',
   components: {
     ChatRenderer
+  },
+  props: {
+    roomId: Number
   },
   data() {
     return {
@@ -79,11 +83,14 @@ export default {
       this.config = cfg
     },
     initChatClient() {
-      let roomId = parseInt(this.$route.params.roomId)
-      if (!this.config.relayMessagesByServer) {
-        this.chatClient = new ChatClientDirect(roomId)
+      if (this.roomId === null) {
+        this.chatClient = new ChatClientTest()
       } else {
-        this.chatClient = new ChatClientRelay(roomId, this.config.autoTranslate)
+        if (!this.config.relayMessagesByServer) {
+          this.chatClient = new ChatClientDirect(this.roomId)
+        } else {
+          this.chatClient = new ChatClientRelay(this.roomId, this.config.autoTranslate)
+        }
       }
       this.chatClient.onAddText = this.onAddText
       this.chatClient.onAddGift = this.onAddGift

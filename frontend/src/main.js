@@ -76,7 +76,19 @@ const router = new VueRouter({
         {path: 'help', name: 'help', component: Help}
       ]
     },
-    {path: '/room/:roomId', name: 'room', component: Room},
+    {path: '/room/test', name: 'test_room', component: Room, props: {roomId: null}},
+    {
+      path: '/room/:roomId',
+      name: 'room',
+      component: Room,
+      props(route) {
+        let roomId = parseInt(route.params.roomId)
+        if (isNaN(roomId)) {
+          roomId = null
+        }
+        return {roomId}
+      }
+    },
     {path: '*', component: NotFound}
   ]
 })

@@ -389,8 +389,13 @@ export default {
         addTime: new Date() // 添加一个本地时间给Ticker用，防止本地时间和服务器时间相差很大的情况
       }
       this.messagesBuffer.push(message)
+
       if (message.type !== constants.MESSAGE_TYPE_TEXT) {
         this.paidMessages.unshift(message)
+        const MAX_PAID_MESSAGE_NUM = 100
+        if (this.paidMessages.length > MAX_PAID_MESSAGE_NUM) {
+          this.paidMessages.splice(MAX_PAID_MESSAGE_NUM, this.paidMessages.length - MAX_PAID_MESSAGE_NUM)
+        }
       }
     },
     handleDelMessage({id}) {

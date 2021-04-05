@@ -41,6 +41,7 @@ export default {
     roomUrl: 'ルームのURL',
     copy: 'コピー',
     enterRoom: 'ルームに入る',
+    enterTestRoom: 'テストルームに入る',
     exportConfig: 'コンフィグの導出',
     importConfig: 'コンフィグの導入',
 

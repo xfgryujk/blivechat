@@ -41,6 +41,7 @@ export default {
     roomUrl: 'Room URL',
     copy: 'Copy',
     enterRoom: 'Enter room',
+    enterTestRoom: 'Enter test room',
     exportConfig: 'Export config',
     importConfig: 'Import config',
 

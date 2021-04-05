@@ -41,6 +41,7 @@ export default {
     roomUrl: '房间URL',
     copy: '复制',
     enterRoom: '进入房间',
+    enterTestRoom: '进入测试房间',
     exportConfig: '导出配置',
     importConfig: '导入配置',
 

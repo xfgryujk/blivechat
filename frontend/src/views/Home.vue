@@ -127,6 +127,7 @@
           </el-form-item>
           <el-form-item>
             <el-button type="primary" :disabled="!roomUrl" @click="enterRoom">{{$t('home.enterRoom')}}</el-button>
+            <el-button :disabled="!roomUrl" @click="enterTestRoom">{{$t('home.enterTestRoom')}}</el-button>
             <el-button @click="exportConfig">{{$t('home.exportConfig')}}</el-button>
             <el-button @click="importConfig">{{$t('home.importConfig')}}</el-button>
           </el-form-item>
@@ -160,13 +161,7 @@ export default {
   },
   computed: {
     roomUrl() {
-      if (this.form.roomId === '') {
-        return ''
-      }
-      let query = {...this.form}
-      delete query.roomId
-      let resolved = this.$router.resolve({name: 'room', params: {roomId: this.form.roomId}, query})
-      return `${window.location.protocol}//${window.location.host}${resolved.href}`
+      return this.getRoomUrl(false)
     },
     obsRoomUrl() {
       if (this.roomUrl === '') {
@@ -199,6 +194,23 @@ export default {
     },
     enterRoom() {
       window.open(this.roomUrl, `room ${this.form.roomId}`, 'menubar=0,location=0,scrollbars=0,toolbar=0,width=600,height=600')
+    },
+    enterTestRoom() {
+      window.open(this.getRoomUrl(true), 'test room', 'menubar=0,location=0,scrollbars=0,toolbar=0,width=600,height=600')
+    },
+    getRoomUrl(isTestRoom) {
+      if (isTestRoom && this.form.roomId === '') {
+        return ''
+      }
+      let query = {...this.form}
+      delete query.roomId
+      let resolved
+      if (isTestRoom) {
+        resolved = this.$router.resolve({name: 'test_room', query})
+      } else {
+        resolved = this.$router.resolve({name: 'room', params: {roomId: this.form.roomId}, query})
+      }
+      return `${window.location.protocol}//${window.location.host}${resolved.href}`
     },
     copyUrl() {
       this.$refs.roomUrlInput.select()
