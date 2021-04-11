@@ -2,16 +2,13 @@
 
 import asyncio
 import functools
-import hashlib
 import logging
-import random
 import re
-import time
-
-import yarl
 from typing import *
 
 import aiohttp
+
+import config
 
 logger = logging.getLogger(__name__)
 
@@ -34,12 +31,22 @@ def init():
 
 
 async def _do_init():
-    # 考虑优先级
-    providers = [
-        TencentTranslate(),
-        YoudaoTranslate(),
-        BilibiliTranslate()
-    ]
+    cfg = config.get_config()
+    providers = []
+    for trans_cfg in cfg.translator_configs:
+        provider = None
+        type_ = trans_cfg['type']
+
+        if type_ == 'TencentTranslateFree':
+            provider = TencentTranslateFree(
+                trans_cfg['query_interval'], trans_cfg['max_queue_size'], trans_cfg['source_language'],
+                trans_cfg['target_language']
+            )
+        elif type_ == 'BilibiliTranslateFree':
+            provider = BilibiliTranslateFree(trans_cfg['query_interval'], trans_cfg['max_queue_size'])
+
+        if provider is not None:
+            providers.append(provider)
     await asyncio.gather(*(provider.init() for provider in providers))
     global _translate_providers
     _translate_providers = providers
@@ -119,9 +126,54 @@ class TranslateProvider:
         raise NotImplementedError
 
 
-class TencentTranslate(TranslateProvider):
-    def __init__(self):
-        # 过期时间1小时
+class FlowControlTranslateProvider(TranslateProvider):
+    def __init__(self, query_interval, max_queue_size):
+        self._query_interval = query_interval
+        # (text, future)
+        self._text_queue = asyncio.Queue(max_queue_size)
+
+    async def init(self):
+        asyncio.ensure_future(self._translate_consumer())
+        return True
+
+    @property
+    def is_available(self):
+        return not self._text_queue.full()
+
+    def translate(self, text, future):
+        try:
+            self._text_queue.put_nowait((text, future))
+        except asyncio.QueueFull:
+            future.set_result(None)
+
+    async def _translate_consumer(self):
+        while True:
+            try:
+                text, future = await self._text_queue.get()
+                asyncio.ensure_future(self._translate_coroutine(text, future))
+                # 频率限制
+                await asyncio.sleep(self._query_interval)
+            except Exception:
+                logger.exception('FlowControlTranslateProvider error:')
+
+    async def _translate_coroutine(self, text, future):
+        try:
+            res = await self._do_translate(text)
+        except BaseException as e:
+            future.set_exception(e)
+        else:
+            future.set_result(res)
+
+    async def _do_translate(self, text):
+        raise NotImplementedError
+
+
+class TencentTranslateFree(FlowControlTranslateProvider):
+    def __init__(self, query_interval, max_queue_size, source_language, target_language):
+        super().__init__(query_interval, max_queue_size)
+        self._source_language = source_language
+        self._target_language = target_language
+
         self._qtv = ''
         self._qtk = ''
         self._reinit_future = None
@@ -129,40 +181,44 @@ class TencentTranslate(TranslateProvider):
         self._fail_count = 0
 
     async def init(self):
+        if not await super().init():
+            return False
+        if not await self._do_init():
+            return False
         self._reinit_future = asyncio.ensure_future(self._reinit_coroutine())
-        return await self._do_init()
+        return True
 
     async def _do_init(self):
         try:
             async with _http_session.get('https://fanyi.qq.com/') as r:
                 if r.status != 200:
-                    logger.warning('TencentTranslate init request failed: status=%d %s', r.status, r.reason)
+                    logger.warning('TencentTranslateFree init request failed: status=%d %s', r.status, r.reason)
                     return False
                 html = await r.text()
 
             m = re.search(r"""\breauthuri\s*=\s*['"](.+?)['"]""", html)
             if m is None:
-                logger.exception('TencentTranslate init failed: reauthuri not found')
+                logger.exception('TencentTranslateFree init failed: reauthuri not found')
                 return False
             reauthuri = m[1]
 
             async with _http_session.post('https://fanyi.qq.com/api/' + reauthuri) as r:
                 if r.status != 200:
-                    logger.warning('TencentTranslate init request failed: reauthuri=%s, status=%d %s',
+                    logger.warning('TencentTranslateFree init request failed: reauthuri=%s, status=%d %s',
                                    reauthuri, r.status, r.reason)
                     return False
                 data = await r.json()
         except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
-            logger.exception('TencentTranslate init error:')
+            logger.exception('TencentTranslateFree init error:')
             return False
 
         qtv = data.get('qtv', None)
         if qtv is None:
-            logger.warning('TencentTranslate init failed: qtv not found')
+            logger.warning('TencentTranslateFree init failed: qtv not found')
             return False
         qtk = data.get('qtk', None)
         if qtk is None:
-            logger.warning('TencentTranslate init failed: qtk not found')
+            logger.warning('TencentTranslateFree init failed: qtk not found')
             return False
 
         self._qtv = qtv
@@ -173,22 +229,14 @@ class TencentTranslate(TranslateProvider):
         try:
             while True:
                 await asyncio.sleep(30)
-                logger.debug('TencentTranslate reinit')
-                try:
-                    await self._do_init()
-                except asyncio.CancelledError:
-                    raise
-                except Exception:
-                    logger.exception('TencentTranslate init error:')
+                logger.debug('TencentTranslateFree reinit')
+                asyncio.ensure_future(self._do_init())
         except asyncio.CancelledError:
             pass
 
     @property
     def is_available(self):
-        return self._qtv != '' and self._qtk != ''
-
-    def translate(self, text, future):
-        asyncio.ensure_future(self._translate_coroutine(text, future))
+        return self._qtv != '' and self._qtk != '' and super().is_available
 
     async def _translate_coroutine(self, text, future):
         try:
@@ -211,26 +259,26 @@ class TencentTranslate(TranslateProvider):
                     'Referer': 'https://fanyi.qq.com/'
                 },
                 data={
-                    'source': 'zh',
-                    'target': 'jp',
+                    'source': self._source_language,
+                    'target': self._target_language,
                     'sourceText': text,
                     'qtv': self._qtv,
                     'qtk': self._qtk
                 }
             ) as r:
                 if r.status != 200:
-                    logger.warning('TencentTranslate request failed: status=%d %s', r.status, r.reason)
+                    logger.warning('TencentTranslateFree request failed: status=%d %s', r.status, r.reason)
                     return None
                 data = await r.json()
         except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
             return None
         if data['errCode'] != 0:
-            logger.warning('TencentTranslate failed: %d %s', data['errCode'], data['errMsg'])
+            logger.warning('TencentTranslateFree failed: %d %s', data['errCode'], data['errMsg'])
             return None
         res = ''.join(record['targetText'] for record in data['translate']['records'])
         if res == '' and text.strip() != '':
             # qtv、qtk过期
-            logger.warning('TencentTranslate result is empty %s', data)
+            logger.warning('TencentTranslateFree result is empty %s', data)
             return None
         return res
 
@@ -241,160 +289,17 @@ class TencentTranslate(TranslateProvider):
             self._cool_down()
 
     def _cool_down(self):
-        logger.info('TencentTranslate is cooling down')
+        logger.info('TencentTranslateFree is cooling down')
+        # 下次_do_init后恢复
         self._qtv = self._qtk = ''
         self._fail_count = 0
 
 
-class YoudaoTranslate(TranslateProvider):
-    def __init__(self):
-        self._has_init = False
-        self._cool_down_future = None
-
-    async def init(self):
-        # 获取cookie
-        try:
-            async with _http_session.get('http://fanyi.youdao.com/') as r:
-                if r.status >= 400:
-                    logger.warning('YoudaoTranslate init request failed: status=%d %s', r.status, r.reason)
-                    return False
-        except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
-            return False
-
-        cookies = _http_session.cookie_jar.filter_cookies(yarl.URL('http://fanyi.youdao.com/'))
-        res = 'JSESSIONID' in cookies and 'OUTFOX_SEARCH_USER_ID' in cookies
-        if res:
-            self._has_init = True
-        return res
-
-    @property
-    def is_available(self):
-        return self._has_init
-
-    def translate(self, text, future):
-        asyncio.ensure_future(self._translate_coroutine(text, future))
-
-    async def _translate_coroutine(self, text, future):
-        try:
-            res = await self._do_translate(text)
-        except BaseException as e:
-            future.set_exception(e)
-        else:
-            future.set_result(res)
+class BilibiliTranslateFree(FlowControlTranslateProvider):
+    def __init__(self, query_interval, max_queue_size):
+        super().__init__(query_interval, max_queue_size)
 
     async def _do_translate(self, text):
-        try:
-            async with _http_session.post(
-                'http://fanyi.youdao.com/translate_o?smartresult=dict&smartresult=rule',
-                headers={
-                    'Referer': 'http://fanyi.youdao.com/'
-                },
-                data={
-                    'i': text,
-                    'from': 'zh-CHS',
-                    'to': 'ja',
-                    'smartresult': 'dict',
-                    'client': 'fanyideskweb',
-                    **self._generate_salt(text),
-                    'doctype': 'json',
-                    'version': '2.1',
-                    'keyfrom': 'fanyi.web',
-                    'action': 'FY_BY_REALTlME'
-                }
-            ) as r:
-                if r.status != 200:
-                    logger.warning('YoudaoTranslate request failed: status=%d %s', r.status, r.reason)
-                    return None
-                data = await r.json()
-        except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
-            return None
-        except aiohttp.ContentTypeError:
-            # 被ban了
-            if self._cool_down_future is None:
-                self._cool_down_future = asyncio.ensure_future(self._cool_down())
-            return None
-        if data['errorCode'] != 0:
-            logger.warning('YoudaoTranslate failed: %d', data['errorCode'])
-            return None
-
-        res = []
-        for outer_result in data['translateResult']:
-            for inner_result in outer_result:
-                res.append(inner_result['tgt'])
-        return ''.join(res)
-
-    @staticmethod
-    def _generate_salt(text):
-        timestamp = int(time.time() * 1000)
-        salt = f'{timestamp}{random.randint(0, 9)}'
-        md5 = hashlib.md5()
-        md5.update(f'fanyideskweb{text}{salt}n%A-rKaT5fb[Gy?;N5@Tj'.encode())
-        sign = md5.hexdigest()
-        return {
-            'ts': timestamp,
-            'bv': '7bcd9ea3ff9b319782c2a557acee9179',  # md5(navigator.appVersion)
-            'salt': salt,
-            'sign': sign
-        }
-
-    async def _cool_down(self):
-        logger.info('YoudaoTranslate is cooling down')
-        self._has_init = False
-        try:
-            while True:
-                await asyncio.sleep(3 * 60)
-                try:
-                    is_success = await self.init()
-                except Exception:
-                    logger.exception('YoudaoTranslate init error:')
-                    continue
-                if is_success:
-                    break
-        finally:
-            logger.info('YoudaoTranslate finished cooling down')
-            self._cool_down_future = None
-
-
-# 目前B站后端是百度翻译
-class BilibiliTranslate(TranslateProvider):
-    def __init__(self):
-        # 最长等待时间大约21秒，(text, future)
-        self._text_queue = asyncio.Queue(7)
-
-    async def init(self):
-        asyncio.ensure_future(self._translate_consumer())
-        return True
-
-    @property
-    def is_available(self):
-        return not self._text_queue.full()
-
-    def translate(self, text, future):
-        try:
-            self._text_queue.put_nowait((text, future))
-        except asyncio.QueueFull:
-            future.set_result(None)
-
-    async def _translate_consumer(self):
-        while True:
-            try:
-                text, future = await self._text_queue.get()
-                asyncio.ensure_future(self._translate_coroutine(text, future))
-                # 频率限制一分钟20次
-                await asyncio.sleep(3.1)
-            except Exception:
-                logger.exception('BilibiliTranslate error:')
-
-    async def _translate_coroutine(self, text, future):
-        try:
-            res = await self._do_translate(text)
-        except BaseException as e:
-            future.set_exception(e)
-        else:
-            future.set_result(res)
-
-    @staticmethod
-    async def _do_translate(text):
         try:
             async with _http_session.get(
                 'https://api.live.bilibili.com/av/v1/SuperChat/messageTranslate',
@@ -407,12 +312,12 @@ class BilibiliTranslate(TranslateProvider):
                 }
             ) as r:
                 if r.status != 200:
-                    logger.warning('BilibiliTranslate request failed: status=%d %s', r.status, r.reason)
+                    logger.warning('BilibiliTranslateFree request failed: status=%d %s', r.status, r.reason)
                     return None
                 data = await r.json()
         except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
             return None
         if data['code'] != 0:
-            logger.warning('BilibiliTranslate failed: %d %s', data['code'], data['msg'])
+            logger.warning('BilibiliTranslateFree failed: %d %s', data['code'], data['msg'])
             return None
         return data['data']['message_trans']

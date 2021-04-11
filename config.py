@@ -40,27 +40,55 @@ class AppConfig:
         self.allow_translate_rooms = {}
         self.tornado_xheaders = False
         self.loader_url = ''
+        self.translator_configs = []
 
     def load(self, path):
         try:
             config = configparser.ConfigParser()
             config.read(path, 'utf-8')
 
-            app_section = config['app']
-            self.database_url = app_section['database_url']
-            self.enable_translate = app_section.getboolean('enable_translate')
-
-            allow_translate_rooms = app_section['allow_translate_rooms']
-            if allow_translate_rooms == '':
-                self.allow_translate_rooms = {}
-            else:
-                allow_translate_rooms = allow_translate_rooms.split(',')
-                self.allow_translate_rooms = set(map(lambda id_: int(id_.strip()), allow_translate_rooms))
-
-            self.tornado_xheaders = app_section.getboolean('tornado_xheaders')
-            self.loader_url = app_section['loader_url']
-
-        except (KeyError, ValueError):
+            self._load_app_config(config)
+            self._load_translator_configs(config)
+        except Exception:
             logger.exception('Failed to load config:')
             return False
         return True
+
+    def _load_app_config(self, config):
+        app_section = config['app']
+        self.database_url = app_section['database_url']
+        self.enable_translate = app_section.getboolean('enable_translate')
+        self.allow_translate_rooms = _str_to_list(app_section['allow_translate_rooms'], int, set)
+        self.tornado_xheaders = app_section.getboolean('tornado_xheaders')
+        self.loader_url = app_section['loader_url']
+
+    def _load_translator_configs(self, config):
+        app_section = config['app']
+        section_names = _str_to_list(app_section['translator_configs'])
+        translator_configs = []
+        for section_name in section_names:
+            section = config[section_name]
+            type_ = section['type']
+
+            translator_config = {
+                'type': type_,
+                'query_interval': section.getfloat('query_interval'),
+                'max_queue_size': section.getint('max_queue_size')
+            }
+            if type_ == 'TencentTranslateFree':
+                translator_config['source_language'] = section['source_language']
+                translator_config['target_language'] = section['target_language']
+
+            translator_configs.append(translator_config)
+        self.translator_configs = translator_configs
+
+
+def _str_to_list(value, item_type: Type=str, container_type: Type=list):
+    value = value.strip()
+    if value == '':
+        return container_type()
+    items = value.split(',')
+    items = map(lambda item: item.strip(), items)
+    if item_type is not str:
+        items = map(lambda item: item_type(item), items)
+    return container_type(items)
