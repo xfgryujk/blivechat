@@ -78,6 +78,16 @@ class AppConfig:
             if type_ == 'TencentTranslateFree':
                 translator_config['source_language'] = section['source_language']
                 translator_config['target_language'] = section['target_language']
+            elif type_ == 'BilibiliTranslateFree':
+                pass
+            elif type_ == 'TencentTranslate':
+                translator_config['source_language'] = section['source_language']
+                translator_config['target_language'] = section['target_language']
+                translator_config['secret_id'] = section['secret_id']
+                translator_config['secret_key'] = section['secret_key']
+                translator_config['region'] = section['region']
+            else:
+                raise ValueError(f'Invalid translator type: {type_}')
 
             translator_configs.append(translator_config)
         self.translator_configs = translator_configs

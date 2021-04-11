@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
+import datetime
 import functools
+import hashlib
+import hmac
+import json
 import logging
 import re
 from typing import *
@@ -32,24 +36,34 @@ def init():
 
 async def _do_init():
     cfg = config.get_config()
+    if not cfg.enable_translate:
+        return
     providers = []
     for trans_cfg in cfg.translator_configs:
-        provider = None
-        type_ = trans_cfg['type']
-
-        if type_ == 'TencentTranslateFree':
-            provider = TencentTranslateFree(
-                trans_cfg['query_interval'], trans_cfg['max_queue_size'], trans_cfg['source_language'],
-                trans_cfg['target_language']
-            )
-        elif type_ == 'BilibiliTranslateFree':
-            provider = BilibiliTranslateFree(trans_cfg['query_interval'], trans_cfg['max_queue_size'])
-
+        provider = create_translate_provider(trans_cfg)
         if provider is not None:
             providers.append(provider)
     await asyncio.gather(*(provider.init() for provider in providers))
     global _translate_providers
     _translate_providers = providers
+
+
+def create_translate_provider(cfg):
+    type_ = cfg['type']
+    if type_ == 'TencentTranslateFree':
+        return TencentTranslateFree(
+            cfg['query_interval'], cfg['max_queue_size'], cfg['source_language'],
+            cfg['target_language']
+        )
+    elif type_ == 'BilibiliTranslateFree':
+        return BilibiliTranslateFree(cfg['query_interval'], cfg['max_queue_size'])
+    elif type_ == 'TencentTranslate':
+        return TencentTranslate(
+            cfg['query_interval'], cfg['max_queue_size'], cfg['source_language'],
+            cfg['target_language'], cfg['secret_id'], cfg['secret_key'],
+            cfg['region']
+        )
+    return None
 
 
 def need_translate(text):
@@ -321,3 +335,112 @@ class BilibiliTranslateFree(FlowControlTranslateProvider):
             logger.warning('BilibiliTranslateFree failed: %d %s', data['code'], data['msg'])
             return None
         return data['data']['message_trans']
+
+
+class TencentTranslate(FlowControlTranslateProvider):
+    def __init__(self, query_interval, max_queue_size, source_language, target_language,
+                 secret_id, secret_key, region):
+        super().__init__(query_interval, max_queue_size)
+        self._source_language = source_language
+        self._target_language = target_language
+        self._secret_id = secret_id
+        self._secret_key = secret_key
+        self._region = region
+
+        self._cool_down_timer_handle = None
+
+    @property
+    def is_available(self):
+        return self._cool_down_timer_handle is None and super().is_available
+
+    async def _do_translate(self, text):
+        try:
+            async with self._request_tencent_cloud(
+                'TextTranslate',
+                '2018-03-21',
+                {
+                    'SourceText': text,
+                    'Source': self._source_language,
+                    'Target': self._target_language,
+                    'ProjectId': 0
+                }
+            ) as r:
+                if r.status != 200:
+                    logger.warning('TencentTranslate request failed: status=%d %s', r.status, r.reason)
+                    return None
+                data = (await r.json())['Response']
+        except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
+            return None
+        error = data.get('Error', None)
+        if error is not None:
+            logger.warning('TencentTranslate failed: %s %s, RequestId=%s', error['Code'],
+                           error['Message'], data['RequestId'])
+            self._on_fail(error['Code'])
+            return None
+        return data['TargetText']
+
+    def _request_tencent_cloud(self, action, version, body):
+        body_bytes = json.dumps(body).encode('utf-8')
+
+        canonical_headers = 'content-type:application/json; charset=utf-8\nhost:tmt.tencentcloudapi.com\n'
+        signed_headers = 'content-type;host'
+        hashed_request_payload = hashlib.sha256(body_bytes).hexdigest()
+        canonical_request = f'POST\n/\n\n{canonical_headers}\n{signed_headers}\n{hashed_request_payload}'
+
+        request_timestamp = int(datetime.datetime.now().timestamp())
+        date = datetime.datetime.utcfromtimestamp(request_timestamp).strftime('%Y-%m-%d')
+        credential_scope = f'{date}/tmt/tc3_request'
+        hashed_canonical_request = hashlib.sha256(canonical_request.encode('utf-8')).hexdigest()
+        string_to_sign = f'TC3-HMAC-SHA256\n{request_timestamp}\n{credential_scope}\n{hashed_canonical_request}'
+
+        def sign(key, msg):
+            return hmac.new(key, msg.encode('utf-8'), hashlib.sha256).digest()
+
+        secret_date = sign(('TC3' + self._secret_key).encode('utf-8'), date)
+        secret_service = sign(secret_date, 'tmt')
+        secret_signing = sign(secret_service, 'tc3_request')
+        signature = hmac.new(secret_signing, string_to_sign.encode('utf-8'), hashlib.sha256).hexdigest()
+
+        authorization = (
+            f'TC3-HMAC-SHA256 Credential={self._secret_id}/{credential_scope}, '
+            f'SignedHeaders={signed_headers}, Signature={signature}'
+        )
+
+        headers = {
+            'Authorization': authorization,
+            'Content-Type': 'application/json; charset=utf-8',
+            'X-TC-Action': action,
+            'X-TC-Version': version,
+            'X-TC-Timestamp': str(request_timestamp),
+            'X-TC-Region': self._region
+        }
+
+        return _http_session.post('https://tmt.tencentcloudapi.com/', headers=headers, data=body_bytes)
+
+    def _on_fail(self, code):
+        if self._cool_down_timer_handle is not None:
+            return
+
+        sleep_time = 0
+        if code == 'FailedOperation.NoFreeAmount':
+            # 下个月恢复免费额度
+            cur_time = datetime.datetime.now()
+            year = cur_time.year
+            month = cur_time.month + 1
+            if month > 12:
+                year += 1
+                month = 1
+            next_month_time = datetime.datetime(year, month, 1, minute=5)
+            sleep_time = (next_month_time - cur_time).total_seconds()
+            # Python 3.8之前不能超过一天
+            sleep_time = min(sleep_time, 24 * 60 * 60 - 1)
+        elif code in ('FailedOperation.ServiceIsolate', 'LimitExceeded'):
+            # 需要手动处理，等5分钟
+            sleep_time = 5 * 60
+        if sleep_time != 0:
+            self._cool_down_timer_handle = asyncio.get_event_loop().call_later(
+                sleep_time, self._on_cool_down_timeout
+            )
+
+    def _on_cool_down_timeout(self):
+        self._cool_down_timer_handle = None
