@@ -17,5 +17,5 @@ README.md
 
 # runtime data
 data/*
-!data/config.ini
+!data/config.example.ini
 log/*

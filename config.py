@@ -7,7 +7,10 @@ from typing import *
 
 logger = logging.getLogger(__name__)
 
-CONFIG_PATH = os.path.join('data', 'config.ini')
+CONFIG_PATH_LIST = [
+    os.path.join('data', 'config.ini'),
+    os.path.join('data', 'config.example.ini')
+]
 
 _config: Optional['AppConfig'] = None
 
@@ -21,8 +24,16 @@ def init():
 
 
 def reload():
+    config_path = ''
+    for path in CONFIG_PATH_LIST:
+        if os.path.exists(path):
+            config_path = path
+            break
+    if config_path == '':
+        return False
+
     config = AppConfig()
-    if not config.load(CONFIG_PATH):
+    if not config.load(config_path):
         return False
     global _config
     _config = config
