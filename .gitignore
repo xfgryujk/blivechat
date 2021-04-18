@@ -105,5 +105,6 @@ venv.bak/
 
 
 .idea/
-data/database.db
-*.log*
+data/*
+!data/config.example.ini
+log/*
