@@ -47,10 +47,16 @@ def get_config():
 class AppConfig:
     def __init__(self):
         self.database_url = 'sqlite:///data/database.db'
-        self.enable_translate = True
-        self.allow_translate_rooms = {}
         self.tornado_xheaders = False
         self.loader_url = ''
+
+        self.fetch_avatar_interval = 3.5
+        self.fetch_avatar_max_queue_size = 2
+        self.avatar_cache_size = 50000
+
+        self.enable_translate = True
+        self.allow_translate_rooms = set()
+        self.translation_cache_size = 50000
         self.translator_configs = []
 
     def load(self, path):
@@ -68,10 +74,16 @@ class AppConfig:
     def _load_app_config(self, config):
         app_section = config['app']
         self.database_url = app_section['database_url']
-        self.enable_translate = app_section.getboolean('enable_translate')
-        self.allow_translate_rooms = _str_to_list(app_section['allow_translate_rooms'], int, set)
         self.tornado_xheaders = app_section.getboolean('tornado_xheaders')
         self.loader_url = app_section['loader_url']
+
+        self.fetch_avatar_interval = app_section.getfloat('fetch_avatar_interval')
+        self.fetch_avatar_max_queue_size = app_section.getint('fetch_avatar_max_queue_size')
+        self.avatar_cache_size = app_section.getint('avatar_cache_size')
+
+        self.enable_translate = app_section.getboolean('enable_translate')
+        self.allow_translate_rooms = _str_to_list(app_section['allow_translate_rooms'], int, set)
+        self.translation_cache_size = app_section.getint('translation_cache_size')
 
     def _load_translator_configs(self, config):
         app_section = config['app']

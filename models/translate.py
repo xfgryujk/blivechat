@@ -124,7 +124,8 @@ def _on_translate_done(key, future):
     if res is None:
         return
     _translate_cache[key] = res
-    while len(_translate_cache) > 50000:
+    cfg = config.get_config()
+    while len(_translate_cache) > cfg.translation_cache_size:
         _translate_cache.pop(next(iter(_translate_cache)), None)
 
 
