@@ -103,14 +103,25 @@ def translate(text) -> Awaitable[Optional[str]]:
         future.set_result(res)
         return future
 
+    # 负载均衡，找等待时间最少的provider
+    min_wait_time = None
+    min_wait_time_provider = None
     for provider in _translate_providers:
-        if provider.is_available:
-            _text_future_map[key] = future
-            future.add_done_callback(functools.partial(_on_translate_done, key))
-            provider.translate(text, future)
-            return future
+        if not provider.is_available:
+            continue
+        wait_time = provider.wait_time
+        if min_wait_time is None or wait_time < min_wait_time:
+            min_wait_time = wait_time
+            min_wait_time_provider = provider
 
-    future.set_result(None)
+    # 没有可用的
+    if min_wait_time_provider is None:
+        future.set_result(None)
+        return future
+
+    _text_future_map[key] = future
+    future.add_done_callback(functools.partial(_on_translate_done, key))
+    min_wait_time_provider.translate(text, future)
     return future
 
 
@@ -137,6 +148,10 @@ class TranslateProvider:
     def is_available(self):
         return True
 
+    @property
+    def wait_time(self):
+        return 0
+
     def translate(self, text, future):
         raise NotImplementedError
 
@@ -154,6 +169,10 @@ class FlowControlTranslateProvider(TranslateProvider):
     @property
     def is_available(self):
         return not self._text_queue.full()
+
+    @property
+    def wait_time(self):
+        return self._text_queue.qsize() * self._query_interval
 
     def translate(self, text, future):
         try:
