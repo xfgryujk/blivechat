@@ -109,6 +109,11 @@ class AppConfig:
                 translator_config['secret_id'] = section['secret_id']
                 translator_config['secret_key'] = section['secret_key']
                 translator_config['region'] = section['region']
+            elif type_ == 'BaiduTranslate':
+                translator_config['source_language'] = section['source_language']
+                translator_config['target_language'] = section['target_language']
+                translator_config['app_id'] = section['app_id']
+                translator_config['secret'] = section['secret']
             else:
                 raise ValueError(f'Invalid translator type: {type_}')
 

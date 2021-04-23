@@ -7,6 +7,7 @@ import hashlib
 import hmac
 import json
 import logging
+import random
 import re
 from typing import *
 
@@ -22,7 +23,7 @@ NO_TRANSLATE_TEXTS = {
 }
 
 _main_event_loop = asyncio.get_event_loop()
-_http_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
+_http_session = None
 _translate_providers: List['TranslateProvider'] = []
 # text -> res
 _translate_cache: Dict[str, str] = {}
@@ -35,6 +36,9 @@ def init():
 
 
 async def _do_init():
+    global _http_session
+    _http_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
+
     cfg = config.get_config()
     if not cfg.enable_translate:
         return
@@ -62,6 +66,11 @@ def create_translate_provider(cfg):
             cfg['query_interval'], cfg['max_queue_size'], cfg['source_language'],
             cfg['target_language'], cfg['secret_id'], cfg['secret_key'],
             cfg['region']
+        )
+    elif type_ == 'BaiduTranslate':
+        return BaiduTranslate(
+            cfg['query_interval'], cfg['max_queue_size'], cfg['source_language'],
+            cfg['target_language'], cfg['app_id'], cfg['secret']
         )
     return None
 
@@ -456,6 +465,68 @@ class TencentTranslate(FlowControlTranslateProvider):
             sleep_time = min(sleep_time, 24 * 60 * 60 - 1)
         elif code in ('FailedOperation.ServiceIsolate', 'LimitExceeded'):
             # 需要手动处理，等5分钟
+            sleep_time = 5 * 60
+        if sleep_time != 0:
+            self._cool_down_timer_handle = asyncio.get_event_loop().call_later(
+                sleep_time, self._on_cool_down_timeout
+            )
+
+    def _on_cool_down_timeout(self):
+        self._cool_down_timer_handle = None
+
+
+class BaiduTranslate(FlowControlTranslateProvider):
+    def __init__(self, query_interval, max_queue_size, source_language, target_language,
+                 app_id, secret):
+        super().__init__(query_interval, max_queue_size)
+        self._source_language = source_language
+        self._target_language = target_language
+        self._app_id = app_id
+        self._secret = secret
+
+        self._cool_down_timer_handle = None
+
+    @property
+    def is_available(self):
+        return self._cool_down_timer_handle is None and super().is_available
+
+    async def _do_translate(self, text):
+        try:
+            async with _http_session.post(
+                'https://fanyi-api.baidu.com/api/trans/vip/translate',
+                data=self._add_sign({
+                    'q': text,
+                    'from': self._source_language,
+                    'to': self._target_language,
+                    'appid': self._app_id,
+                    'salt': random.randint(1, 999999999)
+                })
+            ) as r:
+                if r.status != 200:
+                    logger.warning('BaiduTranslate request failed: status=%d %s', r.status, r.reason)
+                    return None
+                data = await r.json()
+        except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
+            return None
+        error_code = data.get('error_code', None)
+        if error_code is not None:
+            logger.warning('BaiduTranslate failed: %s %s', error_code, data['error_msg'])
+            self._on_fail(error_code)
+            return None
+        return ''.join(result['dst'] for result in data['trans_result'])
+
+    def _add_sign(self, data):
+        str_to_sign = f"{self._app_id}{data['q']}{data['salt']}{self._secret}"
+        sign = hashlib.md5(str_to_sign.encode('utf-8')).hexdigest()
+        return {**data, 'sign': sign}
+
+    def _on_fail(self, code):
+        if self._cool_down_timer_handle is not None:
+            return
+
+        sleep_time = 0
+        if code == '54004':
+            # 账户余额不足，需要手动处理，等5分钟
             sleep_time = 5 * 60
         if sleep_time != 0:
             self._cool_down_timer_handle = asyncio.get_event_loop().call_later(
