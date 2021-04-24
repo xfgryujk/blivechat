@@ -1,5 +1,5 @@
 # 运行时
-FROM python:3.6.8-slim-stretch
+FROM python:3.7.10-slim-stretch
 RUN mv /etc/apt/sources.list /etc/apt/sources.list.bak \
     && echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian/ stretch main contrib non-free">>/etc/apt/sources.list \
     && echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian/ stretch-updates main contrib non-free">>/etc/apt/sources.list \
