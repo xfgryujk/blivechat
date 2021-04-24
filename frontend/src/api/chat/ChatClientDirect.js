@@ -6,8 +6,8 @@ import * as avatar from './avatar'
 
 const HEADER_SIZE = 16
 
-// const WS_BODY_PROTOCOL_VERSION_NORMAL = 0
-// const WS_BODY_PROTOCOL_VERSION_INT = 1 // 用于心跳包
+// const WS_BODY_PROTOCOL_VERSION_INFLATE = 0
+// const WS_BODY_PROTOCOL_VERSION_NORMAL = 1
 const WS_BODY_PROTOCOL_VERSION_DEFLATE = 2
 
 // const OP_HANDSHAKE = 0
@@ -32,6 +32,9 @@ const OP_AUTH_REPLY = 8
 // const MinBusinessOp = 1000
 // const MaxBusinessOp = 10000
 
+const HEARTBEAT_INTERVAL = 10 * 1000
+const RECEIVE_TIMEOUT = HEARTBEAT_INTERVAL + 5 * 1000
+
 let textEncoder = new TextEncoder()
 let textDecoder = new TextDecoder()
 
@@ -55,6 +58,7 @@ export default class ChatClientDirect {
     this.retryCount = 0
     this.isDestroying = false
     this.heartbeatTimerId = null
+    this.receiveTimeoutTimerId = null
   }
 
   async start () {
@@ -120,15 +124,33 @@ export default class ChatClientDirect {
     this.websocket.onopen = this.onWsOpen.bind(this)
     this.websocket.onclose = this.onWsClose.bind(this)
     this.websocket.onmessage = this.onWsMessage.bind(this)
-    this.heartbeatTimerId = window.setInterval(this.sendHeartbeat.bind(this), 10 * 1000)
+  }
+
+  onWsOpen () {
+    this.sendAuth()
+    this.heartbeatTimerId = window.setInterval(this.sendHeartbeat.bind(this), HEARTBEAT_INTERVAL)
+    this.refreshReceiveTimeoutTimer()
   }
 
   sendHeartbeat () {
     this.websocket.send(this.makePacket({}, OP_HEARTBEAT))
   }
 
-  onWsOpen () {
-    this.sendAuth()
+  refreshReceiveTimeoutTimer() {
+    if (this.receiveTimeoutTimerId) {
+      window.clearTimeout(this.receiveTimeoutTimerId)
+    }
+    this.receiveTimeoutTimerId = window.setTimeout(this.onReceiveTimeout.bind(this), RECEIVE_TIMEOUT)
+  }
+
+  onReceiveTimeout() {
+    window.console.warn('接收消息超时')
+    this.receiveTimeoutTimerId = null
+
+    // 直接丢弃阻塞的websocket，不等onclose回调了
+    this.websocket.onopen = this.websocket.onclose = this.websocket.onmessage = null
+    this.websocket.close()
+    this.onWsClose()
   }
 
   onWsClose () {
@@ -137,19 +159,26 @@ export default class ChatClientDirect {
       window.clearInterval(this.heartbeatTimerId)
       this.heartbeatTimerId = null
     }
+    if (this.receiveTimeoutTimerId) {
+      window.clearTimeout(this.receiveTimeoutTimerId)
+      this.receiveTimeoutTimerId = null
+    }
+
     if (this.isDestroying) {
       return
     }
-    window.console.log(`掉线重连中${++this.retryCount}`)
+    window.console.warn(`掉线重连中${++this.retryCount}`)
     window.setTimeout(this.wsConnect.bind(this), 1000)
   }
 
   onWsMessage (event) {
+    this.refreshReceiveTimeoutTimer()
     this.retryCount = 0
     if (!(event.data instanceof ArrayBuffer)) {
       window.console.warn('未知的websocket消息：', event.data)
       return
     }
+
     let data = new Uint8Array(event.data)
     this.handlerMessage(data)
   }

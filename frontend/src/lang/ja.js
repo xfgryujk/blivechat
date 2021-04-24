@@ -41,12 +41,19 @@ export default {
     roomUrl: 'ルームのURL',
     copy: 'コピー',
     enterRoom: 'ルームに入る',
+    enterTestRoom: 'テストルームに入る',
     exportConfig: 'コンフィグの導出',
     importConfig: 'コンフィグの導入',
 
     failedToParseConfig: 'コンフィグ解析に失敗しました'
   },
   stylegen: {
+    legacy: '古典',
+    lineLike: 'Line風',
+
+    light: '明るい',
+    dark: '暗い',
+
     outlines: 'アウトライン',
     showOutlines: 'アウトラインを表示する',
     outlineSize: 'アウトラインのサイズ',

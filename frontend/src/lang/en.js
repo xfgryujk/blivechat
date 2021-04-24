@@ -41,12 +41,19 @@ export default {
     roomUrl: 'Room URL',
     copy: 'Copy',
     enterRoom: 'Enter room',
+    enterTestRoom: 'Enter test room',
     exportConfig: 'Export config',
     importConfig: 'Import config',
 
     failedToParseConfig: 'Failed to parse config: '
   },
   stylegen: {
+    legacy: 'Classic',
+    lineLike: 'Line-like',
+
+    light: 'light',
+    dark: 'dark',
+
     outlines: 'Outlines',
     showOutlines: 'Show outlines',
     outlineSize: 'Outline size',

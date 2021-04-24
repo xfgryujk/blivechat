@@ -137,7 +137,7 @@ export function getGiftShowContent (message, showGiftName) {
 }
 
 export function getShowAuthorName (message) {
-  if (message.authorNamePronunciation) {
+  if (message.authorNamePronunciation && message.authorNamePronunciation !== message.authorName) {
     return `${message.authorName}(${message.authorNamePronunciation})`
   }
   return message.authorName

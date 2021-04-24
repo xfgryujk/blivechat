@@ -41,12 +41,19 @@ export default {
     roomUrl: '房间URL',
     copy: '复制',
     enterRoom: '进入房间',
+    enterTestRoom: '进入测试房间',
     exportConfig: '导出配置',
     importConfig: '导入配置',
 
     failedToParseConfig: '配置解析失败：'
   },
   stylegen: {
+    legacy: '经典',
+    lineLike: '仿微信',
+
+    light: '明亮',
+    dark: '黑暗',
+
     outlines: '描边',
     showOutlines: '显示描边',
     outlineSize: '描边尺寸',
@@ -77,7 +84,7 @@ export default {
 
     backgrounds: '背景',
     bgColor: '背景色',
-    useBarsInsteadOfBg: '用条代替背景',
+    useBarsInsteadOfBg: '用条代替消息背景',
     messageBgColor: '消息背景色',
     ownerMessageBgColor: '主播消息背景色',
     moderatorMessageBgColor: '房管消息背景色',
@@ -104,7 +111,7 @@ export default {
     animateIn: '进入动画',
     fadeInTime: '淡入时间（毫秒）',
     animateOut: '移除旧消息',
-    animateOutWaitTime: '等待时间（秒）',
+    animateOutWaitTime: '移除前等待时间（秒）',
     fadeOutTime: '淡出时间（毫秒）',
     slide: '滑动',
     reverseSlide: '反向滑动',

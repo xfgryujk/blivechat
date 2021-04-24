@@ -32,7 +32,7 @@ class Command(enum.IntEnum):
     UPDATE_TRANSLATION = 7
 
 
-_http_session = aiohttp.ClientSession()
+_http_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
 
 room_manager: Optional['RoomManager'] = None
 
@@ -43,6 +43,8 @@ def init():
 
 
 class Room(blivedm.BLiveClient):
+    HEARTBEAT_INTERVAL = 10
+
     # 重新定义parse_XXX是为了减少对字段名的依赖，防止B站改字段名
     def __parse_danmaku(self, command):
         info = command['info']
@@ -97,7 +99,7 @@ class Room(blivedm.BLiveClient):
     }
 
     def __init__(self, room_id):
-        super().__init__(room_id, session=_http_session, heartbeat_interval=10)
+        super().__init__(room_id, session=_http_session, heartbeat_interval=self.HEARTBEAT_INTERVAL)
         self.clients: List['ChatHandler'] = []
         self.auto_translate_count = 0
 
@@ -365,34 +367,68 @@ class RoomManager:
 
 # noinspection PyAbstractClass
 class ChatHandler(tornado.websocket.WebSocketHandler):
+    HEARTBEAT_INTERVAL = 10
+    RECEIVE_TIMEOUT = HEARTBEAT_INTERVAL + 5
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._close_on_timeout_future = None
+        self._heartbeat_timer_handle = None
+        self._receive_timeout_timer_handle = None
+
         self.room_id = None
         self.auto_translate = False
 
     def open(self):
         logger.info('Websocket connected %s', self.request.remote_ip)
-        self._close_on_timeout_future = asyncio.ensure_future(self._close_on_timeout())
+        self._heartbeat_timer_handle = asyncio.get_event_loop().call_later(
+            self.HEARTBEAT_INTERVAL, self._on_send_heartbeat
+        )
+        self._refresh_receive_timeout_timer()
 
-    async def _close_on_timeout(self):
-        try:
-            # 超过一定时间还没加入房间则断开
-            await asyncio.sleep(10)
-            logger.warning('Client %s joining room timed out', self.request.remote_ip)
-            self.close()
-        except (asyncio.CancelledError, tornado.websocket.WebSocketClosedError):
-            pass
+    def _on_send_heartbeat(self):
+        self.send_message(Command.HEARTBEAT, {})
+        self._heartbeat_timer_handle = asyncio.get_event_loop().call_later(
+            self.HEARTBEAT_INTERVAL, self._on_send_heartbeat
+        )
+
+    def _refresh_receive_timeout_timer(self):
+        if self._receive_timeout_timer_handle is not None:
+            self._receive_timeout_timer_handle.cancel()
+        self._receive_timeout_timer_handle = asyncio.get_event_loop().call_later(
+            self.RECEIVE_TIMEOUT, self._on_receive_timeout
+        )
+
+    def _on_receive_timeout(self):
+        logger.warning('Client %s timed out', self.request.remote_ip)
+        self._receive_timeout_timer_handle = None
+        self.close()
+
+    def on_close(self):
+        logger.info('Websocket disconnected %s room: %s', self.request.remote_ip, str(self.room_id))
+        if self.has_joined_room:
+            room_manager.del_client(self.room_id, self)
+        if self._heartbeat_timer_handle is not None:
+            self._heartbeat_timer_handle.cancel()
+            self._heartbeat_timer_handle = None
+        if self._receive_timeout_timer_handle is not None:
+            self._receive_timeout_timer_handle.cancel()
+            self._receive_timeout_timer_handle = None
 
     def on_message(self, message):
         try:
+            # 超时没有加入房间也断开
+            if self.has_joined_room:
+                self._refresh_receive_timeout_timer()
+
             body = json.loads(message)
             cmd = body['cmd']
             if cmd == Command.HEARTBEAT:
-                return
+                pass
             elif cmd == Command.JOIN_ROOM:
                 if self.has_joined_room:
                     return
+                self._refresh_receive_timeout_timer()
+
                 self.room_id = int(body['data']['roomId'])
                 logger.info('Client %s is joining room %d', self.request.remote_ip, self.room_id)
                 try:
@@ -402,20 +438,10 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
                     pass
 
                 asyncio.ensure_future(room_manager.add_client(self.room_id, self))
-                self._close_on_timeout_future.cancel()
-                self._close_on_timeout_future = None
             else:
                 logger.warning('Unknown cmd, client: %s, cmd: %d, body: %s', self.request.remote_ip, cmd, body)
         except Exception:
             logger.exception('on_message error, client: %s, message: %s', self.request.remote_ip, message)
-
-    def on_close(self):
-        logger.info('Websocket disconnected %s room: %s', self.request.remote_ip, str(self.room_id))
-        if self.has_joined_room:
-            room_manager.del_client(self.room_id, self)
-        if self._close_on_timeout_future is not None:
-            self._close_on_timeout_future.cancel()
-            self._close_on_timeout_future = None
 
     # 跨域测试用
     def check_origin(self, origin):
@@ -432,7 +458,7 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
         try:
             self.write_message(body)
         except tornado.websocket.WebSocketClosedError:
-            self.on_close()
+            self.close()
 
     async def on_join_room(self):
         if self.application.settings['debug']:
@@ -550,7 +576,7 @@ class RoomInfoHandler(api.base.ApiHandler):
                                    res.status, res.reason)
                     return room_id, 0
                 data = await res.json()
-        except aiohttp.ClientConnectionError:
+        except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
             logger.exception('room %d _get_room_info failed', room_id)
             return room_id, 0
 
@@ -574,7 +600,7 @@ class RoomInfoHandler(api.base.ApiHandler):
         #                            res.status, res.reason)
         #             return cls._host_server_list_cache
         #         data = await res.json()
-        # except aiohttp.ClientConnectionError:
+        # except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
         #     logger.exception('room %d _get_server_host_list failed', room_id)
         #     return cls._host_server_list_cache
         #

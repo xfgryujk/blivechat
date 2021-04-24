@@ -11,8 +11,8 @@ export const DEFAULT_CONFIG = {
 
   blockGiftDanmaku: true,
   blockLevel: 0,
-  blockNewbie: true,
-  blockNotMobileVerified: true,
+  blockNewbie: false,
+  blockNotMobileVerified: false,
   blockKeywords: '',
   blockUsers: '',
   blockMedalLevel: 0,
@@ -28,8 +28,9 @@ export function setLocalConfig (config) {
 }
 
 export function getLocalConfig () {
-  if (!window.localStorage.config) {
-    return DEFAULT_CONFIG
+  try {
+    return mergeConfig(JSON.parse(window.localStorage.config), DEFAULT_CONFIG)
+  } catch {
+    return {...DEFAULT_CONFIG}
   }
-  return mergeConfig(JSON.parse(window.localStorage.config), DEFAULT_CONFIG)
 }

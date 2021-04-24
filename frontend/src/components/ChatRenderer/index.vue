@@ -47,7 +47,21 @@ import MembershipItem from './MembershipItem.vue'
 import PaidMessage from './PaidMessage.vue'
 import * as constants from './constants'
 
+// 只有要添加的消息需要平滑
+const NEED_SMOOTH_MESSAGE_TYPES = [
+  constants.MESSAGE_TYPE_TEXT,
+  constants.MESSAGE_TYPE_GIFT,
+  constants.MESSAGE_TYPE_MEMBER,
+  constants.MESSAGE_TYPE_SUPER_CHAT
+]
+// 发送消息时间间隔范围
+const MESSAGE_MIN_INTERVAL = 80
+const MESSAGE_MAX_INTERVAL = 1000
+
+// 每次发送消息后增加的动画时间，要比MESSAGE_MIN_INTERVAL稍微大一点，太小了动画不连续，太大了发送消息时会中断动画
+// 84 = ceil((1000 / 60) * 5)
 const CHAT_SMOOTH_ANIMATION_TIME_MS = 84
+// 滚动条距离底部小于多少像素则认为在底部
 const SCROLLED_TO_BOTTOM_EPSILON = 15
 
 export default {
@@ -59,7 +73,6 @@ export default {
     PaidMessage
   },
   props: {
-    css: String,
     maxNumber: {
       type: Number,
       default: chatConfig.DEFAULT_CONFIG.maxNumber
@@ -70,15 +83,12 @@ export default {
     }
   },
   data() {
-    let styleElement = document.createElement('style')
-    document.head.appendChild(styleElement)
     return {
       MESSAGE_TYPE_TEXT: constants.MESSAGE_TYPE_TEXT,
       MESSAGE_TYPE_GIFT: constants.MESSAGE_TYPE_GIFT,
       MESSAGE_TYPE_MEMBER: constants.MESSAGE_TYPE_MEMBER,
       MESSAGE_TYPE_SUPER_CHAT: constants.MESSAGE_TYPE_SUPER_CHAT,
 
-      styleElement,
       messages: [],                        // 显示的消息
       paidMessages: [],                    // 固定在上方的消息
 
@@ -108,19 +118,14 @@ export default {
     }
   },
   watch: {
-    css(val) {
-      this.styleElement.innerText = val
-    },
     canScrollToBottom(val) {
       this.cantScrollStartTime = val ? null : new Date()
     }
   },
   mounted() {
-    this.styleElement.innerText = this.css
     this.scrollToBottom()
   },
   beforeDestroy() {
-    document.head.removeChild(this.styleElement)
     if (this.emitSmoothedMessageTimerId) {
       window.clearTimeout(this.emitSmoothedMessageTimerId)
       this.emitSmoothedMessageTimerId = null
@@ -239,35 +244,52 @@ export default {
     },
 
     enqueueMessages(messages) {
-      if (this.lastEnqueueTime) {
-        let interval = new Date() - this.lastEnqueueTime
-        // 理论上B站发包间隔1S，如果不过滤间隔太短的会导致消息平滑失效
-        if (interval > 100) {
+      // 估计进队列时间间隔
+      if (!this.lastEnqueueTime) {
+        this.lastEnqueueTime = new Date()
+      } else {
+        let curTime = new Date()
+        let interval = curTime - this.lastEnqueueTime
+        // 让发消息速度变化不要太频繁
+        if (interval > 1000) {
           this.enqueueIntervals.push(interval)
           if (this.enqueueIntervals.length > 5) {
             this.enqueueIntervals.splice(0, this.enqueueIntervals.length - 5)
           }
           this.estimatedEnqueueInterval = Math.max(...this.enqueueIntervals)
+          this.lastEnqueueTime = curTime
         }
       }
-      this.lastEnqueueTime = new Date()
 
-      // 只有要显示的消息需要平滑
+      // 把messages分成messageGroup，每个组里最多有1个需要平滑的消息
       let messageGroup = []
       for (let message of messages) {
         messageGroup.push(message)
-        if (message.type !== constants.MESSAGE_TYPE_DEL && message.type !== constants.MESSAGE_TYPE_UPDATE) {
+        if (this.messageNeedSmooth(message)) {
           this.smoothedMessageQueue.push(messageGroup)
           messageGroup = []
         }
       }
+      // 还剩下不需要平滑的消息
       if (messageGroup.length > 0) {
+        if (this.smoothedMessageQueue.length > 0) {
+          // 和上一组合并
+          let lastMessageGroup = this.smoothedMessageQueue[this.smoothedMessageQueue.length - 1]
+          for (let message of messageGroup) {
+            lastMessageGroup.push(message)
+          }
+        } else {
+          // 自己一个组
           this.smoothedMessageQueue.push(messageGroup)
+        }
       }
 
       if (!this.emitSmoothedMessageTimerId) {
         this.emitSmoothedMessageTimerId = window.setTimeout(this.emitSmoothedMessages)
       }
+    },
+    messageNeedSmooth({type}) {
+      return NEED_SMOOTH_MESSAGE_TYPES.indexOf(type) !== -1
     },
     emitSmoothedMessages() {
       this.emitSmoothedMessageTimerId = null
@@ -280,21 +302,18 @@ export default {
       if (this.estimatedEnqueueInterval) {
         estimatedNextEnqueueRemainTime = Math.max(this.lastEnqueueTime - new Date() + this.estimatedEnqueueInterval, 1)
       }
-      // 最快80ms/条，计算发送的消息数，保证在下次进队列之前消费队列到最多剩3条消息，不消费完是为了防止消息速度变慢时突然停顿
-      const MIN_SLEEP_TIME = 80
-      const MAX_SLEEP_TIME = 1000
-      const MAX_REMAIN_GROUP_NUM = 3
+      // 计算发送的消息数，保证在下次进队列之前发完
       // 下次进队列之前应该发多少条消息
-      let shouldEmitGroupNum = Math.max(this.smoothedMessageQueue.length - MAX_REMAIN_GROUP_NUM, 0)
+      let shouldEmitGroupNum = Math.max(this.smoothedMessageQueue.length, 0)
       // 下次进队列之前最多能发多少次
-      let maxCanEmitCount = estimatedNextEnqueueRemainTime / MIN_SLEEP_TIME
+      let maxCanEmitCount = estimatedNextEnqueueRemainTime / MESSAGE_MIN_INTERVAL
       // 这次发多少条消息
       let groupNumToEmit
       if (shouldEmitGroupNum < maxCanEmitCount) {
-        // 队列中消息数很少，每次发1条也能发到最多剩3条
+        // 队列中消息数很少，每次发1条也能发完
         groupNumToEmit = 1
       } else {
-        // 每次发1条以上，保证按最快速度能发到最多剩3条
+        // 每次发1条以上，保证按最快速度能发完
         groupNumToEmit = Math.ceil(shouldEmitGroupNum / maxCanEmitCount)
       }
 
@@ -314,17 +333,17 @@ export default {
       // 消息没发完，计算下次发消息时间
       let sleepTime
       if (groupNumToEmit === 1) {
-        // 队列中消息数很少，随便定个[MIN_SLEEP_TIME, MAX_SLEEP_TIME]的时间
+        // 队列中消息数很少，随便定个[MESSAGE_MIN_INTERVAL, MESSAGE_MAX_INTERVAL]的时间
         sleepTime = estimatedNextEnqueueRemainTime / this.smoothedMessageQueue.length
         sleepTime *= 0.5 + Math.random()
-        if (sleepTime > MAX_SLEEP_TIME) {
-          sleepTime = MAX_SLEEP_TIME
-        } else if (sleepTime < MIN_SLEEP_TIME) {
-          sleepTime = MIN_SLEEP_TIME
+        if (sleepTime > MESSAGE_MAX_INTERVAL) {
+          sleepTime = MESSAGE_MAX_INTERVAL
+        } else if (sleepTime < MESSAGE_MIN_INTERVAL) {
+          sleepTime = MESSAGE_MIN_INTERVAL
         }
       } else {
         // 按最快速度发
-        sleepTime = MIN_SLEEP_TIME
+        sleepTime = MESSAGE_MIN_INTERVAL
       }
       this.emitSmoothedMessageTimerId = window.setTimeout(this.emitSmoothedMessages, sleepTime)
     },
@@ -351,7 +370,7 @@ export default {
         }
       }
 
-      this.maybeResizeScrollContainer(),
+      this.maybeResizeScrollContainer()
       this.flushMessagesBuffer()
       this.$nextTick(this.maybeScrollToBottom)
     },
@@ -361,8 +380,13 @@ export default {
         addTime: new Date() // 添加一个本地时间给Ticker用，防止本地时间和服务器时间相差很大的情况
       }
       this.messagesBuffer.push(message)
+
       if (message.type !== constants.MESSAGE_TYPE_TEXT) {
         this.paidMessages.unshift(message)
+        const MAX_PAID_MESSAGE_NUM = 100
+        if (this.paidMessages.length > MAX_PAID_MESSAGE_NUM) {
+          this.paidMessages.splice(MAX_PAID_MESSAGE_NUM, this.paidMessages.length - MAX_PAID_MESSAGE_NUM)
+        }
       }
     },
     handleDelMessage({id}) {
@@ -425,7 +449,8 @@ export default {
       }
       this.messagesBuffer = []
       // 等items高度变化
-      this.$nextTick(this.showNewMessages)
+      await this.$nextTick()
+      this.showNewMessages()
     },
     showNewMessages() {
       let hasScrollBar = this.$refs.items.clientHeight > this.$refs.scroller.clientHeight

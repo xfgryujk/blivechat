@@ -6,6 +6,7 @@
 import {mergeConfig, toBool, toInt} from '@/utils'
 import * as pronunciation from '@/utils/pronunciation'
 import * as chatConfig from '@/api/chatConfig'
+import ChatClientTest from '@/api/chat/ChatClientTest'
 import ChatClientDirect from '@/api/chat/ChatClientDirect'
 import ChatClientRelay from '@/api/chat/ChatClientRelay'
 import ChatRenderer from '@/components/ChatRenderer'
@@ -15,6 +16,16 @@ export default {
   name: 'Room',
   components: {
     ChatRenderer
+  },
+  props: {
+    roomId: {
+      type: Number,
+      default: null
+    },
+    strConfig: {
+      type: Object,
+      default: () => ({})
+    }
   },
   data() {
     return {
@@ -54,9 +65,9 @@ export default {
     initConfig() {
       let cfg = {}
       // 留空的使用默认值
-      for (let i in this.$route.query) {
-        if (this.$route.query[i] !== '') {
-          cfg[i] = this.$route.query[i]
+      for (let i in this.strConfig) {
+        if (this.strConfig[i] !== '') {
+          cfg[i] = this.strConfig[i]
         }
       }
       cfg = mergeConfig(cfg, chatConfig.DEFAULT_CONFIG)
@@ -79,11 +90,14 @@ export default {
       this.config = cfg
     },
     initChatClient() {
-      let roomId = parseInt(this.$route.params.roomId)
-      if (!this.config.relayMessagesByServer) {
-        this.chatClient = new ChatClientDirect(roomId)
+      if (this.roomId === null) {
+        this.chatClient = new ChatClientTest()
       } else {
-        this.chatClient = new ChatClientRelay(roomId, this.config.autoTranslate)
+        if (!this.config.relayMessagesByServer) {
+          this.chatClient = new ChatClientDirect(this.roomId)
+        } else {
+          this.chatClient = new ChatClientRelay(this.roomId, this.config.autoTranslate)
+        }
       }
       this.chatClient.onAddText = this.onAddText
       this.chatClient.onAddGift = this.onAddGift
@@ -92,6 +106,13 @@ export default {
       this.chatClient.onDelSuperChat = this.onDelSuperChat
       this.chatClient.onUpdateTranslation = this.onUpdateTranslation
       this.chatClient.start()
+    },
+
+    start() {
+      this.chatClient.start()
+    },
+    stop() {
+      this.chatClient.stop()
     },
 
     onAddText(data) {

@@ -10,6 +10,7 @@ import aiohttp
 import sqlalchemy
 import sqlalchemy.exc
 
+import config
 import models.database
 
 logger = logging.getLogger(__name__)
@@ -18,18 +19,21 @@ logger = logging.getLogger(__name__)
 DEFAULT_AVATAR_URL = '//static.hdslb.com/images/member/noface.gif'
 
 _main_event_loop = asyncio.get_event_loop()
-_http_session = aiohttp.ClientSession()
+_http_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
 # user_id -> avatar_url
 _avatar_url_cache: Dict[int, str] = {}
 # 正在获取头像的Future，user_id -> Future
 _uid_fetch_future_map: Dict[int, asyncio.Future] = {}
 # 正在获取头像的user_id队列
-_uid_queue_to_fetch = asyncio.Queue(15)
+_uid_queue_to_fetch = None
 # 上次被B站ban时间
 _last_fetch_banned_time: Optional[datetime.datetime] = None
 
 
 def init():
+    cfg = config.get_config()
+    global _uid_queue_to_fetch
+    _uid_queue_to_fetch = asyncio.Queue(cfg.fetch_avatar_max_queue_size)
     asyncio.ensure_future(_get_avatar_url_from_web_consumer())
 
 
@@ -124,7 +128,8 @@ async def _get_avatar_url_from_web_consumer():
             asyncio.ensure_future(_get_avatar_url_from_web_coroutine(user_id, future))
 
             # 限制频率，防止被B站ban
-            await asyncio.sleep(0.2)
+            cfg = config.get_config()
+            await asyncio.sleep(cfg.fetch_avatar_interval)
         except Exception:
             logger.exception('_get_avatar_url_from_web_consumer error:')
 
@@ -178,7 +183,8 @@ def update_avatar_cache(user_id, avatar_url):
 
 def _update_avatar_cache_in_memory(user_id, avatar_url):
     _avatar_url_cache[user_id] = avatar_url
-    while len(_avatar_url_cache) > 50000:
+    cfg = config.get_config()
+    while len(_avatar_url_cache) > cfg.avatar_cache_size:
         _avatar_url_cache.pop(next(iter(_avatar_url_cache)), None)
 
 
