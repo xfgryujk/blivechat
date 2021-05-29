@@ -300,15 +300,16 @@ export default class ChatClientDirect {
       return
     }
     let data = command.data
-    if (data.coin_type !== 'gold') { // 丢人
-      return
-    }
+//  if (data.coin_type !== 'gold') { // 白嫖不丢人
+//    return
+//  }
 
     data = {
       id: getUuid4Hex(),
       avatarUrl: avatar.processAvatarUrl(data.face),
       timestamp: data.timestamp,
       authorName: data.uname,
+      coinType: data.coin_type,
       totalCoin: data.total_coin,
       giftName: data.giftName,
       num: data.num

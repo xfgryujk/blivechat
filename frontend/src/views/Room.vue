@@ -137,7 +137,7 @@ export default {
       if (!this.config.showGift) {
         return
       }
-      let price = data.totalCoin / 1000
+      let price = (data.coinType == 'gold') ? (data.totalCoin / 1000) : 0
       if (this.mergeSimilarGift(data.authorName, price, data.giftName, data.num)) {
         return
       }
