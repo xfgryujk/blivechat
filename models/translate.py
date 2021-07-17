@@ -23,7 +23,7 @@ NO_TRANSLATE_TEXTS = {
 }
 
 _main_event_loop = asyncio.get_event_loop()
-_http_session = None
+_http_session: Optional[aiohttp.ClientSession] = None
 _translate_providers: List['TranslateProvider'] = []
 # text -> res
 _translate_cache: Dict[str, str] = {}

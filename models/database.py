@@ -13,7 +13,7 @@ engine = None
 DbSession: Optional[Type[sqlalchemy.orm.Session]] = None
 
 
-def init(debug):
+def init(_debug):
     cfg = config.get_config()
     global engine, DbSession
     # engine = sqlalchemy.create_engine(cfg.database_url, echo=debug)
@@ -28,7 +28,7 @@ def get_session():
     session = DbSession()
     try:
         yield session
-    except:
+    except BaseException:
         session.rollback()
         raise
     finally:

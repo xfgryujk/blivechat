@@ -121,7 +121,7 @@ class AppConfig:
         self.translator_configs = translator_configs
 
 
-def _str_to_list(value, item_type: Type=str, container_type: Type=list):
+def _str_to_list(value, item_type: Type = str, container_type: Type = list):
     value = value.strip()
     if value == '':
         return container_type()

@@ -7,6 +7,10 @@ import tornado.web
 
 # noinspection PyAbstractClass
 class ApiHandler(tornado.web.RequestHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.json_args = None
+
     def set_default_headers(self):
         # 跨域测试用
         if not self.application.settings['debug']:
@@ -18,13 +22,12 @@ class ApiHandler(tornado.web.RequestHandler):
                             self.request.headers['Access-Control-Request-Headers'])
 
     def prepare(self):
-        if self.request.headers.get('Content-Type', '').startswith('application/json'):
-            try:
-                self.json_args = json.loads(self.request.body)
-            except json.JSONDecodeError:
-                self.json_args = None
-        else:
-            self.json_args = None
+        if not self.request.headers.get('Content-Type', '').startswith('application/json'):
+            return
+        try:
+            self.json_args = json.loads(self.request.body)
+        except json.JSONDecodeError:
+            pass
 
     async def options(self, *_args, **_kwargs):
         # 跨域测试用

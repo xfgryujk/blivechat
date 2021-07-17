@@ -60,6 +60,7 @@ def init_logging(debug):
     file_handler = logging.handlers.TimedRotatingFileHandler(
         LOG_FILE_NAME, encoding='utf-8', when='midnight', backupCount=7, delay=True
     )
+    # noinspection PyArgumentList
     logging.basicConfig(
         format='{asctime} {levelname} [{name}]: {message}',
         datefmt='%Y-%m-%d %H:%M:%S',

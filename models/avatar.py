@@ -25,7 +25,7 @@ _avatar_url_cache: Dict[int, str] = {}
 # 正在获取头像的Future，user_id -> Future
 _uid_fetch_future_map: Dict[int, asyncio.Future] = {}
 # 正在获取头像的user_id队列
-_uid_queue_to_fetch = None
+_uid_queue_to_fetch: Optional[asyncio.Queue] = None
 # 上次被B站ban时间
 _last_fetch_banned_time: Optional[datetime.datetime] = None
 
