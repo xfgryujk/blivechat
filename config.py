@@ -62,7 +62,7 @@ class AppConfig:
     def load(self, path):
         try:
             config = configparser.ConfigParser()
-            config.read(path, 'utf-8')
+            config.read(path, 'utf-8-sig')
 
             self._load_app_config(config)
             self._load_translator_configs(config)
