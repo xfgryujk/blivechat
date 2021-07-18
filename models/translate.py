@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
+import base64
 import datetime
 import functools
 import hashlib
@@ -11,6 +12,8 @@ import random
 import re
 from typing import *
 
+import Crypto.Cipher.AES as cry_aes
+import Crypto.Util.Padding as cry_pad
 import aiohttp
 
 import config
@@ -217,9 +220,11 @@ class TencentTranslateFree(FlowControlTranslateProvider):
         self._source_language = source_language
         self._target_language = target_language
 
-        self._qtv = ''
-        self._qtk = ''
+        self._server_time_delta = 0
+        self._uc_key = self._uc_iv = ''
+        self._qtv = self._qtk = ''
         self._reinit_future = None
+
         # 连续失败的次数
         self._fail_count = 0
 
@@ -239,12 +244,42 @@ class TencentTranslateFree(FlowControlTranslateProvider):
                     return False
                 html = await r.text()
 
-            m = re.search(r"""\breauthuri\s*=\s*['"](.+?)['"]""", html)
-            if m is None:
-                logger.exception('TencentTranslateFree init failed: reauthuri not found')
-                return False
-            reauthuri = m[1]
+                try:
+                    server_time = r.headers['Date']
+                    server_time = datetime.datetime.strptime(server_time, '%a, %d %b %Y %H:%M:%S GMT')
+                    server_time = server_time.replace(tzinfo=datetime.timezone.utc).timestamp()
+                    self._server_time_delta = int((datetime.datetime.now().timestamp() - server_time) * 1000)
+                except (KeyError, ValueError):
+                    self._server_time_delta = 0
+        except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
+            logger.exception('TencentTranslateFree init error:')
+            return False
 
+        # 获取token URL
+        m = re.search(r"""\breauthuri\s*=\s*['"](.+?)['"]""", html)
+        if m is None:
+            logger.exception('TencentTranslateFree init failed: reauthuri not found')
+            return False
+        reauthuri = m[1]
+
+        # 获取验证用的key、iv
+        m = re.search(r"""\s*=\s*['"]((?:\w+\|\w+-)+\w+\|\w+)['"]""", html)
+        if m is None:
+            logger.exception('TencentTranslateFree init failed: initial global variables not found')
+            return False
+        uc_key = None
+        uc_iv = None
+        for item in m[1].split('-'):
+            key, _, value = item.partition('|')
+            if key == 'a137':
+                uc_key = value
+            elif key == 'E74':
+                uc_iv = value
+            if uc_key is not None and uc_iv is not None:
+                break
+
+        # 获取token
+        try:
             async with _http_session.post('https://fanyi.qq.com/api/' + reauthuri) as r:
                 if r.status != 200:
                     logger.warning('TencentTranslateFree init request failed: reauthuri=%s, status=%d %s',
@@ -264,6 +299,8 @@ class TencentTranslateFree(FlowControlTranslateProvider):
             logger.warning('TencentTranslateFree init failed: qtk not found')
             return False
 
+        self._uc_key = uc_key
+        self._uc_iv = uc_iv
         self._qtv = qtv
         self._qtk = qtk
         return True
@@ -279,7 +316,7 @@ class TencentTranslateFree(FlowControlTranslateProvider):
 
     @property
     def is_available(self):
-        return self._qtv != '' and self._qtk != '' and super().is_available
+        return '' not in (self._uc_key, self._uc_iv, self._qtv, self._qtk) and super().is_available
 
     async def _translate_coroutine(self, text, future):
         try:
@@ -299,7 +336,8 @@ class TencentTranslateFree(FlowControlTranslateProvider):
             async with _http_session.post(
                 'https://fanyi.qq.com/api/translate',
                 headers={
-                    'Referer': 'https://fanyi.qq.com/'
+                    'Referer': 'https://fanyi.qq.com/',
+                    'uc': self._get_uc()
                 },
                 data={
                     'source': self._source_language,
@@ -312,6 +350,7 @@ class TencentTranslateFree(FlowControlTranslateProvider):
                 if r.status != 200:
                     logger.warning('TencentTranslateFree request failed: status=%d %s', r.status, r.reason)
                     return None
+                self._update_uc_key(r)
                 data = await r.json()
         except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
             return None
@@ -325,15 +364,59 @@ class TencentTranslateFree(FlowControlTranslateProvider):
             return None
         return res
 
+    def _get_uc(self):
+        user_actions = self._gen_user_actions()
+        cur_timestamp = str(int(datetime.datetime.now().timestamp() * 1000))
+        server_time_delta = str(self._server_time_delta)
+        uc = '|'.join([user_actions, cur_timestamp, server_time_delta])
+
+        aes = cry_aes.new(self._uc_key.encode('utf-8'), cry_aes.MODE_CBC, self._uc_iv.encode('utf-8'))
+        uc = cry_pad.pad(uc.encode('utf-8'), aes.block_size, 'pkcs7')
+        uc = aes.encrypt(uc)
+        uc = base64.b64encode(uc).decode('utf-8')
+        return uc
+
+    @staticmethod
+    def _gen_user_actions():
+        # 1：点击翻译；2：源输入框聚焦或失去焦点；3：点击源语言列表；4：点击交换语言；5：点击目标语言列表；6：源输入框输入、粘贴
+        user_actions = []
+        if random.randint(1, 5) == 1:
+            for i in range(random.randint(1, 2)):
+                user_actions.append('2')
+        user_actions.append('6')
+        for i in range(random.randint(0, 6)):
+            user_actions.append(random.choice('26'))
+        if random.randint(1, 5) == 1:
+            user_actions.append('1')
+        return ''.join(user_actions)
+
+    def _update_uc_key(self, r):
+        try:
+            hf_f = r.headers['f']
+            hf_ts = int(r.headers['ts'])
+        except (KeyError, ValueError):
+            return
+
+        cur_timestamp = int(datetime.datetime.now().timestamp() * 1000)
+        hf_f = base64.b64decode(hf_f.encode('utf-8')).decode('utf-8')
+        pos = int(hf_f[72: 72 + 4])
+        uc_key = hf_f[pos: pos + 16]
+        uc_iv = hf_f[pos + 16: pos + 16 + 16]
+
+        self._server_time_delta = cur_timestamp - hf_ts
+        self._uc_key = uc_key
+        self._uc_iv = uc_iv
+
     def _on_fail(self):
         self._fail_count += 1
-        # 目前没有测试出被ban的情况，为了可靠性，连续失败20次时冷却直到下次重新init
-        if self._fail_count >= 20:
+        # 为了可靠性，连续失败10次时冷却直到下次重新init
+        if self._fail_count >= 10:
             self._cool_down()
 
     def _cool_down(self):
         logger.info('TencentTranslateFree is cooling down')
         # 下次_do_init后恢复
+        self._uc_key = self._uc_iv = ''
         self._qtv = self._qtk = ''
         self._fail_count = 0
 
