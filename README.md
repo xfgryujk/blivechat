@@ -62,6 +62,10 @@
    ```sh
    python3 main.py --host 127.0.0.1 --port 12450
    ```
+   打开带有用户界面的服务器：（上文的host、端口号等参数同样适用）
+   ```sh
+   python3 gui.py
+   ```
 3. 用浏览器打开[http://localhost:12450](http://localhost:12450)，以下略
 
 ### 四、Docker（自建服务器）
