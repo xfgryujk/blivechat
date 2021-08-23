@@ -1,0 +1,528 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>config_window</class>
+ <widget class="QWidget" name="config_window">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>440</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string notr="true">悬浮窗设置</string>
+  </property>
+  <layout class="QVBoxLayout" name="config_window_vertical_layout">
+   <item>
+    <widget class="QTabWidget" name="tab_widget">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="tab_general">
+      <attribute name="title">
+       <string notr="true">常规</string>
+      </attribute>
+      <layout class="QFormLayout" name="form_layout_general">
+       <property name="labelAlignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_room_id">
+         <property name="text">
+          <string notr="true">房间ID</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QSpinBox" name="spin_box_room_id">
+         <property name="maximum">
+          <number>999999999</number>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QCheckBox" name="check_box_show_messages">
+         <property name="text">
+          <string notr="true">显示弹幕</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QCheckBox" name="check_box_merge_similar_messages">
+         <property name="text">
+          <string notr="true">合并相似弹幕</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="2">
+        <widget class="Line" name="line_1">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QSpinBox" name="spin_box_max_number_of_messages">
+         <property name="maximum">
+          <number>999999999</number>
+         </property>
+         <property name="value">
+          <number>60</number>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_max_number_of_messages">
+         <property name="text">
+          <string notr="true">最大弹幕数</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0" colspan="2">
+        <widget class="Line" name="line_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1">
+        <widget class="QCheckBox" name="check_box_show_gift_name">
+         <property name="text">
+          <string notr="true">显示礼物名</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
+        <widget class="QCheckBox" name="check_box_merge_gifts">
+         <property name="text">
+          <string notr="true">合并礼物</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QCheckBox" name="check_box_show_shper_chats">
+         <property name="text">
+          <string notr="true">显示打赏和新舰长</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="1">
+        <widget class="QSpinBox" name="spin_box_min_price_of_super_chats_to_show">
+         <property name="maximum">
+          <number>999999999</number>
+         </property>
+         <property name="value">
+          <number>7</number>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="0">
+        <widget class="QLabel" name="label_min_price_of_super_chats_to_show">
+         <property name="text">
+          <string notr="true">最低显示打赏价格（元）</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_block">
+      <attribute name="title">
+       <string notr="true">屏蔽</string>
+      </attribute>
+      <layout class="QFormLayout" name="form_layout_block">
+       <property name="labelAlignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+       <item row="0" column="1">
+        <widget class="QCheckBox" name="check_box_block_system_messages">
+         <property name="text">
+          <string notr="true">屏蔽礼物弹幕</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QCheckBox" name="check_box_block_informal_users">
+         <property name="text">
+          <string notr="true">屏蔽非正式会员</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QCheckBox" name="check_box_block_unverified_users">
+         <property name="text">
+          <string notr="true">屏蔽未绑定手机用户</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0" colspan="2">
+        <widget class="Line" name="line_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_block_user_level_lower_than">
+         <property name="text">
+          <string notr="true">屏蔽用户等级低于</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <layout class="QHBoxLayout" name="horizontal_layout_block_user_level_lower_than">
+         <item>
+          <widget class="QSlider" name="horizontal_slider_block_user_level_lower_than">
+           <property name="maximum">
+            <number>60</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="spin_box_block_user_level_lower_than">
+           <property name="maximum">
+            <number>60</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_block_medal_level_lower_than">
+         <property name="text">
+          <string notr="true">屏蔽当前直播间勋章等级低于</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QSlider" name="horizontal_slider_block_medal_level_lower_than">
+           <property name="maximum">
+            <number>40</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="spin_box_block_medal_level_lower_than">
+           <property name="maximum">
+            <number>40</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="6" column="0" colspan="2">
+        <widget class="Line" name="line_4">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="0">
+        <widget class="QLabel" name="label_block_keywords">
+         <property name="text">
+          <string notr="true">屏蔽关键词</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1">
+        <widget class="QTextEdit" name="text_edit_block_keywords">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>50</height>
+          </size>
+         </property>
+         <property name="acceptRichText">
+          <bool>false</bool>
+         </property>
+         <property name="placeholderText">
+          <string notr="true">一行一个</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="0">
+        <widget class="QLabel" name="label_block_users">
+         <property name="text">
+          <string notr="true">屏蔽用户</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
+        <widget class="QTextEdit" name="text_edit_block_users">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>50</height>
+          </size>
+         </property>
+         <property name="acceptRichText">
+          <bool>false</bool>
+         </property>
+         <property name="placeholderText">
+          <string notr="true">一行一个</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_advanced">
+      <attribute name="title">
+       <string notr="true">高级</string>
+      </attribute>
+      <layout class="QFormLayout" name="form_layout_advanced">
+       <item row="0" column="1">
+        <widget class="QCheckBox" name="check_box_reply_message_by_server">
+         <property name="text">
+          <string notr="true">通过服务器转发消息</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QCheckBox" name="check_box_auto_translate_messages_to_japanese">
+         <property name="text">
+          <string notr="true">自动翻译弹幕到日语（需要通过服务器转发消息）</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QRadioButton" name="radio_button_pronunciation_of_gift_username_none">
+         <property name="text">
+          <string notr="true">不显示</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QRadioButton" name="radio_button_pronunciation_of_gift_username_pinyin">
+         <property name="text">
+          <string notr="true">拼音</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QRadioButton" name="radio_button_pronunciation_of_gift_username_kana">
+         <property name="text">
+          <string notr="true">日文假名</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_pronunciation_of_gift_username">
+         <property name="text">
+          <string notr="true">标注打赏用户读音</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="2">
+        <widget class="Line" name="line_5">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="frame_room_url">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QFormLayout" name="form_layout_room_url">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_room_url">
+        <property name="text">
+         <string notr="true">房间URL</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <layout class="QHBoxLayout" name="horizontal_layout_room_url">
+        <item>
+         <widget class="QLineEdit" name="line_edit_room_url"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="push_button_copy_url">
+          <property name="text">
+           <string notr="true">复制</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="1">
+       <layout class="QHBoxLayout" name="horizontal_layout_room_url_edit">
+        <item>
+         <widget class="QPushButton" name="push_button_export_config">
+          <property name="text">
+           <string notr="true">导出配置</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="push_button_import_config">
+          <property name="text">
+           <string notr="true">导入配置</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontal_spacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="push_button_set_test_room">
+          <property name="text">
+           <string notr="true">设置为测试房间</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="frame_extra_css">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>150</height>
+      </size>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QVBoxLayout" name="vertical_layout_extra_css">
+      <item>
+       <widget class="QLabel" name="label_extra_css">
+        <property name="text">
+         <string notr="true">额外的CSS</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontal_layout_extra_css">
+        <item>
+         <widget class="QListWidget" name="list_widget_css_list"/>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="vertical_layout_extra_css_buttons">
+          <item>
+           <widget class="QPushButton" name="push_button_extra_css_add">
+            <property name="text">
+             <string notr="true">添加文件</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="push_button_extra_css_add_url">
+            <property name="text">
+             <string notr="true">添加路径</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="push_button_extra_css_remove">
+            <property name="text">
+             <string notr="true">删除</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="push_button_extra_css_edit">
+            <property name="text">
+             <string notr="true">编辑</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="vertical_spacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
