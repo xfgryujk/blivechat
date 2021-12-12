@@ -19,6 +19,36 @@ const CONTENTS = [
   '有一说一，这件事大家懂的都懂，不懂的，说了你也不明白，不如不说', '让我看看', '我柜子动了，我不玩了'
 ]
 
+const EMOTICONS = [
+  "https://i0.hdslb.com/bfs/live/a98e35996545509188fe4d24bd1a56518ea5af48.png",
+  "https://i0.hdslb.com/bfs/live/2af0e252cc3082384edf8165751f6a49eaf76d94.png",
+  "https://i0.hdslb.com/bfs/live/6a034cfac8631035f5877d722379914f628cf120.png",
+  "https://i0.hdslb.com/bfs/live/625989e78079e3dc38d75cb9ac392fe8c1aa4a75.png",
+  "https://i0.hdslb.com/bfs/live/eff44c1fc03311573e8817ca8010aca72404f65c.png",
+  "https://i0.hdslb.com/bfs/live/a9e2acaf72b663c6ad9c39cda4ae01470e13d845.png",
+  "https://i0.hdslb.com/bfs/live/7251dc7df587388a3933743bf38394d12a922cd7.png",
+  "https://i0.hdslb.com/bfs/live/88b49dac03bfd5d4cb49672956f78beb2ebd0d0b.png",
+  "https://i0.hdslb.com/bfs/live/0e28444c8e2faef3169e98e1a41c487144d877d4.png",
+  "https://i0.hdslb.com/bfs/live/aa48737f877cd328162696a4f784b85d4bfca9ce.png",
+  "https://i0.hdslb.com/bfs/live/61e790813c51eab55ebe0699df1e9834c90b68ba.png",
+  "https://i0.hdslb.com/bfs/live/343f7f7e87fa8a07df63f9cba6b776196d9066f0.png",
+  "https://i0.hdslb.com/bfs/live/7b7a2567ad1520f962ee226df777eaf3ca368fbc.png",
+  "https://i0.hdslb.com/bfs/live/39e518474a3673c35245bf6ef8ebfff2c003fdc3.png",
+  "https://i0.hdslb.com/bfs/live/9029486931c3169c3b4f8e69da7589d29a8eadaa.png",
+  "https://i0.hdslb.com/bfs/live/328e93ce9304090f4035e3aa7ef031d015bbc915.png",
+  "https://i0.hdslb.com/bfs/live/aa93b9af7ba03b50df23b64e9afd0d271955cd71.png",
+  "https://i0.hdslb.com/bfs/live/18af5576a4582535a3c828c3ae46a7855d9c6070.png",
+  "https://i0.hdslb.com/bfs/live/4cf43ac5259589e9239c4e908c8149d5952fcc32.png",
+  "https://i0.hdslb.com/bfs/live/40db7427f02a2d9417f8eeed0f71860dfb28df5a.png",
+  "https://i0.hdslb.com/bfs/live/1ba5126b10e5efe3e4e29509d033a37f128beab2.png",
+  "https://i0.hdslb.com/bfs/live/ff840c706fffa682ace766696b9f645e40899f67.png",
+  "https://i0.hdslb.com/bfs/live/08f1aebaa4d9c170aa79cbafe521ef0891bdf2b5.png",
+  "https://i0.hdslb.com/bfs/live/c2650bf9bbc79b682a4b67b24df067fdd3e5e9ca.png",
+  "https://i0.hdslb.com/bfs/live/c3326ceb63587c79e5b4106ee4018dc59389b5c0.png",
+  "https://i0.hdslb.com/bfs/live/7db4188c050f55ec59a1629fbc5a53661e4ba780.png",
+  "https://i0.hdslb.com/bfs/live/cc2652cef69b22117f1911391567bd2957f27e08.png",
+]
+
 const AUTHOR_TYPES = [
   {weight: 10, value: constants.AUTHRO_TYPE_NORMAL},
   {weight: 5, value: constants.AUTHRO_TYPE_MEMBER},
@@ -64,6 +94,30 @@ const MESSAGE_GENERATORS = [
           authorName: randomChoose(NAMES),
           content: randomChoose(CONTENTS),
           isGiftDanmaku: randInt(1, 10) <= 1,
+          authorLevel: randInt(0, 60),
+          isNewbie: randInt(1, 10) <= 9,
+          isMobileVerified: randInt(1, 10) <= 9,
+          medalLevel: randInt(0, 40),
+          id: getUuid4Hex(),
+          translation: ''
+        }
+      }
+    }
+  },
+  // 表情
+  {
+    weight: 5,
+    value() {
+      return {
+        type: constants.MESSAGE_TYPE_TEXT,
+        message: {
+          ...randGuardInfo(),
+          avatarUrl: avatar.DEFAULT_AVATAR_URL,
+          timestamp: new Date().getTime() / 1000,
+          authorName: randomChoose(NAMES),
+          content: '',
+          emoticon: randomChoose(EMOTICONS),
+          isGiftDanmaku: false,
           authorLevel: randInt(0, 60),
           isNewbie: randInt(1, 10) <= 9,
           isMobileVerified: randInt(1, 10) <= 9,

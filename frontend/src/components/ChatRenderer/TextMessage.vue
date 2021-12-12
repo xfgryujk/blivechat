@@ -23,7 +23,7 @@
           :style="{'--repeated-mark-color': repeatedMarkColor}"
         ></el-badge>
       </span>
-      <div v-if="emoticon" id="message" class="style-scope yt-live-chat-text-message-renderer">
+      <div v-if="emoticon" id="emoticon" class="style-scope yt-live-chat-text-message-renderer">
         <img-shadow :imgUrl="emoticon" width="64" />
       </div>
     </div>
