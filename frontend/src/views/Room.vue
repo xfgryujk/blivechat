@@ -127,6 +127,7 @@ export default {
         authorName: data.authorName,
         authorType: data.authorType,
         content: data.content,
+        emoticon: data.emoticon,
         privilegeType: data.privilegeType,
         repeated: 1,
         translation: data.translation

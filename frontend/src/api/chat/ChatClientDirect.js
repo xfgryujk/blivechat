@@ -277,12 +277,14 @@ export default class ChatClientDirect {
     }
 
     let urank = info[2][5]
+    let emoticon = info[0][13].url || null
     let data = {
       avatarUrl: await avatar.getAvatarUrl(uid),
       timestamp: info[0][4] / 1000,
       authorName: info[2][1],
       authorType: authorType,
       content: info[1],
+      emoticon,
       privilegeType: privilegeType,
       isGiftDanmaku: !!info[0][9],
       authorLevel: info[4][0],
