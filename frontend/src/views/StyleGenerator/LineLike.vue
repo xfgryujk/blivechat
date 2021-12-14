@@ -607,12 +607,12 @@ yt-live-chat-ticker-sponsor-item-renderer * {
         color = '#ffffff'
       }
       let typeSelector = authorType ? `[author-type="${authorType}"]` : ''
-      return `${this.form.emoticonBubble ? 'yt-live-chat-text-message-renderer${typeSelector} #emoticon,' : ''}
+      return `${this.form.emoticonBubble ? `yt-live-chat-text-message-renderer${typeSelector} #emoticon,` : ''}
 yt-live-chat-text-message-renderer${typeSelector} #message {
   background-color: ${color} !important;
 }
 
-${this.form.emoticonBubble ? 'yt-live-chat-text-message-renderer${typeSelector} #emoticon::before,' : ''}
+${this.form.emoticonBubble ? `yt-live-chat-text-message-renderer${typeSelector} #emoticon::before,` : ''}
 yt-live-chat-text-message-renderer${typeSelector} #message::before {
   border-right-color: ${color};
 }`
