@@ -14,6 +14,7 @@ import tornado.websocket
 
 import api.base
 import blivedm.blivedm as blivedm
+import blivedm.blivedm.client as blivedm_client
 import config
 import models.avatar
 import models.translate
@@ -42,77 +43,94 @@ def init():
     room_manager = RoomManager()
 
 
-class Room(blivedm.BLiveClient):
+class Room(blivedm.BLiveClient, blivedm.BaseHandler):
     HEARTBEAT_INTERVAL = 10
 
-    # 重新定义parse_XXX是为了减少对字段名的依赖，防止B站改字段名
-    def __parse_danmaku(self, command):
+    # 重新定义XXX_callback是为了减少对字段名的依赖，防止B站改字段名
+    def __danmu_msg_callback(self, client: blivedm.BLiveClient, command: dict):
         info = command['info']
-        if info[3]:
-            room_id = info[3][3]
+        if len(info[3]) != 0:
             medal_level = info[3][0]
+            medal_room_id = info[3][3]
         else:
-            room_id = medal_level = 0
-        return self._on_receive_danmaku(blivedm.DanmakuMessage(
-            None, None, None, info[0][4], None, None, info[0][9], None,
-            info[1],
-            info[2][0], info[2][1], info[2][2], None, None, info[2][5], info[2][6], None,
-            medal_level, None, None, room_id, None, None,
-            info[4][0], None, None,
-            None, None,
-            info[7]
-        ))
+            medal_level = 0
+            medal_room_id = 0
 
-    def __parse_gift(self, command):
+        message = blivedm.DanmakuMessage(
+            timestamp=info[0][4],
+            msg_type=info[0][9],
+
+            msg=info[1],
+
+            uid=info[2][0],
+            uname=info[2][1],
+            admin=info[2][2],
+            urank=info[2][5],
+            mobile_verify=info[2][6],
+
+            medal_level=medal_level,
+            medal_room_id=medal_room_id,
+
+            user_level=info[4][0],
+
+            privilege_type=info[7],
+        )
+        return self._on_danmaku(client, message)
+
+    def __send_gift_callback(self, client: blivedm.BLiveClient, command: dict):
         data = command['data']
-        return self._on_receive_gift(blivedm.GiftMessage(
-            data['giftName'], data['num'], data['uname'], data['face'], None,
-            data['uid'], data['timestamp'], None, None,
-            None, None, None, data['coin_type'], data['total_coin']
-        ))
+        message = blivedm.GiftMessage(
+            gift_name=data['giftName'],
+            num=data['num'],
+            uname=data['uname'],
+            face=data['face'],
+            uid=data['uid'],
+            timestamp=data['timestamp'],
+            coin_type=data['coin_type'],
+            total_coin=data['total_coin'],
+        )
+        return self._on_gift(client, message)
 
-    def __parse_buy_guard(self, command):
+    def __guard_buy_callback(self, client: blivedm.BLiveClient, command: dict):
         data = command['data']
-        return self._on_buy_guard(blivedm.GuardBuyMessage(
-            data['uid'], data['username'], data['guard_level'], None, None,
-            None, None, data['start_time'], None
-        ))
+        message = blivedm.GuardBuyMessage(
+            uid=data['uid'],
+            username=data['username'],
+            guard_level=data['guard_level'],
+            start_time=data['start_time'],
+        )
+        return self._on_buy_guard(client, message)
 
-    def __parse_super_chat(self, command):
+    def __super_chat_message_callback(self, client: blivedm.BLiveClient, command: dict):
         data = command['data']
-        return self._on_super_chat(blivedm.SuperChatMessage(
-            data['price'], data['message'], None, data['start_time'],
-            None, None, data['id'], None,
-            None, data['uid'], data['user_info']['uname'],
-            data['user_info']['face'], None,
-            None, None,
-            None, None, None,
-            None
-        ))
+        message = blivedm.SuperChatMessage(
+            price=data['price'],
+            message=data['message'],
+            start_time=data['start_time'],
+            id_=data['id'],
+            uid=data['uid'],
+            uname=data['user_info']['uname'],
+            face=data['user_info']['face'],
+        )
+        return self._on_super_chat(client, message)
 
-    _COMMAND_HANDLERS = {
-        **blivedm.BLiveClient._COMMAND_HANDLERS,
-        'DANMU_MSG': __parse_danmaku,
-        'SEND_GIFT': __parse_gift,
-        'GUARD_BUY': __parse_buy_guard,
-        'SUPER_CHAT_MESSAGE': __parse_super_chat
+    _CMD_CALLBACK_DICT = {
+        **blivedm.BaseHandler._CMD_CALLBACK_DICT,
+        'DANMU_MSG': __danmu_msg_callback,
+        'SEND_GIFT': __send_gift_callback,
+        'GUARD_BUY': __guard_buy_callback,
+        'SUPER_CHAT_MESSAGE': __super_chat_message_callback
     }
 
     def __init__(self, room_id):
         super().__init__(room_id, session=_http_session, heartbeat_interval=self.HEARTBEAT_INTERVAL)
+        self.add_handler(self)
         self.clients: List['ChatHandler'] = []
         self.auto_translate_count = 0
 
     async def init_room(self):
         await super().init_room()
         return True
-
-    def stop_and_close(self):
-        if self.is_running:
-            future = self.stop()
-            future.add_done_callback(lambda _future: asyncio.ensure_future(self.close()))
-        else:
-            asyncio.ensure_future(self.close())
 
     def send_message(self, cmd, data):
         body = json.dumps({'cmd': cmd, 'data': data})
@@ -130,22 +148,19 @@ class Room(blivedm.BLiveClient):
             except tornado.websocket.WebSocketClosedError:
                 room_manager.del_client(self.room_id, client)
 
-    async def _on_receive_danmaku(self, danmaku: blivedm.DanmakuMessage):
-        asyncio.ensure_future(self.__on_receive_danmaku(danmaku))
-
-    async def __on_receive_danmaku(self, danmaku: blivedm.DanmakuMessage):
-        if danmaku.uid == self.room_owner_uid:
+    async def _on_danmaku(self, client: blivedm.BLiveClient, message: blivedm.DanmakuMessage):
+        if message.uid == self.room_owner_uid:
             author_type = 3  # 主播
-        elif danmaku.admin:
+        elif message.admin:
             author_type = 2  # 房管
-        elif danmaku.privilege_type != 0:  # 1总督，2提督，3舰长
+        elif message.privilege_type != 0:  # 1总督，2提督，3舰长
             author_type = 1  # 舰队
         else:
             author_type = 0
 
-        need_translate = self._need_translate(danmaku.msg)
+        need_translate = self._need_translate(message.msg)
         if need_translate:
-            translation = models.translate.get_translation_from_cache(danmaku.msg)
+            translation = models.translate.get_translation_from_cache(message.msg)
             if translation is None:
                 # 没有缓存，需要后面异步翻译后通知
                 translation = ''
@@ -157,41 +172,41 @@ class Room(blivedm.BLiveClient):
         id_ = uuid.uuid4().hex
         # 为了节省带宽用list而不是dict
         self.send_message(Command.ADD_TEXT, make_text_message(
-            await models.avatar.get_avatar_url(danmaku.uid),
-            int(danmaku.timestamp / 1000),
-            danmaku.uname,
+            await models.avatar.get_avatar_url(message.uid),
+            int(message.timestamp / 1000),
+            message.uname,
             author_type,
-            danmaku.msg,
-            danmaku.privilege_type,
-            danmaku.msg_type,
-            danmaku.user_level,
-            danmaku.urank < 10000,
-            danmaku.mobile_verify,
-            0 if danmaku.room_id != self.room_id else danmaku.medal_level,
+            message.msg,
+            message.privilege_type,
+            message.msg_type,
+            message.user_level,
+            message.urank < 10000,
+            message.mobile_verify,
+            0 if message.medal_room_id != self.room_id else message.medal_level,
             id_,
             translation
         ))
 
         if need_translate:
-            await self._translate_and_response(danmaku.msg, id_)
+            asyncio.ensure_future(self._translate_and_response(message.msg, id_))
 
-    async def _on_receive_gift(self, gift: blivedm.GiftMessage):
-        avatar_url = models.avatar.process_avatar_url(gift.face)
-        models.avatar.update_avatar_cache(gift.uid, avatar_url)
-        if gift.coin_type != 'gold':  # 丢人
+    async def _on_gift(self, client: blivedm.BLiveClient, message: blivedm.GiftMessage):
+        avatar_url = models.avatar.process_avatar_url(message.face)
+        models.avatar.update_avatar_cache(message.uid, avatar_url)
+        if message.coin_type != 'gold':  # 丢人
             return
         id_ = uuid.uuid4().hex
         self.send_message(Command.ADD_GIFT, {
             'id': id_,
             'avatarUrl': avatar_url,
-            'timestamp': gift.timestamp,
-            'authorName': gift.uname,
-            'totalCoin': gift.total_coin,
-            'giftName': gift.gift_name,
-            'num': gift.num
+            'timestamp': message.timestamp,
+            'authorName': message.uname,
+            'totalCoin': message.total_coin,
+            'giftName': message.gift_name,
+            'num': message.num
         })
 
-    async def _on_buy_guard(self, message: blivedm.GuardBuyMessage):
+    async def _on_buy_guard(self, client: blivedm.BLiveClient, message: blivedm.GuardBuyMessage):
         asyncio.ensure_future(self.__on_buy_guard(message))
 
     async def __on_buy_guard(self, message: blivedm.GuardBuyMessage):
@@ -204,7 +219,7 @@ class Room(blivedm.BLiveClient):
             'privilegeType': message.guard_level
         })
 
-    async def _on_super_chat(self, message: blivedm.SuperChatMessage):
+    async def _on_super_chat(self, client: blivedm.BLiveClient, message: blivedm.SuperChatMessage):
         avatar_url = models.avatar.process_avatar_url(message.face)
         models.avatar.update_avatar_cache(message.uid, avatar_url)
 
@@ -233,7 +248,7 @@ class Room(blivedm.BLiveClient):
         if need_translate:
             asyncio.ensure_future(self._translate_and_response(message.message, id_))
 
-    async def _on_super_chat_delete(self, message: blivedm.SuperChatDeleteMessage):
+    async def _on_super_chat_delete(self, client: blivedm.BLiveClient, message: blivedm.SuperChatDeleteMessage):
         self.send_message(Command.ADD_SUPER_CHAT, {
             'ids': list(map(str, message.ids))
         })
@@ -360,7 +375,7 @@ class RoomManager:
         logger.info('Removing room %d', room_id)
         for client in room.clients:
             client.close()
-        room.stop_and_close()
+        asyncio.ensure_future(room.stop_and_close())
         self._rooms.pop(room_id, None)
         logger.info('%d rooms', len(self._rooms))
 
@@ -547,7 +562,7 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
 
 # noinspection PyAbstractClass
 class RoomInfoHandler(api.base.ApiHandler):
-    _host_server_list_cache = blivedm.DEFAULT_DANMAKU_SERVER_LIST
+    _host_server_list_cache = blivedm_client.DEFAULT_DANMAKU_SERVER_LIST
 
     async def get(self):
         room_id = int(self.get_query_argument('roomId'))
@@ -569,7 +584,7 @@ class RoomInfoHandler(api.base.ApiHandler):
     @staticmethod
     async def _get_room_info(room_id):
         try:
-            async with _http_session.get(blivedm.ROOM_INIT_URL, params={'room_id': room_id}
+            async with _http_session.get(blivedm_client.ROOM_INIT_URL, params={'room_id': room_id}
                                          ) as res:
                 if res.status != 200:
                     logger.warning('room %d _get_room_info failed: %d %s', room_id,

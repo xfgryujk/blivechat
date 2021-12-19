@@ -1,4 +1,5 @@
 aiohttp==3.7.4
+Brotli==1.0.9
 pycryptodome==3.10.1
 sqlalchemy==1.3.13
 tornado==6.0.2
