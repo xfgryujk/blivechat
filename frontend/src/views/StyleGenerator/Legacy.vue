@@ -551,7 +551,7 @@ ${!this.form.messageOnNewLine ? '' : `yt-live-chat-text-message-renderer #messag
   overflow: visible !important;
 }`}
 
-yt-live-chat-text-message-renderer #message img {
+yt-live-chat-text-message-renderer #message .emoji {
   width: auto !important;
   height: ${this.form.emoticonSize}px !important;
 }`

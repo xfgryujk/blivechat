@@ -19,7 +19,7 @@
       </yt-live-chat-author-chip>
       <span id="message" class="style-scope yt-live-chat-text-message-renderer">
         <template v-if="!emoticon">{{ content }}</template>
-        <img v-else class="small-emoji emoji yt-formatted-string style-scope yt-live-chat-text-message-renderer"
+        <img v-else class="emoji yt-formatted-string style-scope yt-live-chat-text-message-renderer"
           :src="emoticon" :alt="content" shared-tooltip-text="" id="emoji"
         >
         <el-badge :value="repeated" :max="99" v-show="repeated > 1" class="style-scope yt-live-chat-text-message-renderer"

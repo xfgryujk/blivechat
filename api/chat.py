@@ -33,6 +33,11 @@ class Command(enum.IntEnum):
     UPDATE_TRANSLATION = 7
 
 
+class ContentType(enum.IntEnum):
+    TEXT = 0
+    EMOTICON = 1
+
+
 _http_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
 
 room_manager: Optional['RoomManager'] = None
@@ -56,10 +61,11 @@ class Room(blivedm.BLiveClient, blivedm.BaseHandler):
             medal_level = 0
             medal_room_id = 0
 
-        # TODO 带表情信息
         message = blivedm.DanmakuMessage(
             timestamp=info[0][4],
             msg_type=info[0][9],
+            dm_type=info[0][12],
+            emoticon_options=info[0][13],
 
             msg=info[1],
 
@@ -159,6 +165,15 @@ class Room(blivedm.BLiveClient, blivedm.BaseHandler):
         else:
             author_type = 0
 
+        if message.dm_type == 1:
+            content_type = ContentType.EMOTICON
+            content_type_params = make_emoticon_params(
+                message.emoticon_options_dict['url'],
+            )
+        else:
+            content_type = ContentType.TEXT
+            content_type_params = None
+
         need_translate = self._need_translate(message.msg)
         if need_translate:
             translation = models.translate.get_translation_from_cache(message.msg)
@@ -173,19 +188,21 @@ class Room(blivedm.BLiveClient, blivedm.BaseHandler):
         id_ = uuid.uuid4().hex
         # 为了节省带宽用list而不是dict
         self.send_message(Command.ADD_TEXT, make_text_message(
-            await models.avatar.get_avatar_url(message.uid),
-            int(message.timestamp / 1000),
-            message.uname,
-            author_type,
-            message.msg,
-            message.privilege_type,
-            message.msg_type,
-            message.user_level,
-            message.urank < 10000,
-            message.mobile_verify,
-            0 if message.medal_room_id != self.room_id else message.medal_level,
-            id_,
-            translation
+            avatar_url=await models.avatar.get_avatar_url(message.uid),
+            timestamp=int(message.timestamp / 1000),
+            author_name=message.uname,
+            author_type=author_type,
+            content=message.msg,
+            privilege_type=message.privilege_type,
+            is_gift_danmaku=message.msg_type,
+            author_level=message.user_level,
+            is_newbie=message.urank < 10000,
+            is_mobile_verified=message.mobile_verify,
+            medal_level=0 if message.medal_room_id != self.room_id else message.medal_level,
+            id_=id_,
+            translation=translation,
+            content_type=content_type,
+            content_type_params=content_type_params,
         ))
 
         if need_translate:
@@ -278,7 +295,7 @@ class Room(blivedm.BLiveClient, blivedm.BaseHandler):
 
 def make_text_message(avatar_url, timestamp, author_name, author_type, content, privilege_type,
                       is_gift_danmaku, author_level, is_newbie, is_mobile_verified, medal_level,
-                      id_, translation):
+                      id_, translation, content_type, content_type_params):
     return [
         # 0: avatarUrl
         avatar_url,
@@ -305,7 +322,18 @@ def make_text_message(avatar_url, timestamp, author_name, author_type, content, 
         # 11: id
         id_,
         # 12: translation
-        translation
+        translation,
+        # 13: contentType
+        content_type,
+        # 14: contentTypeParams
+        content_type_params if content_type_params is not None else [],
+    ]
+
+
+def make_emoticon_params(url):
+    return [
+        # 0: url
+        url,
     ]
 
 
@@ -314,7 +342,7 @@ def make_translation_message(msg_id, translation):
         # 0: id
         msg_id,
         # 1: translation
-        translation
+        translation,
     ]
 
 
@@ -485,19 +513,21 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
             cfg = config.get_config()
             if cfg.allow_translate_rooms and self.room_id not in cfg.allow_translate_rooms:
                 self.send_message(Command.ADD_TEXT, make_text_message(
-                    models.avatar.DEFAULT_AVATAR_URL,
-                    int(time.time()),
-                    'blivechat',
-                    2,
-                    'Translation is not allowed in this room. Please download to use translation',
-                    0,
-                    False,
-                    60,
-                    False,
-                    True,
-                    0,
-                    uuid.uuid4().hex,
-                    ''
+                    avatar_url=models.avatar.DEFAULT_AVATAR_URL,
+                    timestamp=int(time.time()),
+                    author_name='blivechat',
+                    author_type=2,
+                    content='Translation is not allowed in this room. Please download to use translation',
+                    privilege_type=0,
+                    is_gift_danmaku=False,
+                    author_level=60,
+                    is_newbie=False,
+                    is_mobile_verified=True,
+                    medal_level=0,
+                    id_=uuid.uuid4().hex,
+                    translation='',
+                    content_type=ContentType.TEXT,
+                    content_type_params=None,
                 ))
 
     # 测试用
@@ -508,19 +538,21 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
             'authorName': 'xfgryujk',
         }
         text_data = make_text_message(
-            base_data['avatarUrl'],
-            base_data['timestamp'],
-            base_data['authorName'],
-            0,
-            '我能吞下玻璃而不伤身体',
-            0,
-            False,
-            20,
-            False,
-            True,
-            0,
-            uuid.uuid4().hex,
-            ''
+            avatar_url=base_data['avatarUrl'],
+            timestamp=base_data['timestamp'],
+            author_name=base_data['authorName'],
+            author_type=0,
+            content='我能吞下玻璃而不伤身体',
+            privilege_type=0,
+            is_gift_danmaku=False,
+            author_level=20,
+            is_newbie=False,
+            is_mobile_verified=True,
+            medal_level=0,
+            id_=uuid.uuid4().hex,
+            translation='',
+            content_type=ContentType.TEXT,
+            content_type_params=None,
         )
         member_data = {
             **base_data,

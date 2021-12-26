@@ -7,6 +7,9 @@ const COMMAND_ADD_SUPER_CHAT = 5
 const COMMAND_DEL_SUPER_CHAT = 6
 const COMMAND_UPDATE_TRANSLATION = 7
 
+// const CONTENT_TYPE_TEXT = 0
+const CONTENT_TYPE_EMOTICON = 1
+
 const HEARTBEAT_INTERVAL = 10 * 1000
 const RECEIVE_TIMEOUT = HEARTBEAT_INTERVAL + 5 * 1000
 
@@ -122,6 +125,14 @@ export default class ChatClientRelay {
       if (!this.onAddText) {
         break
       }
+
+      let emoticon = null
+      let contentType = data[13]
+      let contentTypeParams = data[14]
+      if (contentType === CONTENT_TYPE_EMOTICON) {
+        emoticon = contentTypeParams[0] // TODO 改成对象？
+      }
+
       data = {
         avatarUrl: data[0],
         timestamp: data[1],
@@ -136,7 +147,7 @@ export default class ChatClientRelay {
         medalLevel: data[10],
         id: data[11],
         translation: data[12],
-        emoticon: null // TODO 支持表情
+        emoticon: emoticon
       }
       this.onAddText(data)
       break
