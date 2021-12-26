@@ -17,12 +17,15 @@
           ></author-badge>
         </span>
       </yt-live-chat-author-chip>
-      <span id="message" class="style-scope yt-live-chat-text-message-renderer">{{
+      <span v-if="!emoticon" id="message" class="style-scope yt-live-chat-text-message-renderer">{{
         content
         }}<el-badge :value="repeated" :max="99" v-show="repeated > 1" class="style-scope yt-live-chat-text-message-renderer"
           :style="{'--repeated-mark-color': repeatedMarkColor}"
         ></el-badge>
       </span>
+      <div v-if="emoticon" id="emoticon" class="style-scope yt-live-chat-text-message-renderer">
+        <img-shadow :imgUrl="emoticon" width="64" />
+      </div>
     </div>
   </yt-live-chat-text-message-renderer>
 </template>
@@ -49,6 +52,7 @@ export default {
     authorName: String,
     authorType: Number,
     content: String,
+    emoticon: String,
     privilegeType: Number,
     repeated: Number
   },

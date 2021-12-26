@@ -102,6 +102,18 @@
             </el-form-item>
           </el-col>
         </el-row>
+        <el-row :gutter="20">
+          <el-col :xs="24" :sm="12">
+            <el-form-item :label="$t('stylegen.emoticonBubble')">
+              <el-switch v-model="form.emoticonBubble"></el-switch>
+            </el-form-item>
+          </el-col>
+          <el-col :xs="24" :sm="12">
+            <el-form-item :label="$t('stylegen.emoticonSize')">
+              <el-input v-model.number="form.emoticonSize" type="number" min="0"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-card>
 
       <h3>{{$t('stylegen.time')}}</h3>
@@ -320,6 +332,8 @@ export const DEFAULT_CONFIG = {
   messageFontSize: 18,
   messageLineHeight: 0,
   messageColor: '#000000',
+  emoticonBubble: true,
+  emoticonSize: 64,
 
   showTime: false,
   timeFont: 'Noto Sans SC',
@@ -444,6 +458,8 @@ yt-live-chat-text-message-renderer #chat-badges {
     },
     messageStyle() {
       return `/* Messages */
+${this.form.emoticonBubble ? `yt-live-chat-text-message-renderer #emoticon,
+yt-live-chat-text-message-renderer #emoticon *,` : ''}
 yt-live-chat-text-message-renderer #message,
 yt-live-chat-text-message-renderer #message * {
   ${this.form.messageColor ? `color: ${this.form.messageColor} !important;` : ''}
@@ -452,6 +468,7 @@ yt-live-chat-text-message-renderer #message * {
   line-height: ${this.form.messageLineHeight || this.form.messageFontSize}px !important;
 }
 
+${this.form.emoticonBubble ? 'yt-live-chat-text-message-renderer${typeSelector} #emoticon,' : ''}
 yt-live-chat-text-message-renderer #message {
   display: block !important;
   overflow: visible !important;
@@ -460,6 +477,7 @@ yt-live-chat-text-message-renderer #message {
 }
 
 /* The triangle beside dialog */
+${this.form.emoticonBubble ? 'yt-live-chat-text-message-renderer${typeSelector} #emoticon::before,' : ''}
 yt-live-chat-text-message-renderer #message::before {
   content: "";
   display: inline-block;
@@ -469,6 +487,10 @@ yt-live-chat-text-message-renderer #message::before {
   border: 8px solid transparent;
   border-right: 18px solid;
   transform: rotate(35deg);
+}
+
+yt-live-chat-text-message-renderer #emoticon img {
+  width: ${this.form.emoticonSize}px !important;
 }`
     },
     timeStyle() {
@@ -585,10 +607,12 @@ yt-live-chat-ticker-sponsor-item-renderer * {
         color = '#ffffff'
       }
       let typeSelector = authorType ? `[author-type="${authorType}"]` : ''
-      return `yt-live-chat-text-message-renderer${typeSelector} #message {
+      return `${this.form.emoticonBubble ? `yt-live-chat-text-message-renderer${typeSelector} #emoticon,` : ''}
+yt-live-chat-text-message-renderer${typeSelector} #message {
   background-color: ${color} !important;
 }
 
+${this.form.emoticonBubble ? `yt-live-chat-text-message-renderer${typeSelector} #emoticon::before,` : ''}
 yt-live-chat-text-message-renderer${typeSelector} #message::before {
   border-right-color: ${color};
 }`

@@ -74,6 +74,8 @@ export default {
     memberColor: '舰长颜色',
     showBadges: '显示勋章',
     showColon: '用户名后显示冒号',
+    emoticonBubble: '显示表情气泡',
+    emoticonSize: '表情大小',
 
     messages: '消息',
     color: '颜色',
