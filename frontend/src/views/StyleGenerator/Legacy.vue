@@ -129,9 +129,13 @@
         <el-form-item :label="$t('stylegen.onNewLine')">
           <el-switch v-model="form.messageOnNewLine"></el-switch>
         </el-form-item>
-        <el-form-item :label="$t('stylegen.emoticonSize')">
-          <el-input v-model.number="form.emoticonSize" type="number" min="0"></el-input>
-        </el-form-item>
+        <el-row :gutter="20">
+          <el-col :xs="24" :sm="12">
+            <el-form-item :label="$t('stylegen.emoticonSize')">
+              <el-input v-model.number="form.emoticonSize" type="number" min="0"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-card>
 
       <h3>{{$t('stylegen.time')}}</h3>
@@ -379,7 +383,7 @@ export const DEFAULT_CONFIG = {
   messageLineHeight: 0,
   messageColor: '#ffffff',
   messageOnNewLine: false,
-  emoticonSize: 64,
+  emoticonSize: 18,
 
   showTime: false,
   timeFont: 'Imprima',
@@ -547,8 +551,9 @@ ${!this.form.messageOnNewLine ? '' : `yt-live-chat-text-message-renderer #messag
   overflow: visible !important;
 }`}
 
-yt-live-chat-text-message-renderer #emoticon img {
-  width: ${this.form.emoticonSize}px !important;
+yt-live-chat-text-message-renderer #message img {
+  width: auto !important;
+  height: ${this.form.emoticonSize}px !important;
 }`
     },
     timeStyle() {

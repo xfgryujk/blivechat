@@ -135,7 +135,8 @@ export default class ChatClientRelay {
         isMobileVerified: !!data[9],
         medalLevel: data[10],
         id: data[11],
-        translation: data[12]
+        translation: data[12],
+        emoticon: null // TODO 支持表情
       }
       this.onAddText(data)
       break

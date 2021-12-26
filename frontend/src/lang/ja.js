@@ -74,6 +74,7 @@ export default {
     memberColor: 'メンバーの色',
     showBadges: '勲章を見せる',
     showColon: 'ユーザー名の後にコロンが表示されます',
+    emoticonSize: 'スタンプサイズ',
 
     messages: 'コメント',
     color: '色',

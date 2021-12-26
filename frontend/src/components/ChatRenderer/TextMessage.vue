@@ -6,9 +6,9 @@
     <div id="content" class="style-scope yt-live-chat-text-message-renderer">
       <span id="timestamp" class="style-scope yt-live-chat-text-message-renderer">{{timeText}}</span>
       <yt-live-chat-author-chip class="style-scope yt-live-chat-text-message-renderer">
-        <span id="author-name" dir="auto" class="style-scope yt-live-chat-author-chip" :type="authorTypeText">{{
-          authorName
-          }}<!-- 这里是已验证勋章 -->
+        <span id="author-name" dir="auto" class="style-scope yt-live-chat-author-chip" :type="authorTypeText">
+          <template>{{ authorName }}</template>
+          <!-- 这里是已验证勋章 -->
           <span id="chip-badges" class="style-scope yt-live-chat-author-chip"></span>
         </span>
         <span id="chat-badges" class="style-scope yt-live-chat-author-chip">
@@ -17,15 +17,15 @@
           ></author-badge>
         </span>
       </yt-live-chat-author-chip>
-      <span v-if="!emoticon" id="message" class="style-scope yt-live-chat-text-message-renderer">{{
-        content
-        }}<el-badge :value="repeated" :max="99" v-show="repeated > 1" class="style-scope yt-live-chat-text-message-renderer"
+      <span id="message" class="style-scope yt-live-chat-text-message-renderer">
+        <template v-if="!emoticon">{{ content }}</template>
+        <img v-else class="small-emoji emoji yt-formatted-string style-scope yt-live-chat-text-message-renderer"
+          :src="emoticon" :alt="content" shared-tooltip-text="" id="emoji"
+        >
+        <el-badge :value="repeated" :max="99" v-show="repeated > 1" class="style-scope yt-live-chat-text-message-renderer"
           :style="{'--repeated-mark-color': repeatedMarkColor}"
         ></el-badge>
       </span>
-      <div v-if="emoticon" id="emoticon" class="style-scope yt-live-chat-text-message-renderer">
-        <img-shadow :imgUrl="emoticon" width="64" />
-      </div>
     </div>
   </yt-live-chat-text-message-renderer>
 </template>

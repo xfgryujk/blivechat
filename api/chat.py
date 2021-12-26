@@ -56,6 +56,7 @@ class Room(blivedm.BLiveClient, blivedm.BaseHandler):
             medal_level = 0
             medal_room_id = 0
 
+        # TODO 带表情信息
         message = blivedm.DanmakuMessage(
             timestamp=info[0][4],
             msg_type=info[0][9],

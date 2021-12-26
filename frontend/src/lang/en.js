@@ -74,7 +74,6 @@ export default {
     memberColor: 'Member color',
     showBadges: 'Show badges',
     showColon: 'Show colon after name',
-    emoticonBubble: 'Show emoticon bubbles',
     emoticonSize: 'Emoticon size',
 
     messages: 'Messages',

@@ -13,9 +13,8 @@
               <text-message :key="message.id" v-if="message.type === MESSAGE_TYPE_TEXT"
                 class="style-scope yt-live-chat-item-list-renderer"
                 :avatarUrl="message.avatarUrl" :time="message.time" :authorName="message.authorName"
-                :authorType="message.authorType" :content="getShowContent(message)" :privilegeType="message.privilegeType"
-                :emoticon="message.emoticon"
-                :repeated="message.repeated"
+                :authorType="message.authorType" :content="getShowContent(message)" :emoticon="message.emoticon"
+                :privilegeType="message.privilegeType" :repeated="message.repeated"
               ></text-message>
               <paid-message :key="message.id" v-else-if="message.type === MESSAGE_TYPE_GIFT"
                 class="style-scope yt-live-chat-item-list-renderer"
