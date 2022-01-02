@@ -1,8 +1,6 @@
 # blivechat
 用于OBS的仿YouTube风格的bilibili直播评论栏
 
-最近喜欢看VTuber，想为此写些程序，于是有了这个东西。~~写到一半发现有类似项目了：[bilibili-live-chat](https://github.com/Tsuk1ko/bilibili-live-chat)、[BiliChat](https://github.com/3Shain/BiliChat)~~
-
 ![OBS截图](https://github.com/xfgryujk/blivechat/blob/master/screenshots/obs.png)  
 ![Chrome截图](https://github.com/xfgryujk/blivechat/blob/master/screenshots/chrome.png)  
 ![样式生成器截图](https://github.com/xfgryujk/blivechat/blob/master/screenshots/stylegen.png)  
@@ -31,6 +29,7 @@
 
 * 本地使用时不要关闭blivechat.exe那个黑框，否则不能继续获取头像或弹幕
 * 样式生成器没有列出所有本地字体，但是可以手动输入本地字体
+* 如果需要使用翻译功能，建议看[配置官方翻译接口傻瓜式教程](https://www.bilibili.com/read/cv14663633)
 
 ### 二、公共服务器
 请优先在本地使用，使用公共服务器会有更大的延迟，而且服务器故障时可能发生直播事故
@@ -83,7 +82,7 @@
 ### 参考nginx配置
 `sudo vim /etc/nginx/sites-enabled/blivechat.conf`
 
-```conf
+```nginx
 upstream blivechat {
 	keepalive 8;
 	# blivechat地址
