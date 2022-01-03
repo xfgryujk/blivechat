@@ -1,14 +1,15 @@
 import axios from 'axios'
-import * as pako from 'pako'
 
+import {BrotliDecode} from './brotli_decode'
 import {getUuid4Hex} from '@/utils'
-import * as avatar from './avatar'
+import * as avatar from '../avatar'
 
 const HEADER_SIZE = 16
 
-// const WS_BODY_PROTOCOL_VERSION_INFLATE = 0
-// const WS_BODY_PROTOCOL_VERSION_NORMAL = 1
-const WS_BODY_PROTOCOL_VERSION_DEFLATE = 2
+// const WS_BODY_PROTOCOL_VERSION_NORMAL = 0
+// const WS_BODY_PROTOCOL_VERSION_HEARTBEAT = 1
+// const WS_BODY_PROTOCOL_VERSION_DEFLATE = 2
+const WS_BODY_PROTOCOL_VERSION_BROTLI = 3
 
 // const OP_HANDSHAKE = 0
 // const OP_HANDSHAKE_REPLY = 1
@@ -31,6 +32,9 @@ const OP_AUTH_REPLY = 8
 // B站业务自定义OP
 // const MinBusinessOp = 1000
 // const MaxBusinessOp = 10000
+
+const AUTH_REPLY_CODE_OK = 0
+// const AUTH_REPLY_CODE_TOKEN_ERROR = -101
 
 const HEARTBEAT_INTERVAL = 10 * 1000
 const RECEIVE_TIMEOUT = HEARTBEAT_INTERVAL + 5 * 1000
@@ -105,9 +109,8 @@ export default class ChatClientDirect {
     let authParams = {
       uid: 0,
       roomid: this.roomId,
-      protover: 2,
+      protover: 3,
       platform: 'web',
-      clientver: '1.14.3',
       type: 2
     }
     this.websocket.send(this.makePacket(authParams, OP_AUTH))
@@ -145,7 +148,14 @@ export default class ChatClientDirect {
 
   onReceiveTimeout() {
     window.console.warn('接收消息超时')
-    this.receiveTimeoutTimerId = null
+    this.discardWebsocket()
+  }
+
+  discardWebsocket() {
+    if (this.receiveTimeoutTimerId) {
+      window.clearTimeout(this.receiveTimeoutTimerId)
+      this.receiveTimeoutTimerId = null
+    }
 
     // 直接丢弃阻塞的websocket，不等onclose回调了
     this.websocket.onopen = this.websocket.onclose = this.websocket.onmessage = null
@@ -167,88 +177,124 @@ export default class ChatClientDirect {
     if (this.isDestroying) {
       return
     }
-    window.console.warn(`掉线重连中${++this.retryCount}`)
+    this.retryCount++
+    window.console.warn('掉线重连中', this.retryCount)
     window.setTimeout(this.wsConnect.bind(this), 1000)
   }
 
   onWsMessage (event) {
     this.refreshReceiveTimeoutTimer()
-    this.retryCount = 0
     if (!(event.data instanceof ArrayBuffer)) {
-      window.console.warn('未知的websocket消息：', event.data)
+      window.console.warn('未知的websocket消息类型，data=', event.data)
       return
     }
 
     let data = new Uint8Array(event.data)
-    this.handlerMessage(data)
+    this.parseWsMessage(data)
+
+    // 至少成功处理1条消息
+    this.retryCount = 0
   }
 
-  handlerMessage (data) {
+  parseWsMessage (data) {
     let offset = 0
-    while (offset < data.byteLength) {
-      let dataView = new DataView(data.buffer, offset)
-      let packLen = dataView.getUint32(0)
-      // let rawHeaderSize = dataView.getUint16(4)
-      let ver = dataView.getUint16(6)
-      let operation = dataView.getUint32(8)
-      // let seqId = dataView.getUint32(12)
-      
-      switch (operation) {
-      case OP_HEARTBEAT_REPLY: {
-        // 人气值没用
-        break
+    let dataView = new DataView(data.buffer)
+    let packLen = dataView.getUint32(0)
+    let rawHeaderSize = dataView.getUint16(4)
+    // let ver = dataView.getUint16(6)
+    let operation = dataView.getUint32(8)
+    // let seqId = dataView.getUint32(12)
+
+    switch (operation) {
+    case OP_AUTH_REPLY:
+    case OP_SEND_MSG_REPLY: {
+      // 业务消息，可能有多个包一起发，需要分包
+      while (true) { // eslint-disable-line no-constant-condition
+        let body = new Uint8Array(data.buffer, offset + rawHeaderSize, packLen - rawHeaderSize)
+        this.parseBusinessMessage(dataView, body)
+
+        offset += packLen
+        if (offset >= data.byteLength) {
+          break
+        }
+
+        dataView = new DataView(data.buffer, offset)
+        packLen = dataView.getUint32(0)
+        rawHeaderSize = dataView.getUint16(4)
       }
-      case OP_SEND_MSG_REPLY: {
-        let body = new Uint8Array(data.buffer, offset + HEADER_SIZE, packLen - HEADER_SIZE)
-        if (ver == WS_BODY_PROTOCOL_VERSION_DEFLATE) {
-          body = pako.inflate(body)
-          this.handlerMessage(body)
-        } else {
+      break
+    }
+    case OP_HEARTBEAT_REPLY: {
+      // 服务器心跳包，包含人气值，这里没用
+      break
+    }
+    default: {
+      // 未知消息
+      let body = new Uint8Array(data.buffer, offset + rawHeaderSize, packLen - rawHeaderSize)
+      window.console.warn('未知包类型，operation=', operation, dataView, body)
+      break
+    }
+    }
+  }
+
+  parseBusinessMessage (dataView, body) {
+    let ver = dataView.getUint16(6)
+    let operation = dataView.getUint32(8)
+
+    switch (operation) {
+    case OP_SEND_MSG_REPLY: {
+      // 业务消息
+      if (ver == WS_BODY_PROTOCOL_VERSION_BROTLI) {
+        // 压缩过的先解压
+        body = BrotliDecode(body)
+        this.parseWsMessage(body)
+      } else {
+        // 没压缩过的直接反序列化
+        if (body.length !== 0) {
           try {
             body = JSON.parse(textDecoder.decode(body))
             this.handlerCommand(body)
           } catch (e) {
-            window.console.warn('body:', body)
+            window.console.error('body=', body)
             throw e
           }
         }
-        break
       }
-      case OP_AUTH_REPLY: {
-        this.sendHeartbeat()
-        break
+      break
+    }
+    case OP_AUTH_REPLY: {
+      // 认证响应
+      body = JSON.parse(textDecoder.decode(body))
+      if (body.code !== AUTH_REPLY_CODE_OK) {
+        window.console.error('认证响应错误，body=', body)
+        // 这里应该重新获取token再重连的，但前端没有用到token，所以不重新init了
+        this.discardWebsocket()
+        throw new Error('认证响应错误')
       }
-      default: {
-        let body = new Uint8Array(data.buffer, offset + HEADER_SIZE, packLen - HEADER_SIZE)
-        window.console.warn('未知包类型：operation=', operation, body)
-        break
-      }
-      }
-
-      offset += packLen
+      this.sendHeartbeat()
+      break
+    }
+    default: {
+      // 未知消息
+      window.console.warn('未知包类型，operation=', operation, dataView, body)
+      break
+    }
     }
   }
 
   handlerCommand (command) {
-    if (command instanceof Array) {
-      for (let oneCommand of command) {
-        this.handlerCommand(oneCommand)
-      }
-      return
-    }
-
     let cmd = command.cmd || ''
     let pos = cmd.indexOf(':')
     if (pos != -1) {
       cmd = cmd.substr(0, pos)
     }
-    let handler = COMMAND_HANDLERS[cmd]
-    if (handler) {
-      handler.call(this, command)
+    let callback = CMD_CALLBACK_MAP[cmd]
+    if (callback) {
+      callback.call(this, command)
     }
   }
 
-  async onReceiveDanmaku (command) {
+  async danmuMsgCallback (command) {
     if (!this.onAddText) {
       return
     }
@@ -295,7 +341,7 @@ export default class ChatClientDirect {
     this.onAddText(data)
   }
 
-  onReceiveGift (command) {
+  sendGiftCallback (command) {
     if (!this.onAddGift) {
       return
     }
@@ -316,7 +362,7 @@ export default class ChatClientDirect {
     this.onAddGift(data)
   }
 
-  async onBuyGuard (command) {
+  async guardBuyCallback (command) {
     if (!this.onAddMember) {
       return
     }
@@ -332,7 +378,7 @@ export default class ChatClientDirect {
     this.onAddMember(data)
   }
 
-  onSuperChat (command) {
+  superChatMessageCallback (command) {
     if (!this.onAddSuperChat) {
       return
     }
@@ -350,7 +396,7 @@ export default class ChatClientDirect {
     this.onAddSuperChat(data)
   }
 
-  onSuperChatDelete (command) {
+  superChatMessageDeleteCallback (command) {
     if (!this.onDelSuperChat) {
       return
     }
@@ -363,10 +409,10 @@ export default class ChatClientDirect {
   }
 }
 
-const COMMAND_HANDLERS = {
-  DANMU_MSG: ChatClientDirect.prototype.onReceiveDanmaku,
-  SEND_GIFT: ChatClientDirect.prototype.onReceiveGift,
-  GUARD_BUY: ChatClientDirect.prototype.onBuyGuard,
-  SUPER_CHAT_MESSAGE: ChatClientDirect.prototype.onSuperChat,
-  SUPER_CHAT_MESSAGE_DELETE: ChatClientDirect.prototype.onSuperChatDelete
+const CMD_CALLBACK_MAP = {
+  DANMU_MSG: ChatClientDirect.prototype.danmuMsgCallback,
+  SEND_GIFT: ChatClientDirect.prototype.sendGiftCallback,
+  GUARD_BUY: ChatClientDirect.prototype.guardBuyCallback,
+  SUPER_CHAT_MESSAGE: ChatClientDirect.prototype.superChatMessageCallback,
+  SUPER_CHAT_MESSAGE_DELETE: ChatClientDirect.prototype.superChatMessageDeleteCallback
 }
