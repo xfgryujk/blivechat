@@ -312,7 +312,9 @@ yt-live-chat-paid-message-renderer[allow-animations] #content.yt-live-chat-paid-
 }
 
 #content.yt-live-chat-paid-message-renderer img.yt-live-chat-paid-message-renderer {
-  width: var(--yt-live-chat-emoji-size);
+  /* B站表情有不是正方形的 */
+  /* width: var(--yt-live-chat-emoji-size); */
+  width: auto;
   height: var(--yt-live-chat-emoji-size);
   margin: -1px 2px 1px 2px;
   vertical-align: middle;
