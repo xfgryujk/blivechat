@@ -1,7 +1,7 @@
 <template>
-  <el-container class="app-wrapper" :class="{mobile: isMobile}">
+  <el-container class="app-wrapper" :class="{ mobile: isMobile }">
     <div v-show="isMobile && !hideSidebar" class="drawer-bg" @click="hideSidebar = true"></div>
-    <el-aside width="230px" class="sidebar-container" :class="{'hide-sidebar': hideSidebar}">
+    <el-aside width="230px" class="sidebar-container" :class="{ 'hide-sidebar': hideSidebar }">
       <div class="logo-container">
         <router-link to="/">
           <img src="@/assets/img/logo.png" class="sidebar-logo">

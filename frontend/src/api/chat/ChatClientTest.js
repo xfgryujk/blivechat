@@ -1,4 +1,4 @@
-import {getUuid4Hex} from '@/utils'
+import { getUuid4Hex } from '@/utils'
 import * as constants from '@/components/ChatRenderer/constants'
 import * as avatar from './avatar'
 
@@ -19,7 +19,7 @@ const CONTENTS = [
   '有一说一，这件事大家懂的都懂，不懂的，说了你也不明白，不如不说', '让我看看', '我柜子动了，我不玩了'
 ]
 
- // TODO 改成对象？
+// TODO 改成对象？
 const EMOTICONS = [
   '/static/img/emoticons/233.png',
   '/static/img/emoticons/miaoa.png',
@@ -27,13 +27,13 @@ const EMOTICONS = [
 ]
 
 const AUTHOR_TYPES = [
-  {weight: 10, value: constants.AUTHRO_TYPE_NORMAL},
-  {weight: 5, value: constants.AUTHRO_TYPE_MEMBER},
-  {weight: 2, value: constants.AUTHRO_TYPE_ADMIN},
-  {weight: 1, value: constants.AUTHRO_TYPE_OWNER}
+  { weight: 10, value: constants.AUTHRO_TYPE_NORMAL },
+  { weight: 5, value: constants.AUTHRO_TYPE_MEMBER },
+  { weight: 2, value: constants.AUTHRO_TYPE_ADMIN },
+  { weight: 1, value: constants.AUTHRO_TYPE_OWNER }
 ]
 
-function randGuardInfo () {
+function randGuardInfo() {
   let authorType = randomChoose(AUTHOR_TYPES)
   let privilegeType
   if (authorType === constants.AUTHRO_TYPE_MEMBER || authorType === constants.AUTHRO_TYPE_ADMIN) {
@@ -41,16 +41,16 @@ function randGuardInfo () {
   } else {
     privilegeType = 0
   }
-  return {authorType, privilegeType}
+  return { authorType, privilegeType }
 }
 
 const GIFT_INFO_LIST = [
-  {giftName: 'B坷垃', totalCoin: 9900},
-  {giftName: '礼花', totalCoin: 28000},
-  {giftName: '花式夸夸', totalCoin: 39000},
-  {giftName: '天空之翼', totalCoin: 100000},
-  {giftName: '摩天大楼', totalCoin: 450000},
-  {giftName: '小电视飞船', totalCoin: 1245000}
+  { giftName: 'B坷垃', totalCoin: 9900 },
+  { giftName: '礼花', totalCoin: 28000 },
+  { giftName: '花式夸夸', totalCoin: 39000 },
+  { giftName: '天空之翼', totalCoin: 100000 },
+  { giftName: '摩天大楼', totalCoin: 450000 },
+  { giftName: '小电视飞船', totalCoin: 1245000 }
 ]
 
 const SC_PRICES = [
@@ -159,7 +159,7 @@ const MESSAGE_GENERATORS = [
   }
 ]
 
-function randomChoose (nodes) {
+function randomChoose(nodes) {
   if (nodes.length === 0) {
     return null
   }
@@ -187,12 +187,12 @@ function randomChoose (nodes) {
   return null
 }
 
-function randInt (min, max) {
-  return Math.floor(min + (max - min + 1) * Math.random())
+function randInt(min, max) {
+  return Math.floor(min + ((max - min + 1) * Math.random()))
 }
 
 export default class ChatClientTest {
-  constructor () {
+  constructor() {
     this.minSleepTime = 800
     this.maxSleepTime = 1200
 
@@ -206,25 +206,25 @@ export default class ChatClientTest {
     this.timerId = null
   }
 
-  start () {
+  start() {
     this.refreshTimer()
   }
 
-  stop () {
+  stop() {
     if (this.timerId) {
       window.clearTimeout(this.timerId)
       this.timerId = null
     }
   }
 
-  refreshTimer () {
+  refreshTimer() {
     this.timerId = window.setTimeout(this.onTimeout.bind(this), randInt(this.minSleepTime, this.maxSleepTime))
   }
 
-  onTimeout () {
+  onTimeout() {
     this.refreshTimer()
 
-    let {type, message} = randomChoose(MESSAGE_GENERATORS)()
+    let { type, message } = randomChoose(MESSAGE_GENERATORS)()
     switch (type) {
     case constants.MESSAGE_TYPE_TEXT:
       this.onAddText(message)

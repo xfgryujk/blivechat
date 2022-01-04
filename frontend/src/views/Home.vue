@@ -142,7 +142,7 @@ import _ from 'lodash'
 import axios from 'axios'
 import download from 'downloadjs'
 
-import {mergeConfig} from '@/utils'
+import { mergeConfig } from '@/utils'
 import * as chatConfig from '@/api/chatConfig'
 
 export default {
@@ -189,7 +189,7 @@ export default {
       try {
         this.serverConfig = (await axios.get('/api/server_info')).data.config
       } catch (e) {
-        this.$message.error('Failed to fetch server information: ' + e)
+        this.$message.error(`Failed to fetch server information: ${e}`)
       }
     },
     enterRoom() {
@@ -202,13 +202,13 @@ export default {
       if (isTestRoom && this.form.roomId === '') {
         return ''
       }
-      let query = {...this.form}
+      let query = { ...this.form }
       delete query.roomId
       let resolved
       if (isTestRoom) {
-        resolved = this.$router.resolve({name: 'test_room', query})
+        resolved = this.$router.resolve({ name: 'test_room', query })
       } else {
-        resolved = this.$router.resolve({name: 'room', params: {roomId: this.form.roomId}, query})
+        resolved = this.$router.resolve({ name: 'room', params: { roomId: this.form.roomId }, query })
       }
       return `${window.location.protocol}//${window.location.host}${resolved.href}`
     },
@@ -235,7 +235,7 @@ export default {
             return
           }
           cfg = mergeConfig(cfg, chatConfig.DEFAULT_CONFIG)
-          this.form = {roomId: this.form.roomId, ...cfg}
+          this.form = { roomId: this.form.roomId, ...cfg }
         }
         reader.readAsText(input.files[0])
       }

@@ -2,21 +2,21 @@ export const DICT_PINYIN = 'pinyin'
 export const DICT_KANA = 'kana'
 
 export class PronunciationConverter {
-  constructor () {
+  constructor() {
     this.pronunciationMap = new Map()
   }
 
-  async loadDict (dictName) {
+  async loadDict(dictName) {
     let promise
     switch (dictName) {
-      case DICT_PINYIN:
-        promise = import('./dictPinyin')
-        break
-      case DICT_KANA:
-        promise = import('./dictKana')
-        break
-      default:
-        return
+    case DICT_PINYIN:
+      promise = import('./dictPinyin')
+      break
+    case DICT_KANA:
+      promise = import('./dictKana')
+      break
+    default:
+      return
     }
 
     let dictTxt = (await promise).default
@@ -30,7 +30,7 @@ export class PronunciationConverter {
     this.pronunciationMap = pronunciationMap
   }
 
-  getPronunciation (text) {
+  getPronunciation(text) {
     let res = []
     let lastHasPronunciation = null
     for (let char of text) {

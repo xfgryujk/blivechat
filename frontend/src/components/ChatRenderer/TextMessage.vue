@@ -4,7 +4,7 @@
       :imgUrl="avatarUrl"
     ></img-shadow>
     <div id="content" class="style-scope yt-live-chat-text-message-renderer">
-      <span id="timestamp" class="style-scope yt-live-chat-text-message-renderer">{{timeText}}</span>
+      <span id="timestamp" class="style-scope yt-live-chat-text-message-renderer">{{ timeText }}</span>
       <yt-live-chat-author-chip class="style-scope yt-live-chat-text-message-renderer">
         <span id="author-name" dir="auto" class="style-scope yt-live-chat-author-chip" :type="authorTypeText">
           <template>{{ authorName }}</template>
@@ -23,7 +23,7 @@
           :src="emoticon" :alt="content" shared-tooltip-text="" id="emoji"
         >
         <el-badge :value="repeated" :max="99" v-show="repeated > 1" class="style-scope yt-live-chat-text-message-renderer"
-          :style="{'--repeated-mark-color': repeatedMarkColor}"
+          :style="{ '--repeated-mark-color': repeatedMarkColor }"
         ></el-badge>
       </span>
     </div>
@@ -73,7 +73,7 @@ export default {
         color = [0, 0, 0]
         let t = (this.repeated - 2) / (10 - 2)
         for (let i = 0; i < 3; i++) {
-          color[i] = REPEATED_MARK_COLOR_START[i] + (REPEATED_MARK_COLOR_END[i] - REPEATED_MARK_COLOR_START[i]) * t
+          color[i] = REPEATED_MARK_COLOR_START[i] + ((REPEATED_MARK_COLOR_END[i] - REPEATED_MARK_COLOR_START[i]) * t)
         }
       }
       return `hsl(${color[0]}, ${color[1]}%, ${color[2]}%)`

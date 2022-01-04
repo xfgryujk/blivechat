@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-import {BrotliDecode} from './brotli_decode'
-import {getUuid4Hex} from '@/utils'
+import { BrotliDecode } from './brotli_decode'
+import { getUuid4Hex } from '@/utils'
 import * as avatar from '../avatar'
 
 const HEADER_SIZE = 16
@@ -37,18 +37,18 @@ const AUTH_REPLY_CODE_OK = 0
 // const AUTH_REPLY_CODE_TOKEN_ERROR = -101
 
 const HEARTBEAT_INTERVAL = 10 * 1000
-const RECEIVE_TIMEOUT = HEARTBEAT_INTERVAL + 5 * 1000
+const RECEIVE_TIMEOUT = HEARTBEAT_INTERVAL + (5 * 1000)
 
 let textEncoder = new TextEncoder()
 let textDecoder = new TextDecoder()
 
 export default class ChatClientDirect {
-  constructor (roomId) {
+  constructor(roomId) {
     // 调用initRoom后初始化，如果失败，使用这里的默认值
     this.roomId = roomId
     this.roomOwnerUid = 0
     this.hostServerList = [
-      {host: "broadcastlv.chat.bilibili.com", port: 2243, wss_port: 443, ws_port: 2244}
+      { host: "broadcastlv.chat.bilibili.com", port: 2243, wss_port: 443, ws_port: 2244 }
     ]
 
     this.onAddText = null
@@ -65,24 +65,24 @@ export default class ChatClientDirect {
     this.receiveTimeoutTimerId = null
   }
 
-  async start () {
+  async start() {
     await this.initRoom()
     this.wsConnect()
   }
 
-  stop () {
+  stop() {
     this.isDestroying = true
     if (this.websocket) {
       this.websocket.close()
     }
   }
 
-  async initRoom () {
+  async initRoom() {
     let res
     try {
-      res = (await axios.get('/api/room_info', {params: {
+      res = (await axios.get('/api/room_info', { params: {
         roomId: this.roomId
-      }})).data
+      } })).data
     } catch {
       return
     }
@@ -93,7 +93,7 @@ export default class ChatClientDirect {
     }
   }
 
-  makePacket (data, operation) {
+  makePacket(data, operation) {
     let body = textEncoder.encode(JSON.stringify(data))
     let header = new ArrayBuffer(HEADER_SIZE)
     let headerView = new DataView(header)
@@ -105,7 +105,7 @@ export default class ChatClientDirect {
     return new Blob([header, body])
   }
 
-  sendAuth () {
+  sendAuth() {
     let authParams = {
       uid: 0,
       roomid: this.roomId,
@@ -116,7 +116,7 @@ export default class ChatClientDirect {
     this.websocket.send(this.makePacket(authParams, OP_AUTH))
   }
 
-  wsConnect () {
+  wsConnect() {
     if (this.isDestroying) {
       return
     }
@@ -129,13 +129,13 @@ export default class ChatClientDirect {
     this.websocket.onmessage = this.onWsMessage.bind(this)
   }
 
-  onWsOpen () {
+  onWsOpen() {
     this.sendAuth()
     this.heartbeatTimerId = window.setInterval(this.sendHeartbeat.bind(this), HEARTBEAT_INTERVAL)
     this.refreshReceiveTimeoutTimer()
   }
 
-  sendHeartbeat () {
+  sendHeartbeat() {
     this.websocket.send(this.makePacket({}, OP_HEARTBEAT))
   }
 
@@ -147,7 +147,7 @@ export default class ChatClientDirect {
   }
 
   onReceiveTimeout() {
-    window.console.warn('接收消息超时')
+    console.warn('接收消息超时')
     this.discardWebsocket()
   }
 
@@ -163,7 +163,7 @@ export default class ChatClientDirect {
     this.onWsClose()
   }
 
-  onWsClose () {
+  onWsClose() {
     this.websocket = null
     if (this.heartbeatTimerId) {
       window.clearInterval(this.heartbeatTimerId)
@@ -178,14 +178,14 @@ export default class ChatClientDirect {
       return
     }
     this.retryCount++
-    window.console.warn('掉线重连中', this.retryCount)
+    console.warn('掉线重连中', this.retryCount)
     window.setTimeout(this.wsConnect.bind(this), 1000)
   }
 
-  onWsMessage (event) {
+  onWsMessage(event) {
     this.refreshReceiveTimeoutTimer()
     if (!(event.data instanceof ArrayBuffer)) {
-      window.console.warn('未知的websocket消息类型，data=', event.data)
+      console.warn('未知的websocket消息类型，data=', event.data)
       return
     }
 
@@ -196,7 +196,7 @@ export default class ChatClientDirect {
     this.retryCount = 0
   }
 
-  parseWsMessage (data) {
+  parseWsMessage(data) {
     let offset = 0
     let dataView = new DataView(data.buffer)
     let packLen = dataView.getUint32(0)
@@ -231,13 +231,13 @@ export default class ChatClientDirect {
     default: {
       // 未知消息
       let body = new Uint8Array(data.buffer, offset + rawHeaderSize, packLen - rawHeaderSize)
-      window.console.warn('未知包类型，operation=', operation, dataView, body)
+      console.warn('未知包类型，operation=', operation, dataView, body)
       break
     }
     }
   }
 
-  parseBusinessMessage (dataView, body) {
+  parseBusinessMessage(dataView, body) {
     let ver = dataView.getUint16(6)
     let operation = dataView.getUint32(8)
 
@@ -255,7 +255,7 @@ export default class ChatClientDirect {
             body = JSON.parse(textDecoder.decode(body))
             this.handlerCommand(body)
           } catch (e) {
-            window.console.error('body=', body)
+            console.error('body=', body)
             throw e
           }
         }
@@ -266,7 +266,7 @@ export default class ChatClientDirect {
       // 认证响应
       body = JSON.parse(textDecoder.decode(body))
       if (body.code !== AUTH_REPLY_CODE_OK) {
-        window.console.error('认证响应错误，body=', body)
+        console.error('认证响应错误，body=', body)
         // 这里应该重新获取token再重连的，但前端没有用到token，所以不重新init了
         this.discardWebsocket()
         throw new Error('认证响应错误')
@@ -276,13 +276,13 @@ export default class ChatClientDirect {
     }
     default: {
       // 未知消息
-      window.console.warn('未知包类型，operation=', operation, dataView, body)
+      console.warn('未知包类型，operation=', operation, dataView, body)
       break
     }
     }
   }
 
-  handlerCommand (command) {
+  handlerCommand(command) {
     let cmd = command.cmd || ''
     let pos = cmd.indexOf(':')
     if (pos != -1) {
@@ -294,7 +294,7 @@ export default class ChatClientDirect {
     }
   }
 
-  async danmuMsgCallback (command) {
+  async danmuMsgCallback(command) {
     if (!this.onAddText) {
       return
     }
@@ -329,10 +329,10 @@ export default class ChatClientDirect {
       authorType: authorType,
       content: info[1],
       privilegeType: privilegeType,
-      isGiftDanmaku: !!info[0][9],
+      isGiftDanmaku: Boolean(info[0][9]),
       authorLevel: info[4][0],
       isNewbie: info[2][5] < 10000,
-      isMobileVerified: !!info[2][6],
+      isMobileVerified: Boolean(info[2][6]),
       medalLevel: roomId === this.roomId ? medalLevel : 0,
       id: getUuid4Hex(),
       translation: '',
@@ -341,7 +341,7 @@ export default class ChatClientDirect {
     this.onAddText(data)
   }
 
-  sendGiftCallback (command) {
+  sendGiftCallback(command) {
     if (!this.onAddGift) {
       return
     }
@@ -362,7 +362,7 @@ export default class ChatClientDirect {
     this.onAddGift(data)
   }
 
-  async guardBuyCallback (command) {
+  async guardBuyCallback(command) {
     if (!this.onAddMember) {
       return
     }
@@ -378,7 +378,7 @@ export default class ChatClientDirect {
     this.onAddMember(data)
   }
 
-  superChatMessageCallback (command) {
+  superChatMessageCallback(command) {
     if (!this.onAddSuperChat) {
       return
     }
@@ -396,7 +396,7 @@ export default class ChatClientDirect {
     this.onAddSuperChat(data)
   }
 
-  superChatMessageDeleteCallback (command) {
+  superChatMessageDeleteCallback(command) {
     if (!this.onDelSuperChat) {
       return
     }
@@ -405,7 +405,7 @@ export default class ChatClientDirect {
     for (let id of command.data.ids) {
       ids.push(id.toString())
     }
-    this.onDelSuperChat({ids})
+    this.onDelSuperChat({ ids })
   }
 }
 

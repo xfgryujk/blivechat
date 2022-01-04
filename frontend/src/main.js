@@ -71,12 +71,12 @@ const router = new VueRouter({
       path: '/',
       component: Layout,
       children: [
-        {path: '', component: Home},
-        {path: 'stylegen', name: 'stylegen', component: StyleGenerator},
-        {path: 'help', name: 'help', component: Help}
+        { path: '', component: Home },
+        { path: 'stylegen', name: 'stylegen', component: StyleGenerator },
+        { path: 'help', name: 'help', component: Help }
       ]
     },
-    {path: '/room/test', name: 'test_room', component: Room, props: route => ({strConfig: route.query})},
+    { path: '/room/test', name: 'test_room', component: Room, props: route => ({ strConfig: route.query }) },
     {
       path: '/room/:roomId',
       name: 'room',
@@ -86,10 +86,10 @@ const router = new VueRouter({
         if (isNaN(roomId)) {
           roomId = null
         }
-        return {roomId, strConfig: route.query}
+        return { roomId, strConfig: route.query }
       }
     },
-    {path: '*', component: NotFound}
+    { path: '*', component: NotFound }
   ]
 })
 

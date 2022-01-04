@@ -1,4 +1,4 @@
-import {mergeConfig} from '@/utils'
+import { mergeConfig } from '@/utils'
 
 export const DEFAULT_CONFIG = {
   minGiftPrice: 7, // $1
@@ -22,15 +22,15 @@ export const DEFAULT_CONFIG = {
   giftUsernamePronunciation: ''
 }
 
-export function setLocalConfig (config) {
+export function setLocalConfig(config) {
   config = mergeConfig(config, DEFAULT_CONFIG)
   window.localStorage.config = JSON.stringify(config)
 }
 
-export function getLocalConfig () {
+export function getLocalConfig() {
   try {
     return mergeConfig(JSON.parse(window.localStorage.config), DEFAULT_CONFIG)
   } catch {
-    return {...DEFAULT_CONFIG}
+    return { ...DEFAULT_CONFIG }
   }
 }

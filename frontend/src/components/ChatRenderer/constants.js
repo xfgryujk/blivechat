@@ -100,7 +100,7 @@ export const PRICE_CONFIGS = [
     pinTime: 0
   },
   { // $1蓝
-    price: 1 * EXCHANGE_RATE,
+    price: EXCHANGE_RATE,
     colors: {
       contentBg: 'rgba(30,136,229,1)',
       headerBg: 'rgba(21,101,192,1)',
@@ -113,7 +113,7 @@ export const PRICE_CONFIGS = [
   }
 ]
 
-export function getPriceConfig (price) {
+export function getPriceConfig(price) {
   for (const config of PRICE_CONFIGS) {
     if (price >= config.price) {
       return config
@@ -122,21 +122,21 @@ export function getPriceConfig (price) {
   return PRICE_CONFIGS[PRICE_CONFIGS.length - 1]
 }
 
-export function getShowContent (message) {
+export function getShowContent(message) {
   if (message.translation) {
     return `${message.content}（${message.translation}）`
   }
   return message.content
 }
 
-export function getGiftShowContent (message, showGiftName) {
+export function getGiftShowContent(message, showGiftName) {
   if (!showGiftName) {
     return ''
   }
   return `Sent ${message.giftName}x${message.num}`
 }
 
-export function getShowAuthorName (message) {
+export function getShowAuthorName(message) {
   if (message.authorNamePronunciation && message.authorNamePronunciation !== message.authorName) {
     return `${message.authorName}(${message.authorNamePronunciation})`
   }

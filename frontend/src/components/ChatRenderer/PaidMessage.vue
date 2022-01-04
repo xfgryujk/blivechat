@@ -16,16 +16,14 @@
         ></img-shadow>
         <div id="header-content" class="style-scope yt-live-chat-paid-message-renderer">
           <div id="header-content-primary-column" class="style-scope yt-live-chat-paid-message-renderer">
-            <div id="author-name" class="style-scope yt-live-chat-paid-message-renderer">{{authorName}}</div>
-            <div id="purchase-amount" class="style-scope yt-live-chat-paid-message-renderer">{{priceText}}</div>
+            <div id="author-name" class="style-scope yt-live-chat-paid-message-renderer">{{ authorName }}</div>
+            <div id="purchase-amount" class="style-scope yt-live-chat-paid-message-renderer">{{ priceText }}</div>
           </div>
-          <span id="timestamp" class="style-scope yt-live-chat-paid-message-renderer">{{timeText}}</span>
+          <span id="timestamp" class="style-scope yt-live-chat-paid-message-renderer">{{ timeText }}</span>
         </div>
       </div>
       <div id="content" class="style-scope yt-live-chat-paid-message-renderer">
-        <div id="message" dir="auto" class="style-scope yt-live-chat-paid-message-renderer">{{
-          content
-        }}</div>
+        <div id="message" dir="auto" class="style-scope yt-live-chat-paid-message-renderer">{{ content }}</div>
       </div>
     </div>
   </yt-live-chat-paid-message-renderer>
@@ -53,7 +51,7 @@ export default {
       return constants.getPriceConfig(this.price).colors
     },
     priceText() {
-      return 'CN¥' + utils.formatCurrency(this.price)
+      return `CN¥${utils.formatCurrency(this.price)}`
     },
     timeText() {
       return utils.getTimeTextHourMin(this.time)

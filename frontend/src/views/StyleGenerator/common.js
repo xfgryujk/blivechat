@@ -53,7 +53,7 @@ yt-live-chat-membership-item-renderer a {
   text-decoration: none !important;
 }`
 
-export function getImportStyle (allFonts) {
+export function getImportStyle(allFonts) {
   let fontsNeedToImport = new Set()
   for (let font of allFonts) {
     if (fonts.NETWORK_FONTS.indexOf(font) !== -1) {
@@ -67,7 +67,7 @@ export function getImportStyle (allFonts) {
   return res.join('\n')
 }
 
-export function getAvatarStyle (config) {
+export function getAvatarStyle(config) {
   return `/* Avatars */
 yt-live-chat-text-message-renderer #author-photo,
 yt-live-chat-text-message-renderer #author-photo img,
@@ -83,7 +83,7 @@ yt-live-chat-membership-item-renderer #author-photo img {
 }`
 }
 
-export function getTimeStyle (config) {
+export function getTimeStyle(config) {
   return `/* Timestamps */
 yt-live-chat-text-message-renderer #timestamp {
   display: ${config.showTime ? 'inline' : 'none'} !important;
@@ -94,7 +94,7 @@ yt-live-chat-text-message-renderer #timestamp {
 }`
 }
 
-export function getAnimationStyle (config) {
+export function getAnimationStyle(config) {
   if (!config.animateIn && !config.animateOut) {
     return ''
   }
@@ -113,13 +113,13 @@ export function getAnimationStyle (config) {
       : ` transform: translateX(${config.reverseSlide ? 16 : -16}px);`
     } }`)
     curTime += config.fadeInTime
-    keyframes.push(`  ${(curTime / totalTime) * 100}% { opacity: 1; transform: none; }`)
+    keyframes.push(`  ${curTime / totalTime * 100}% { opacity: 1; transform: none; }`)
   }
   if (config.animateOut) {
     curTime += config.animateOutWaitTime * 1000
-    keyframes.push(`  ${(curTime / totalTime) * 100}% { opacity: 1; transform: none; }`)
+    keyframes.push(`  ${curTime / totalTime * 100}% { opacity: 1; transform: none; }`)
     curTime += config.fadeOutTime
-    keyframes.push(`  ${(curTime / totalTime) * 100}% { opacity: 0;${!config.slide ? ''
+    keyframes.push(`  ${curTime / totalTime * 100}% { opacity: 0;${!config.slide ? ''
       : ` transform: translateX(${config.reverseSlide ? -16 : 16}px);`
     } }`)
   }
@@ -136,7 +136,7 @@ yt-live-chat-paid-message-renderer {
 }`
 }
 
-export function cssEscapeStr (str) {
+export function cssEscapeStr(str) {
   let res = []
   for (let char of str) {
     res.push(cssEscapeChar(char))
@@ -144,7 +144,7 @@ export function cssEscapeStr (str) {
   return res.join('')
 }
 
-function cssEscapeChar (char) {
+function cssEscapeChar(char) {
   if (!needEscapeChar(char)) {
     return char
   }
@@ -153,7 +153,7 @@ function cssEscapeChar (char) {
   return `\\${hexCode} `
 }
 
-function needEscapeChar (char) {
+function needEscapeChar(char) {
   let code = char.codePointAt(0)
   if (0x20 <= code && code <= 0x7E) {
     return char === '"' || char === '\\'

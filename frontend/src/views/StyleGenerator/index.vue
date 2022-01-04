@@ -11,21 +11,21 @@
       </el-tabs>
 
       <el-form label-width="150px" size="mini">
-        <h3>{{$t('stylegen.result')}}</h3>
+        <h3>{{ $t('stylegen.result') }}</h3>
         <el-card shadow="never">
           <el-form-item label="CSS">
             <el-input v-model="inputResult" ref="result" type="textarea" :rows="20"></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="copyResult">{{$t('stylegen.copy')}}</el-button>
-            <el-button @click="resetConfig">{{$t('stylegen.resetConfig')}}</el-button>
+            <el-button type="primary" @click="copyResult">{{ $t('stylegen.copy') }}</el-button>
+            <el-button @click="resetConfig">{{ $t('stylegen.resetConfig') }}</el-button>
           </el-form-item>
         </el-card>
       </el-form>
     </el-col>
 
     <el-col :sm="24" :md="8">
-      <div :style="{position: 'relative', top: `${exampleTop}px`}">
+      <div :style="{ position: 'relative', top: `${exampleTop}px` }">
         <el-form inline style="line-height: 40px">
           <el-form-item :label="$t('stylegen.playAnimation')" style="margin: 0">
             <el-switch v-model="playAnimation" @change="onPlayAnimationChange"></el-switch>
@@ -34,7 +34,7 @@
             <el-switch v-model="exampleBgLight" :active-text="$t('stylegen.light')" :inactive-text="$t('stylegen.dark')"></el-switch>
           </el-form-item>
         </el-form>
-        <div id="example-container" :class="{light: exampleBgLight}">
+        <div id="example-container" :class="{ light: exampleBgLight }">
           <div id="fakebody">
             <room ref="room"></room>
           </div>

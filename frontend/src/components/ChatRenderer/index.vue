@@ -7,7 +7,7 @@
       <div ref="scroller" id="item-scroller" class="style-scope yt-live-chat-item-list-renderer animated" @scroll="onScroll">
         <div ref="itemOffset" id="item-offset" class="style-scope yt-live-chat-item-list-renderer" style="height: 0px;">
           <div ref="items" id="items" class="style-scope yt-live-chat-item-list-renderer" style="overflow: hidden"
-            :style="{transform: `translateY(${Math.floor(scrollPixelsRemaining)}px)`}"
+            :style="{ transform: `translateY(${Math.floor(scrollPixelsRemaining)}px)` }"
           >
             <template v-for="message in messages">
               <text-message :key="message.id" v-if="message.type === MESSAGE_TYPE_TEXT"
@@ -114,7 +114,7 @@ export default {
   },
   computed: {
     canScrollToBottom() {
-      return this.atBottom/* || this.allowScroll*/
+      return this.atBottom/* || this.allowScroll */
     }
   },
   watch: {
@@ -288,7 +288,7 @@ export default {
         this.emitSmoothedMessageTimerId = window.setTimeout(this.emitSmoothedMessages)
       }
     },
-    messageNeedSmooth({type}) {
+    messageNeedSmooth({ type }) {
       return NEED_SMOOTH_MESSAGE_TYPES.indexOf(type) !== -1
     },
     emitSmoothedMessages() {
@@ -355,18 +355,18 @@ export default {
 
       for (let message of messageGroup) {
         switch (message.type) {
-          case constants.MESSAGE_TYPE_TEXT:
-          case constants.MESSAGE_TYPE_GIFT:
-          case constants.MESSAGE_TYPE_MEMBER:
-          case constants.MESSAGE_TYPE_SUPER_CHAT:
-            this.handleAddMessage(message)
-            break
-          case constants.MESSAGE_TYPE_DEL:
-            this.handleDelMessage(message)
-            break
-          case constants.MESSAGE_TYPE_UPDATE:
-            this.handleUpdateMessage(message)
-            break
+        case constants.MESSAGE_TYPE_TEXT:
+        case constants.MESSAGE_TYPE_GIFT:
+        case constants.MESSAGE_TYPE_MEMBER:
+        case constants.MESSAGE_TYPE_SUPER_CHAT:
+          this.handleAddMessage(message)
+          break
+        case constants.MESSAGE_TYPE_DEL:
+          this.handleDelMessage(message)
+          break
+        case constants.MESSAGE_TYPE_UPDATE:
+          this.handleUpdateMessage(message)
+          break
         }
       }
 
@@ -389,7 +389,7 @@ export default {
         }
       }
     },
-    handleDelMessage({id}) {
+    handleDelMessage({ id }) {
       for (let arr of [this.messages, this.paidMessages, this.messagesBuffer]) {
         for (let i = 0; i < arr.length; i++) {
           if (arr[i].id === id) {
@@ -400,7 +400,7 @@ export default {
         }
       }
     },
-    handleUpdateMessage({id, newValuesObj}) {
+    handleUpdateMessage({ id, newValuesObj }) {
       // 遍历滚动的消息
       this.forEachRecentMessage(999999999, message => {
         if (message.id !== id) {
@@ -468,7 +468,7 @@ export default {
         this.lastSmoothChatMessageAddMs = performance.now()
       }
       let interval = performance.now() - this.lastSmoothChatMessageAddMs
-      this.chatRateMs = 0.9 * this.chatRateMs + 0.1 * interval
+      this.chatRateMs = (0.9 * this.chatRateMs) + (0.1 * interval)
       if (this.isSmoothed) {
         if (this.chatRateMs < 400) {
           this.isSmoothed = false
