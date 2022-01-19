@@ -156,6 +156,9 @@ class Room(blivedm.BLiveClient, blivedm.BaseHandler):
                 room_manager.del_client(self.room_id, client)
 
     async def _on_danmaku(self, client: blivedm.BLiveClient, message: blivedm.DanmakuMessage):
+        asyncio.ensure_future(self.__on_danmaku(message))
+
+    async def __on_danmaku(self, message: blivedm.DanmakuMessage):
         if message.uid == self.room_owner_uid:
             author_type = 3  # 主播
         elif message.admin:
@@ -206,7 +209,7 @@ class Room(blivedm.BLiveClient, blivedm.BaseHandler):
         ))
 
         if need_translate:
-            asyncio.ensure_future(self._translate_and_response(message.msg, id_))
+            await self._translate_and_response(message.msg, id_)
 
     async def _on_gift(self, client: blivedm.BLiveClient, message: blivedm.GiftMessage):
         avatar_url = models.avatar.process_avatar_url(message.face)
