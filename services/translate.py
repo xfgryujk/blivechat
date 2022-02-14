@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import asyncio
 import base64
 import datetime
@@ -12,11 +11,12 @@ import random
 import re
 from typing import *
 
-import Crypto.Cipher.AES as cry_aes
-import Crypto.Util.Padding as cry_pad
+import Crypto.Cipher.AES as cry_aes  # noqa
+import Crypto.Util.Padding as cry_pad  # noqa
 import aiohttp
 
 import config
+import utils.request
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,6 @@ NO_TRANSLATE_TEXTS = {
 }
 
 _main_event_loop = asyncio.get_event_loop()
-_http_session: Optional[aiohttp.ClientSession] = None
 _translate_providers: List['TranslateProvider'] = []
 # text -> res
 _translate_cache: Dict[str, str] = {}
@@ -39,9 +38,6 @@ def init():
 
 
 async def _do_init():
-    global _http_session
-    _http_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
-
     cfg = config.get_config()
     if not cfg.enable_translate:
         return
@@ -142,7 +138,7 @@ def _on_translate_done(key, future):
     # 缓存
     try:
         res = future.result()
-    except Exception:
+    except Exception:  # noqa
         return
     if res is None:
         return
@@ -199,7 +195,7 @@ class FlowControlTranslateProvider(TranslateProvider):
                 asyncio.ensure_future(self._translate_coroutine(text, future))
                 # 频率限制
                 await asyncio.sleep(self._query_interval)
-            except Exception:
+            except Exception:  # noqa
                 logger.exception('FlowControlTranslateProvider error:')
 
     async def _translate_coroutine(self, text, future):
@@ -238,7 +234,7 @@ class TencentTranslateFree(FlowControlTranslateProvider):
 
     async def _do_init(self):
         try:
-            async with _http_session.get('https://fanyi.qq.com/') as r:
+            async with utils.request.http_session.get('https://fanyi.qq.com/') as r:
                 if r.status != 200:
                     logger.warning('TencentTranslateFree init request failed: status=%d %s', r.status, r.reason)
                     return False
@@ -280,7 +276,7 @@ class TencentTranslateFree(FlowControlTranslateProvider):
 
         # 获取token
         try:
-            async with _http_session.post('https://fanyi.qq.com/api/' + reauthuri) as r:
+            async with utils.request.http_session.post('https://fanyi.qq.com/api/' + reauthuri) as r:
                 if r.status != 200:
                     logger.warning('TencentTranslateFree init request failed: reauthuri=%s, status=%d %s',
                                    reauthuri, r.status, r.reason)
@@ -333,7 +329,7 @@ class TencentTranslateFree(FlowControlTranslateProvider):
 
     async def _do_translate(self, text):
         try:
-            async with _http_session.post(
+            async with utils.request.http_session.post(
                 'https://fanyi.qq.com/api/translate',
                 headers={
                     'Referer': 'https://fanyi.qq.com/',
@@ -427,7 +423,7 @@ class BilibiliTranslateFree(FlowControlTranslateProvider):
 
     async def _do_translate(self, text):
         try:
-            async with _http_session.get(
+            async with utils.request.http_session.get(
                 'https://api.live.bilibili.com/av/v1/SuperChat/messageTranslate',
                 params={
                     'room_id': '21396545',
@@ -527,7 +523,7 @@ class TencentTranslate(FlowControlTranslateProvider):
             'X-TC-Region': self._region
         }
 
-        return _http_session.post('https://tmt.tencentcloudapi.com/', headers=headers, data=body_bytes)
+        return utils.request.http_session.post('https://tmt.tencentcloudapi.com/', headers=headers, data=body_bytes)
 
     def _on_fail(self, code):
         if self._cool_down_timer_handle is not None:
@@ -575,7 +571,7 @@ class BaiduTranslate(FlowControlTranslateProvider):
 
     async def _do_translate(self, text):
         try:
-            async with _http_session.post(
+            async with utils.request.http_session.post(
                 'https://fanyi-api.baidu.com/api/trans/vip/translate',
                 data=self._add_sign({
                     'q': text,

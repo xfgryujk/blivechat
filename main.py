@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import argparse
 import logging
 import logging.handlers
@@ -12,9 +11,10 @@ import tornado.web
 import api.chat
 import api.main
 import config
-import models.avatar
 import models.database
-import models.translate
+import services.avatar
+import services.chat
+import services.translate
 import update
 
 logger = logging.getLogger(__name__)
@@ -39,9 +39,9 @@ def main():
     init_logging(args.debug)
     config.init()
     models.database.init(args.debug)
-    models.avatar.init()
-    models.translate.init()
-    api.chat.init()
+    services.avatar.init()
+    services.translate.init()
+    services.chat.init()
     update.check_update()
 
     run_server(args.host, args.port, args.debug)
@@ -60,7 +60,6 @@ def init_logging(debug):
     file_handler = logging.handlers.TimedRotatingFileHandler(
         LOG_FILE_NAME, encoding='utf-8', when='midnight', backupCount=7, delay=True
     )
-    # noinspection PyArgumentList
     logging.basicConfig(
         format='{asctime} {levelname} [{name}]: {message}',
         datefmt='%Y-%m-%d %H:%M:%S',

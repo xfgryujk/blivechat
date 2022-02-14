@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-
 import asyncio
 
 import aiohttp
+
+import utils.request
 
 VERSION = 'v1.5.3'
 
@@ -13,15 +14,16 @@ def check_update():
 
 async def _do_check_update():
     try:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
-            async with session.get('https://api.github.com/repos/xfgryujk/blivechat/releases/latest') as r:
-                data = await r.json()
-                if data['name'] != VERSION:
-                    print('---------------------------------------------')
-                    print('New version available:', data['name'])
-                    print(data['body'])
-                    print('Download:', data['html_url'])
-                    print('---------------------------------------------')
+        async with utils.request.http_session.get(
+            'https://api.github.com/repos/xfgryujk/blivechat/releases/latest'
+        ) as r:
+            data = await r.json()
+            if data['name'] != VERSION:
+                print('---------------------------------------------')
+                print('New version available:', data['name'])
+                print(data['body'])
+                print('Download:', data['html_url'])
+                print('---------------------------------------------')
     except aiohttp.ClientConnectionError:
         print('Failed to check update: connection failed')
     except asyncio.TimeoutError:

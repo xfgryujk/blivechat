@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import configparser
 import logging
 import os
@@ -66,7 +65,7 @@ class AppConfig:
 
             self._load_app_config(config)
             self._load_translator_configs(config)
-        except Exception:
+        except Exception:  # noqa
             logger.exception('Failed to load config:')
             return False
         return True

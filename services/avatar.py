@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import asyncio
 import datetime
 import logging
@@ -11,7 +10,9 @@ import sqlalchemy
 import sqlalchemy.exc
 
 import config
+import models.bilibili as bl_models
 import models.database
+import utils.request
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,6 @@ logger = logging.getLogger(__name__)
 DEFAULT_AVATAR_URL = '//static.hdslb.com/images/member/noface.gif'
 
 _main_event_loop = asyncio.get_event_loop()
-_http_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
 # user_id -> avatar_url
 _avatar_url_cache: Dict[int, str] = {}
 # 正在获取头像的Future，user_id -> Future
@@ -67,7 +67,9 @@ def get_avatar_url_from_database(user_id) -> Awaitable[Optional[str]]:
 def _do_get_avatar_url_from_database(user_id):
     try:
         with models.database.get_session() as session:
-            user = session.query(BilibiliUser).filter(BilibiliUser.uid == user_id).one_or_none()
+            user = session.query(bl_models.BilibiliUser).filter(
+                bl_models.BilibiliUser.uid == user_id
+            ).one_or_none()
             if user is None:
                 return None
             avatar_url = user.avatar_url
@@ -130,7 +132,7 @@ async def _get_avatar_url_from_web_consumer():
             # 限制频率，防止被B站ban
             cfg = config.get_config()
             await asyncio.sleep(cfg.fetch_avatar_interval)
-        except Exception:
+        except Exception:  # noqa
             logger.exception('_get_avatar_url_from_web_consumer error:')
 
 
@@ -145,8 +147,9 @@ async def _get_avatar_url_from_web_coroutine(user_id, future):
 
 async def _do_get_avatar_url_from_web(user_id):
     try:
-        async with _http_session.get('https://api.bilibili.com/x/space/acc/info',
-                                     params={'mid': user_id}) as r:
+        async with utils.request.http_session.get(
+            'https://api.bilibili.com/x/space/acc/info', params={'mid': user_id}
+        ) as r:
             if r.status != 200:
                 logger.warning('Failed to fetch avatar: status=%d %s uid=%d', r.status, r.reason, user_id)
                 if r.status == 412:
@@ -191,24 +194,19 @@ def _update_avatar_cache_in_memory(user_id, avatar_url):
 def _update_avatar_cache_in_database(user_id, avatar_url):
     try:
         with models.database.get_session() as session:
-            user = session.query(BilibiliUser).filter(BilibiliUser.uid == user_id).one_or_none()
+            user = session.query(bl_models.BilibiliUser).filter(
+                bl_models.BilibiliUser.uid == user_id
+            ).one_or_none()
             if user is None:
-                user = BilibiliUser(uid=user_id, avatar_url=avatar_url,
-                                    update_time=datetime.datetime.now())
+                user = bl_models.BilibiliUser(
+                    uid=user_id
+                )
                 session.add(user)
-            else:
-                user.avatar_url = avatar_url
-                user.update_time = datetime.datetime.now()
+            user.avatar_url = avatar_url
+            user.update_time = datetime.datetime.now()
             session.commit()
     except (sqlalchemy.exc.OperationalError, sqlalchemy.exc.IntegrityError):
         # SQLite会锁整个文件，忽略就行，另外还有多线程导致ID重复的问题
         pass
     except sqlalchemy.exc.SQLAlchemyError:
         logger.exception('_update_avatar_cache_in_database failed:')
-
-
-class BilibiliUser(models.database.OrmBase):
-    __tablename__ = 'bilibili_users'
-    uid = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    avatar_url = sqlalchemy.Column(sqlalchemy.String(100))
-    update_time = sqlalchemy.Column(sqlalchemy.DateTime)

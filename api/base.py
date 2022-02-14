@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
-
 import json
 
 import tornado.web
 
 
-# noinspection PyAbstractClass
-class ApiHandler(tornado.web.RequestHandler):
+class ApiHandler(tornado.web.RequestHandler):  # noqa
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.json_args = None

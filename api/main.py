@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import tornado.web
 
 import api.base
@@ -7,8 +6,7 @@ import config
 import update
 
 
-# noinspection PyAbstractClass
-class MainHandler(tornado.web.StaticFileHandler):
+class MainHandler(tornado.web.StaticFileHandler):  # noqa
     """为了使用Vue Router的history模式，把不存在的文件请求转发到index.html"""
     async def get(self, path, include_body=True):
         try:
@@ -20,8 +18,7 @@ class MainHandler(tornado.web.StaticFileHandler):
             await super().get('index.html', include_body)
 
 
-# noinspection PyAbstractClass
-class ServerInfoHandler(api.base.ApiHandler):
+class ServerInfoHandler(api.base.ApiHandler):  # noqa
     async def get(self):
         cfg = config.get_config()
         self.write({
