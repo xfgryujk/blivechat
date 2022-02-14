@@ -21,7 +21,7 @@ RUN pip3 install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple -r r
 # 前端依赖
 WORKDIR ./frontend
 COPY frontend/package.json ./
-RUN npm i --registry=https://registry.npm.taobao.org
+RUN npm i --registry=https://registry.npmmirror.com
 
 # 编译前端
 COPY . ../
