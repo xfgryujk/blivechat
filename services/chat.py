@@ -63,8 +63,10 @@ class LiveClientManager:
 
 
 class LiveClient(blivedm.BLiveClient):
+    HEARTBEAT_INTERVAL = 10
+
     def __init__(self, room_id):
-        super().__init__(room_id, session=utils.request.http_session, heartbeat_interval=10)
+        super().__init__(room_id, session=utils.request.http_session, heartbeat_interval=self.HEARTBEAT_INTERVAL)
 
     @property
     def tmp_room_id(self):
@@ -78,12 +80,19 @@ class LiveClient(blivedm.BLiveClient):
 
 class ClientRoomManager:
     """管理到客户端的连接"""
+    # 房间没有客户端后延迟多久删除房间，不立即删除防止短时间后重连
+    DELAY_DEL_ROOM_TIMEOUT = 10
+
     def __init__(self):
         self._rooms: Dict[int, ClientRoom] = {}
+        # room_id -> timer_handle
+        self._delay_del_timer_handles: Dict[int, asyncio.TimerHandle] = {}
 
     def add_client(self, room_id, client: 'api.chat.ChatHandler'):
-        room = self.get_or_add_room(room_id)
+        room = self._get_or_add_room(room_id)
         room.add_client(client)
+
+        self._clear_delay_del_timer(room_id)
 
     def del_client(self, room_id, client: 'api.chat.ChatHandler'):
         room = self.get_room(room_id)
@@ -92,12 +101,12 @@ class ClientRoomManager:
         room.del_client(client)
 
         if room.client_count == 0:
-            self.del_room(room_id)
+            self.delay_del_room(room_id, self.DELAY_DEL_ROOM_TIMEOUT)
 
     def get_room(self, room_id):
         return self._rooms.get(room_id, None)
 
-    def get_or_add_room(self, room_id):
+    def _get_or_add_room(self, room_id):
         room = self._rooms.get(room_id, None)
         if room is None:
             logger.info('room=%d creating client room', room_id)
@@ -108,6 +117,8 @@ class ClientRoomManager:
         return room
 
     def del_room(self, room_id):
+        self._clear_delay_del_timer(room_id)
+
         room = self._rooms.pop(room_id, None)
         if room is None:
             return
@@ -116,6 +127,21 @@ class ClientRoomManager:
         logger.info('room=%d client room removed, %d client rooms', room_id, len(self._rooms))
 
         _live_client_manager.del_live_client(room_id)
+
+    def delay_del_room(self, room_id, timeout):
+        self._clear_delay_del_timer(room_id)
+        self._delay_del_timer_handles[room_id] = asyncio.get_event_loop().call_later(
+            timeout, self._on_delay_del_room, room_id
+        )
+
+    def _clear_delay_del_timer(self, room_id):
+        timer_handle = self._delay_del_timer_handles.pop(room_id, None)
+        if timer_handle is not None:
+            timer_handle.cancel()
+
+    def _on_delay_del_room(self, room_id):
+        self._delay_del_timer_handles.pop(room_id, None)
+        self.del_room(room_id)
 
 
 class ClientRoom:

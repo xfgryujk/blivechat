@@ -25,7 +25,6 @@ NO_TRANSLATE_TEXTS = {
     '强', '余裕', '余裕余裕', '大丈夫', '再放送', '放送事故', '清楚', '清楚清楚'
 }
 
-_main_event_loop = asyncio.get_event_loop()
 _translate_providers: List['TranslateProvider'] = []
 # text -> res
 _translate_cache: Dict[str, str] = {}
@@ -103,7 +102,7 @@ def translate(text) -> Awaitable[Optional[str]]:
     if future is not None:
         return future
     # 否则创建一个翻译任务
-    future = _main_event_loop.create_future()
+    future = asyncio.get_event_loop().create_future()
 
     # 查缓存
     res = _translate_cache.get(key, None)
