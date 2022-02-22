@@ -169,18 +169,25 @@ export default {
       return constants.getPriceConfig(message.price).pinTime
     },
     updateProgress() {
+      // 更新进度
       this.curTime = new Date()
-      for (let i = 0; i < this.messages.length;) {
-        let message = this.messages[i]
+
+      // 删除过期的消息
+      let filteredMessages = []
+      let messagesChanged = false
+      for (let message of this.messages) {
         let pinTime = this.getPinTime(message)
         if ((this.curTime - message.addTime) / (60 * 1000) >= pinTime) {
-          if (this.pinnedMessage == message) {
+          messagesChanged = true
+          if (this.pinnedMessage === message) {
             this.pinnedMessage = null
           }
-          this.messages.splice(i, 1)
-        } else {
-          i++
+          continue
         }
+        filteredMessages.push(message)
+      }
+      if (messagesChanged) {
+        this.$emit('update:messages', filteredMessages)
       }
     },
     onItemClick(message) {
