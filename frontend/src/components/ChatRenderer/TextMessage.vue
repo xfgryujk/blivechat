@@ -5,18 +5,9 @@
     ></img-shadow>
     <div id="content" class="style-scope yt-live-chat-text-message-renderer">
       <span id="timestamp" class="style-scope yt-live-chat-text-message-renderer">{{ timeText }}</span>
-      <yt-live-chat-author-chip class="style-scope yt-live-chat-text-message-renderer">
-        <span id="author-name" dir="auto" class="style-scope yt-live-chat-author-chip" :type="authorTypeText">
-          <template>{{ authorName }}</template>
-          <!-- 这里是已验证勋章 -->
-          <span id="chip-badges" class="style-scope yt-live-chat-author-chip"></span>
-        </span>
-        <span id="chat-badges" class="style-scope yt-live-chat-author-chip">
-          <author-badge class="style-scope yt-live-chat-author-chip"
-            :isAdmin="authorType === 2" :privilegeType="privilegeType"
-          ></author-badge>
-        </span>
-      </yt-live-chat-author-chip>
+      <author-chip class="style-scope yt-live-chat-text-message-renderer"
+        :isInMemberMessage="false" :authorName="authorName" :authorType="authorType" :privilegeType="privilegeType"
+      ></author-chip>
       <span id="message" class="style-scope yt-live-chat-text-message-renderer">
         <template v-if="!emoticon">{{ content }}</template>
         <img v-else class="emoji yt-formatted-string style-scope yt-live-chat-text-message-renderer"
@@ -31,8 +22,8 @@
 </template>
 
 <script>
-import ImgShadow from './ImgShadow.vue'
-import AuthorBadge from './AuthorBadge.vue'
+import ImgShadow from './ImgShadow'
+import AuthorChip from './AuthorChip'
 import * as constants from './constants'
 import * as utils from '@/utils'
 
@@ -44,7 +35,7 @@ export default {
   name: 'TextMessage',
   components: {
     ImgShadow,
-    AuthorBadge
+    AuthorChip
   },
   props: {
     avatarUrl: String,
@@ -99,4 +90,3 @@ yt-live-chat-text-message-renderer>#content>#message>.el-badge .el-badge__conten
 </style>
 
 <style src="@/assets/css/youtube/yt-live-chat-text-message-renderer.css"></style>
-<style src="@/assets/css/youtube/yt-live-chat-author-chip.css"></style>

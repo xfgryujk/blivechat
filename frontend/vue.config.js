@@ -1,6 +1,6 @@
 module.exports = {
   chainWebpack: config => {
-    const APP_VERSION = process.env.npm_package_version
+    const APP_VERSION = `v${process.env.npm_package_version}`
 
     config.plugin('define')
       .tap(args => {

@@ -41,10 +41,10 @@
 
 <script>
 import * as chatConfig from '@/api/chatConfig'
-import Ticker from './Ticker.vue'
-import TextMessage from './TextMessage.vue'
-import MembershipItem from './MembershipItem.vue'
-import PaidMessage from './PaidMessage.vue'
+import Ticker from './Ticker'
+import TextMessage from './TextMessage'
+import MembershipItem from './MembershipItem'
+import PaidMessage from './PaidMessage'
 import * as constants from './constants'
 
 // 只有要添加的消息需要平滑

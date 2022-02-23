@@ -319,7 +319,6 @@ class LiveMsgHandler(blivedm.BaseHandler):
             translation = ''
 
         msg_id = uuid.uuid4().hex
-        # 为了节省带宽用list而不是dict
         room.send_cmd_data(api.chat.Command.ADD_TEXT, api.chat.make_text_message_data(
             avatar_url=avatar_url,
             timestamp=int(message.timestamp / 1000),
@@ -327,10 +326,10 @@ class LiveMsgHandler(blivedm.BaseHandler):
             author_type=author_type,
             content=message.msg,
             privilege_type=message.privilege_type,
-            is_gift_danmaku=message.msg_type,
+            is_gift_danmaku=bool(message.msg_type),
             author_level=message.user_level,
             is_newbie=message.urank < 10000,
-            is_mobile_verified=message.mobile_verify,
+            is_mobile_verified=bool(message.mobile_verify),
             medal_level=0 if message.medal_room_id != client.room_id else message.medal_level,
             id_=msg_id,
             translation=translation,

@@ -1,5 +1,5 @@
 <template>
-  <yt-live-chat-author-badge-renderer :type="authorTypeText" v-if="isAdmin || privilegeType > 0">
+  <yt-live-chat-author-badge-renderer :type="authorTypeText">
     <el-tooltip :content="readableAuthorTypeText" placement="top">
       <div id="image" class="style-scope yt-live-chat-author-badge-renderer">
         <yt-icon v-if="isAdmin" class="style-scope yt-live-chat-author-badge-renderer">

@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import ImgShadow from './ImgShadow.vue'
+import ImgShadow from './ImgShadow'
 import * as constants from './constants'
 import * as utils from '@/utils'
 

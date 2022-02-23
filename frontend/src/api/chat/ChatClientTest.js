@@ -36,8 +36,10 @@ const AUTHOR_TYPES = [
 function randGuardInfo() {
   let authorType = randomChoose(AUTHOR_TYPES)
   let privilegeType
-  if (authorType === constants.AUTHRO_TYPE_MEMBER || authorType === constants.AUTHRO_TYPE_ADMIN) {
+  if (authorType === constants.AUTHRO_TYPE_MEMBER) {
     privilegeType = randInt(1, 3)
+  } else if (authorType === constants.AUTHRO_TYPE_ADMIN) {
+    privilegeType = randInt(0, 3)
   } else {
     privilegeType = 0
   }

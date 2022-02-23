@@ -41,9 +41,9 @@
 <script>
 import * as chatConfig from '@/api/chatConfig'
 import { formatCurrency } from '@/utils'
-import ImgShadow from './ImgShadow.vue'
-import MembershipItem from './MembershipItem.vue'
-import PaidMessage from './PaidMessage.vue'
+import ImgShadow from './ImgShadow'
+import MembershipItem from './MembershipItem'
+import PaidMessage from './PaidMessage'
 import * as constants from './constants'
 
 export default {

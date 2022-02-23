@@ -47,14 +47,29 @@ def make_message_body(cmd, data):
     ).encode('utf-8')
 
 
-def make_text_message_data(avatar_url, timestamp, author_name, author_type, content, privilege_type,
-                           is_gift_danmaku, author_level, is_newbie, is_mobile_verified, medal_level,
-                           id_, translation, content_type, content_type_params):
+def make_text_message_data(
+    avatar_url: str = services.avatar.DEFAULT_AVATAR_URL,
+    timestamp: int = None,
+    author_name: str = '',
+    author_type: int = 0,
+    content: str = '',
+    privilege_type: int = 0,
+    is_gift_danmaku: bool = False,
+    author_level: int = 1,
+    is_newbie: bool = False,
+    is_mobile_verified: bool = True,
+    medal_level: int = 0,
+    id_: str = None,
+    translation: str = '',
+    content_type: int = ContentType.TEXT,
+    content_type_params: list = None,
+):
+    # 为了节省带宽用list而不是dict
     return [
         # 0: avatarUrl
         avatar_url,
         # 1: timestamp
-        timestamp,
+        timestamp if timestamp is not None else int(time.time()),
         # 2: authorName
         author_name,
         # 3: authorType
@@ -74,7 +89,7 @@ def make_text_message_data(avatar_url, timestamp, author_name, author_type, cont
         # 10: medalLevel
         medal_level,
         # 11: id
-        id_,
+        id_ if id_ is not None else uuid.uuid4().hex,
         # 12: translation
         translation,
         # 13: contentType
@@ -210,21 +225,10 @@ class ChatHandler(tornado.websocket.WebSocketHandler):  # noqa
             cfg = config.get_config()
             if cfg.allow_translate_rooms and self.room_id not in cfg.allow_translate_rooms:
                 self.send_cmd_data(Command.ADD_TEXT, make_text_message_data(
-                    avatar_url=services.avatar.DEFAULT_AVATAR_URL,
-                    timestamp=int(time.time()),
                     author_name='blivechat',
                     author_type=2,
                     content='Translation is not allowed in this room. Please download to use translation',
-                    privilege_type=0,
-                    is_gift_danmaku=False,
                     author_level=60,
-                    is_newbie=False,
-                    is_mobile_verified=True,
-                    medal_level=0,
-                    id_=uuid.uuid4().hex,
-                    translation='',
-                    content_type=ContentType.TEXT,
-                    content_type_params=None,
                 ))
 
     # 测试用
@@ -238,18 +242,8 @@ class ChatHandler(tornado.websocket.WebSocketHandler):  # noqa
             avatar_url=base_data['avatarUrl'],
             timestamp=base_data['timestamp'],
             author_name=base_data['authorName'],
-            author_type=0,
             content='我能吞下玻璃而不伤身体',
-            privilege_type=0,
-            is_gift_danmaku=False,
-            author_level=20,
-            is_newbie=False,
-            is_mobile_verified=True,
-            medal_level=0,
-            id_=uuid.uuid4().hex,
-            translation='',
-            content_type=ContentType.TEXT,
-            content_type_params=None,
+            author_level=60,
         )
         member_data = {
             **base_data,
