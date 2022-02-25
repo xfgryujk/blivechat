@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import VueI18n from 'vue-i18n'
 import {
   Aside, Autocomplete, Badge, Button, Card, Col, ColorPicker, Container, Divider, Form, FormItem, Image,
   Input, Main, Menu, MenuItem, Message, Option, OptionGroup, Radio, RadioGroup, Row, Select, Scrollbar,
@@ -8,17 +7,14 @@ import {
 } from 'element-ui'
 import axios from 'axios'
 
-import App from './App.vue'
+import { i18n } from './i18n'
+import App from './App'
 import Layout from './layout'
-import Home from './views/Home.vue'
+import Home from './views/Home'
 import StyleGenerator from './views/StyleGenerator'
 import Help from './views/Help'
-import Room from './views/Room.vue'
-import NotFound from './views/NotFound.vue'
-
-import zh from './lang/zh'
-import ja from './lang/ja'
-import en from './lang/en'
+import Room from './views/Room'
+import NotFound from './views/NotFound'
 
 if (process.env.NODE_ENV === 'development') {
   // 开发时使用localhost:12450
@@ -27,7 +23,6 @@ if (process.env.NODE_ENV === 'development') {
 axios.defaults.timeout = 10 * 1000
 
 Vue.use(VueRouter)
-Vue.use(VueI18n)
 // 初始化element
 Vue.use(Aside)
 Vue.use(Autocomplete)
@@ -91,25 +86,6 @@ const router = new VueRouter({
     },
     { path: '*', component: NotFound }
   ]
-})
-
-let locale = window.localStorage.lang
-if (!locale) {
-  let lang = navigator.language
-  if (lang.startsWith('zh')) {
-    locale = 'zh'
-  } else if (lang.startsWith('ja')) {
-    locale = 'ja'
-  } else {
-    locale = 'en'
-  }
-}
-const i18n = new VueI18n({
-  locale,
-  fallbackLocale: 'en',
-  messages: {
-    zh, ja, en
-  }
 })
 
 new Vue({

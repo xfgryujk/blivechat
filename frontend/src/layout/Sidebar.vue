@@ -30,24 +30,31 @@
         <template slot="title">
           <i class="el-icon-chat-line-square"></i>Language
         </template>
-        <el-menu-item v-for="{ locale, name } in [
-            { locale: 'zh', name: '中文' },
-            { locale: 'ja', name: '日本語' },
-            { locale: 'en', name: 'English' }
-          ]"
-          :key="locale" @click="onSelectLanguage(locale)"
-        >{{ name }}</el-menu-item>
+        <el-menu-item v-for="locale in LOCALES" :key="locale.locale" @click="onSelectLanguage(locale.locale)">
+          <template>{{ locale.name }}</template>
+        </el-menu-item>
       </el-submenu>
     </el-menu>
   </el-scrollbar>
 </template>
 
 <script>
+import * as i18n from '@/i18n'
+
 export default {
   name: 'Sidebar',
+  data() {
+    return {
+      LOCALES: [
+        { locale: 'zh', name: '中文' },
+        { locale: 'ja', name: '日本語' },
+        { locale: 'en', name: 'English' }
+      ]
+    }
+  },
   methods: {
     onSelectLanguage(locale) {
-      window.localStorage.lang = this.$i18n.locale = locale
+      i18n.setLocale(locale)
     }
   }
 }
