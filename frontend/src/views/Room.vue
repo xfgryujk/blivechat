@@ -30,7 +30,7 @@ export default {
   },
   data() {
     return {
-      config: { ...chatConfig.DEFAULT_CONFIG },
+      config: chatConfig.deepCloneDefaultConfig(),
       chatClient: null,
       pronunciationConverter: null
     }
@@ -76,7 +76,7 @@ export default {
           cfg[i] = this.strConfig[i]
         }
       }
-      cfg = mergeConfig(cfg, chatConfig.DEFAULT_CONFIG)
+      cfg = mergeConfig(cfg, chatConfig.deepCloneDefaultConfig())
 
       cfg.minGiftPrice = toInt(cfg.minGiftPrice, chatConfig.DEFAULT_CONFIG.minGiftPrice)
       cfg.showDanmaku = toBool(cfg.showDanmaku)
@@ -85,15 +85,29 @@ export default {
       cfg.mergeSimilarDanmaku = toBool(cfg.mergeSimilarDanmaku)
       cfg.mergeGift = toBool(cfg.mergeGift)
       cfg.maxNumber = toInt(cfg.maxNumber, chatConfig.DEFAULT_CONFIG.maxNumber)
+
       cfg.blockGiftDanmaku = toBool(cfg.blockGiftDanmaku)
       cfg.blockLevel = toInt(cfg.blockLevel, chatConfig.DEFAULT_CONFIG.blockLevel)
       cfg.blockNewbie = toBool(cfg.blockNewbie)
       cfg.blockNotMobileVerified = toBool(cfg.blockNotMobileVerified)
       cfg.blockMedalLevel = toInt(cfg.blockMedalLevel, chatConfig.DEFAULT_CONFIG.blockMedalLevel)
+
       cfg.relayMessagesByServer = toBool(cfg.relayMessagesByServer)
       cfg.autoTranslate = toBool(cfg.autoTranslate)
+      cfg.emoticons = this.toObjIfJson(cfg.emoticons)
 
+      chatConfig.sanitizeConfig(cfg)
       this.config = cfg
+    },
+    toObjIfJson(str) {
+      if (typeof str !== 'string') {
+        return str
+      }
+      try {
+        return JSON.parse(str)
+      } catch {
+        return {}
+      }
     },
     initChatClient() {
       if (this.roomId === null) {
@@ -201,9 +215,7 @@ export default {
       this.$refs.renderer.addMessage(message)
     },
     onDelSuperChat(data) {
-      for (let id of data.ids) {
-        this.$refs.renderer.delMessage(id)
-      }
+      this.$refs.renderer.delMessages(data.ids)
     },
     onUpdateTranslation(data) {
       if (!this.config.autoTranslate) {
@@ -224,19 +236,25 @@ export default {
       } else if (this.config.blockMedalLevel > 0 && data.medalLevel < this.config.blockMedalLevel) {
         return false
       }
-      return this.filterSuperChatMessage(data)
+      return this.filterByContent(data.content) && this.filterByAuthorName(data.authorName)
     },
     filterSuperChatMessage(data) {
+      return this.filterByContent(data.content) && this.filterByAuthorName(data.authorName)
+    },
+    filterNewMemberMessage(data) {
+      return this.filterByAuthorName(data.authorName)
+    },
+    filterByContent(content) {
       for (let keyword of this.blockKeywords) {
-        if (data.content.indexOf(keyword) !== -1) {
+        if (content.indexOf(keyword) !== -1) {
           return false
         }
       }
-      return this.filterNewMemberMessage(data)
+      return true
     },
-    filterNewMemberMessage(data) {
+    filterByAuthorName(authorName) {
       for (let user of this.blockUsers) {
-        if (data.authorName === user) {
+        if (authorName === user) {
           return false
         }
       }

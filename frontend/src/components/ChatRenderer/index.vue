@@ -211,12 +211,12 @@ export default {
       this.delMessages([id])
     },
     delMessages(ids) {
-      this.enqueueMessages(ids.map(id => {
-        return {
+      this.enqueueMessages(ids.map(
+        id => ({
           type: constants.MESSAGE_TYPE_DEL,
           id
-        }
-      }))
+        })
+      ))
     },
     clearMessages() {
       this.messages = []

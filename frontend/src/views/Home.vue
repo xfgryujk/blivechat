@@ -154,8 +154,8 @@ export default {
         loaderUrl: ''
       },
       form: {
-        roomId: parseInt(window.localStorage.roomId || '1'),
-        ...chatConfig.getLocalConfig()
+        ...chatConfig.getLocalConfig(),
+        roomId: parseInt(window.localStorage.roomId || '1')
       }
     }
   },
@@ -205,6 +205,7 @@ export default {
 
       let query = {
         ...this.form,
+        emoticons: JSON.stringify(this.form.emoticons),
         lang: this.$i18n.locale
       }
       delete query.roomId
@@ -239,12 +240,19 @@ export default {
             this.$message.error(this.$t('home.failedToParseConfig') + e)
             return
           }
-          cfg = mergeConfig(cfg, chatConfig.DEFAULT_CONFIG)
-          this.form = { roomId: this.form.roomId, ...cfg }
+          this.importConfigFromObj(cfg)
         }
         reader.readAsText(input.files[0])
       }
       input.click()
+    },
+    importConfigFromObj(cfg) {
+      cfg = mergeConfig(cfg, chatConfig.deepCloneDefaultConfig())
+      chatConfig.sanitizeConfig(cfg)
+      this.form = {
+        ...cfg,
+        roomId: this.form.roomId
+      }
     }
   }
 }
