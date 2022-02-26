@@ -129,5 +129,14 @@ export default {
     p3: '3. Generate styles with the style generator. Copy the CSS',
     p4: '4. Add browser source in OBS',
     p5: '5. Enter the previously copied room URL at URL, and enter the previously copied CSS at custom CSS'
+  },
+  chat: {
+    moderator: 'moderator',
+    guardLevel1: 'governor',
+    guardLevel2: 'admiral',
+    guardLevel3: 'captain',
+    sendGift: 'Sent {giftName}x{num}',
+    membershipTitle: 'New member',
+    tickerMembership: 'Member'
   }
 }

@@ -202,8 +202,13 @@ export default {
       if (isTestRoom && this.form.roomId === '') {
         return ''
       }
-      let query = { ...this.form }
+
+      let query = {
+        ...this.form,
+        lang: this.$i18n.locale
+      }
       delete query.roomId
+
       let resolved
       if (isTestRoom) {
         resolved = this.$router.resolve({ name: 'test_room', query })

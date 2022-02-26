@@ -129,5 +129,14 @@ export default {
     p3: '3. スタイルジェネレータでお好みのコメント様子を選び、出力したCSSをコピーする',
     p4: '4. OBSでブラウザを新規作成する',
     p5: '5. プロパティでこぴーしたURLを入力し、カスタムCSSでスタイルジェネレータのCSSを入力する'
+  },
+  chat: {
+    moderator: 'モデレーター',
+    guardLevel1: '総督',
+    guardLevel2: '提督',
+    guardLevel3: '艦長',
+    sendGift: '{giftName}x{num} を贈りました',
+    membershipTitle: '新規メンバー',
+    tickerMembership: 'メンバー'
   }
 }

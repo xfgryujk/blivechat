@@ -129,5 +129,14 @@ export default {
     p3: '3. 使用样式生成器生成样式，复制CSS',
     p4: '4. 在OBS中添加浏览器源',
     p5: '5. URL处输入之前复制的房间URL，自定义CSS处输入之前复制的CSS'
+  },
+  chat: {
+    moderator: '管理员',
+    guardLevel1: '总督',
+    guardLevel2: '提督',
+    guardLevel3: '舰长',
+    sendGift: '赠送 {giftName}x{num}',
+    membershipTitle: '新会员',
+    tickerMembership: '会员'
   }
 }

@@ -3,6 +3,7 @@
 </template>
 
 <script>
+import * as i18n from '@/i18n'
 import { mergeConfig, toBool, toInt } from '@/utils'
 import * as pronunciation from '@/utils/pronunciation'
 import * as chatConfig from '@/api/chatConfig'
@@ -63,6 +64,11 @@ export default {
   },
   methods: {
     initConfig() {
+      let locale = this.strConfig.lang
+      if (locale) {
+        i18n.setLocale(locale)
+      }
+
       let cfg = {}
       // 留空的使用默认值
       for (let i in this.strConfig) {
@@ -170,7 +176,7 @@ export default {
         authorName: data.authorName,
         authorNamePronunciation: this.getPronunciation(data.authorName),
         privilegeType: data.privilegeType,
-        title: 'New member'
+        title: this.$t('chat.membershipTitle')
       }
       this.$refs.renderer.addMessage(message)
     },

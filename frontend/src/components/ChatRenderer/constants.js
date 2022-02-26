@@ -1,3 +1,5 @@
+import * as i18n from '@/i18n'
+
 export const AUTHRO_TYPE_NORMAL = 0
 export const AUTHRO_TYPE_MEMBER = 1
 export const AUTHRO_TYPE_ADMIN = 2
@@ -10,12 +12,20 @@ export const AUTHOR_TYPE_TO_TEXT = [
   'owner' // 主播
 ]
 
-export const GUARD_LEVEL_TO_TEXT = [
+const GUARD_LEVEL_TO_TEXT_KEY = [
   '',
-  '总督',
-  '提督',
-  '舰长'
+  'chat.guardLevel1',
+  'chat.guardLevel2',
+  'chat.guardLevel3'
 ]
+
+export function getShowGuardLevelText(guardLevel) {
+  let key = GUARD_LEVEL_TO_TEXT_KEY[guardLevel] || ''
+  if (key === '') {
+    return ''
+  }
+  return i18n.i18n.t(key)
+}
 
 export const MESSAGE_TYPE_TEXT = 0
 export const MESSAGE_TYPE_GIFT = 1
@@ -133,7 +143,7 @@ export function getGiftShowContent(message, showGiftName) {
   if (!showGiftName) {
     return ''
   }
-  return `Sent ${message.giftName}x${message.num}`
+  return i18n.i18n.t('chat.sendGift', { giftName: message.giftName, num: message.num })
 }
 
 export function getShowAuthorName(message) {

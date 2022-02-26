@@ -7,7 +7,7 @@ import {
 } from 'element-ui'
 import axios from 'axios'
 
-import { i18n } from './i18n'
+import * as i18n from './i18n'
 import App from './App'
 import Layout from './layout'
 import Home from './views/Home'
@@ -71,7 +71,12 @@ const router = new VueRouter({
         { path: 'help', name: 'help', component: Help }
       ]
     },
-    { path: '/room/test', name: 'test_room', component: Room, props: route => ({ strConfig: route.query }) },
+    {
+      path: '/room/test',
+      name: 'test_room',
+      component: Room,
+      props: route => ({ strConfig: route.query })
+    },
     {
       path: '/room/:roomId',
       name: 'room',
@@ -91,5 +96,5 @@ const router = new VueRouter({
 new Vue({
   render: h => h(App),
   router,
-  i18n
+  i18n: i18n.i18n
 }).$mount('#app')

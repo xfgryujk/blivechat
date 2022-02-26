@@ -14,7 +14,8 @@
           </svg>
         </yt-icon>
         <img v-else :src="`/static/img/icons/guard-level-${privilegeType}.png`"
-          class="style-scope yt-live-chat-author-badge-renderer" :alt="readableAuthorTypeText">
+          class="style-scope yt-live-chat-author-badge-renderer" :alt="readableAuthorTypeText"
+        >
       </div>
     </el-tooltip>
   </yt-live-chat-author-badge-renderer>
@@ -38,9 +39,9 @@ export default {
     },
     readableAuthorTypeText() {
       if (this.isAdmin) {
-        return '管理员'
+        return this.$t('chat.moderator')
       }
-      return constants.GUARD_LEVEL_TO_TEXT[this.privilegeType]
+      return constants.getShowGuardLevelText(this.privilegeType)
     }
   }
 }
