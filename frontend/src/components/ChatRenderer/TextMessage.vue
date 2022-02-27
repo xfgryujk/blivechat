@@ -9,11 +9,14 @@
         :isInMemberMessage="false" :authorName="authorName" :authorType="authorType" :privilegeType="privilegeType"
       ></author-chip>
       <span id="message" class="style-scope yt-live-chat-text-message-renderer">
-        <template v-if="!emoticon">{{ content }}</template>
-        <img v-else class="emoji yt-formatted-string style-scope yt-live-chat-text-message-renderer"
-          :src="emoticon" :alt="content" shared-tooltip-text="" id="emoji"
-        >
-        <el-badge :value="repeated" :max="99" v-show="repeated > 1" class="style-scope yt-live-chat-text-message-renderer"
+        <template v-for="(content, index) in richContent">
+          <span :key="index" v-if="content.type === CONTENT_TYPE_TEXT">{{ content.text }}</span>
+          <img :key="index" v-else-if="content.type === CONTENT_TYPE_IMAGE"
+            class="emoji yt-formatted-string style-scope yt-live-chat-text-message-renderer"
+            :src="content.url" :alt="content.text" :shared-tooltip-text="content.text" :id="`emoji-${content.text}`"
+          >
+        </template>
+        <el-badge :value="repeated" :max="99" v-if="repeated > 1" class="style-scope yt-live-chat-text-message-renderer"
           :style="{ '--repeated-mark-color': repeatedMarkColor }"
         ></el-badge>
       </span>
@@ -42,10 +45,15 @@ export default {
     time: Date,
     authorName: String,
     authorType: Number,
-    content: String,
-    emoticon: String,
+    richContent: Array,
     privilegeType: Number,
     repeated: Number
+  },
+  data() {
+    return {
+      CONTENT_TYPE_TEXT: constants.CONTENT_TYPE_TEXT,
+      CONTENT_TYPE_IMAGE: constants.CONTENT_TYPE_IMAGE
+    }
   },
   computed: {
     timeText() {

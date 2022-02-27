@@ -38,8 +38,13 @@ export default {
     pinyin: '拼音',
     kana: '日文假名',
 
+    emoticon: '自定义表情',
+    emoticonKeyword: '替换关键词',
+    emoticonUrl: 'URL',
+    operation: '操作',
+    addEmoticon: '添加表情',
+
     roomUrl: '房间URL',
-    copy: '复制',
     enterRoom: '进入房间',
     enterTestRoom: '进入测试房间',
     exportConfig: '导出配置',

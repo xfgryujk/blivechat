@@ -1,9 +1,9 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import {
-  Aside, Autocomplete, Badge, Button, Card, Col, ColorPicker, Container, Divider, Form, FormItem, Image,
+  Aside, Autocomplete, Badge, Button, ButtonGroup, Card, Col, ColorPicker, Container, Divider, Form, FormItem, Image,
   Input, Main, Menu, MenuItem, Message, Option, OptionGroup, Radio, RadioGroup, Row, Select, Scrollbar,
-  Slider, Submenu, Switch, TabPane, Tabs, Tooltip
+  Slider, Submenu, Switch, Table, TableColumn, TabPane, Tabs, Tooltip
 } from 'element-ui'
 import axios from 'axios'
 
@@ -28,6 +28,7 @@ Vue.use(Aside)
 Vue.use(Autocomplete)
 Vue.use(Badge)
 Vue.use(Button)
+Vue.use(ButtonGroup)
 Vue.use(Card)
 Vue.use(Col)
 Vue.use(ColorPicker)
@@ -50,6 +51,8 @@ Vue.use(Scrollbar)
 Vue.use(Slider)
 Vue.use(Submenu)
 Vue.use(Switch)
+Vue.use(Table)
+Vue.use(TableColumn)
 Vue.use(TabPane)
 Vue.use(Tabs)
 Vue.use(Tooltip)

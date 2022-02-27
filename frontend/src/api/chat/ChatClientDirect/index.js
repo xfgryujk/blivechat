@@ -336,7 +336,7 @@ export default class ChatClientDirect {
       medalLevel: roomId === this.roomId ? medalLevel : 0,
       id: getUuid4Hex(),
       translation: '',
-      emoticon: info[0][13].url || null // TODO 改成对象？
+      emoticon: info[0][13].url || null
     }
     this.onAddText(data)
   }

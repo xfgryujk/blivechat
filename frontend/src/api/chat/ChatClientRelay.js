@@ -130,7 +130,7 @@ export default class ChatClientRelay {
       let contentType = data[13]
       let contentTypeParams = data[14]
       if (contentType === CONTENT_TYPE_EMOTICON) {
-        emoticon = contentTypeParams[0] // TODO 改成对象？
+        emoticon = contentTypeParams[0]
       }
 
       data = {

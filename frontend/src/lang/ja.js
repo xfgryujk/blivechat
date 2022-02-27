@@ -38,8 +38,13 @@ export default {
     pinyin: 'ピンイン',
     kana: '仮名',
 
+    emoticon: 'カスタムスタンプ',
+    emoticonKeyword: '置き換えるキーワード',
+    emoticonUrl: 'URL',
+    operation: '操作',
+    addEmoticon: 'スタンプを追加',
+
     roomUrl: 'ルームのURL',
-    copy: 'コピー',
     enterRoom: 'ルームに入る',
     enterTestRoom: 'テストルームに入る',
     exportConfig: 'コンフィグの導出',
