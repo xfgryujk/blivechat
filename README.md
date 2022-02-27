@@ -107,6 +107,9 @@ server {
 	ssl_certificate /PATH/TO/CERT.crt;
 	ssl_certificate_key /PATH/TO/CERT_KEY.key;
 
+	client_body_buffer_size 256k;
+	client_max_body_size 1.1m;
+
 	# 代理header
 	proxy_http_version 1.1;
 	proxy_set_header Host $host;

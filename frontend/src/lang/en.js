@@ -43,6 +43,7 @@ export default {
     emoticonUrl: 'URL',
     operation: 'Operation',
     addEmoticon: 'Add emote',
+    emoticonFileTooLarge: 'File size is too large. Max size is 1MB',
 
     roomUrl: 'Room URL',
     enterRoom: 'Enter room',

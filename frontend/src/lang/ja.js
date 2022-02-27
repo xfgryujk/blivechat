@@ -43,6 +43,7 @@ export default {
     emoticonUrl: 'URL',
     operation: '操作',
     addEmoticon: 'スタンプを追加',
+    emoticonFileTooLarge: 'ファイルサイズが大きすぎます。最大サイズは1MBです',
 
     roomUrl: 'ルームのURL',
     enterRoom: 'ルームに入る',

@@ -48,9 +48,7 @@ export default class ChatClientRelay {
       return
     }
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
-    // 开发时使用localhost:12450
-    const host = process.env.NODE_ENV === 'development' ? 'localhost:12450' : window.location.host
-    const url = `${protocol}://${host}/api/chat`
+    const url = `${protocol}://${window.location.host}/api/chat`
     this.websocket = new WebSocket(url)
     this.websocket.onopen = this.onWsOpen.bind(this)
     this.websocket.onclose = this.onWsClose.bind(this)

@@ -16,10 +16,6 @@ import Help from './views/Help'
 import Room from './views/Room'
 import NotFound from './views/NotFound'
 
-if (process.env.NODE_ENV === 'development') {
-  // 开发时使用localhost:12450
-  axios.defaults.baseURL = 'http://localhost:12450'
-}
 axios.defaults.timeout = 10 * 1000
 
 Vue.use(VueRouter)

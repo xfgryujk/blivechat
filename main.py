@@ -25,6 +25,8 @@ LOG_FILE_NAME = os.path.join(BASE_PATH, 'log', 'blivechat.log')
 
 routes = [
     (r'/api/server_info', api.main.ServerInfoHandler),
+    (r'/api/emoticon', api.main.UploadEmoticonHandler),
+
     (r'/api/chat', api.chat.ChatHandler),
     (r'/api/room_info', api.chat.RoomInfoHandler),
     (r'/api/avatar_url', api.chat.AvatarHandler),
@@ -75,6 +77,7 @@ def init_logging(debug):
 def run_server(host, port, debug):
     app = tornado.web.Application(
         routes,
+        WEB_ROOT=WEB_ROOT,
         websocket_ping_interval=10,
         debug=debug,
         autoreload=False
@@ -84,7 +87,9 @@ def run_server(host, port, debug):
         app.listen(
             port,
             host,
-            xheaders=cfg.tornado_xheaders
+            xheaders=cfg.tornado_xheaders,
+            max_body_size=1024 * 1024,
+            max_buffer_size=1024 * 1024
         )
     except OSError:
         logger.warning('Address is used %s:%d', host, port)

@@ -217,7 +217,7 @@ class ChatHandler(tornado.websocket.WebSocketHandler):  # noqa
             self.close()
 
     async def _on_joined_room(self):
-        if self.application.settings['debug']:
+        if self.settings['debug']:
             await self._send_test_message()
 
         # 不允许自动翻译的提示
