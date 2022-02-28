@@ -179,6 +179,7 @@ export default {
     return {
       serverConfig: {
         enableTranslate: true,
+        enableUploadFile: true,
         loaderUrl: ''
       },
       form: {

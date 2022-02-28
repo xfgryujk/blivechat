@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import contextlib
 from typing import *
 
 import sqlalchemy.ext.declarative
@@ -22,13 +21,5 @@ def init(_debug):
     OrmBase.metadata.create_all(_engine)
 
 
-@contextlib.contextmanager
-def get_session() -> ContextManager[sqlalchemy.orm.Session]:
-    session = _DbSession()
-    try:
-        yield session
-    except BaseException:
-        session.rollback()
-        raise
-    finally:
-        session.close()
+def get_session():
+    return _DbSession()
