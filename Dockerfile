@@ -1,35 +1,46 @@
-# 运行时
-FROM python:3.7.10-slim-stretch
-RUN mv /etc/apt/sources.list /etc/apt/sources.list.bak \
-    && echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian/ stretch main contrib non-free">>/etc/apt/sources.list \
-    && echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian/ stretch-updates main contrib non-free">>/etc/apt/sources.list \
-    && echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian/ stretch-backports main contrib non-free">>/etc/apt/sources.list \
-    && echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian-security stretch/updates main contrib non-free">>/etc/apt/sources.list \
-    && apt-get update \
-    && apt-get install -y wget tar xz-utils
-RUN wget https://nodejs.org/dist/v10.16.0/node-v10.16.0-linux-x64.tar.xz \
-    && tar -xvf node-v10.16.0-linux-x64.tar.xz \
-    && rm node-v10.16.0-linux-x64.tar.xz \
-    && ln -s /node-v10.16.0-linux-x64/bin/node /usr/local/bin/node \
-    && ln -s /node-v10.16.0-linux-x64/bin/npm /usr/local/bin/npm
+#
+# 构建前端
+#
 
-# 后端依赖
-WORKDIR /blivechat
-COPY requirements.txt ./
-RUN pip3 install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
+FROM node:16.14.0-bullseye AS builder
+ARG BASE_PATH='/root/blivechat'
+WORKDIR "${BASE_PATH}/frontend"
 
 # 前端依赖
-WORKDIR ./frontend
 COPY frontend/package.json ./
 RUN npm i --registry=https://registry.npmmirror.com
 
 # 编译前端
-COPY . ../
+COPY frontend ./
 RUN npm run build
 
+#
+# 准备后端
+#
+
+FROM python:3.8.12-bullseye
+ARG BASE_PATH='/root/blivechat'
+ARG EXT_DATA_PATH='/mnt/data'
+WORKDIR "${BASE_PATH}"
+
+# 后端依赖
+COPY requirements.txt ./
+RUN pip3 install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
+
+# 数据目录
+COPY . ./
+RUN mkdir -p "${EXT_DATA_PATH}/frontend/dist" \
+    && mv data "${EXT_DATA_PATH}/data" \
+    && ln -s "${EXT_DATA_PATH}/data" data \
+    && mv log "${EXT_DATA_PATH}/log" \
+    && ln -s "${EXT_DATA_PATH}/log" log \
+    && ln -s "${EXT_DATA_PATH}/frontend/dist" frontend/dist
+
+# 编译好的前端
+COPY --from=builder "${BASE_PATH}/frontend/dist" "${EXT_DATA_PATH}/frontend/dist/"
+
 # 运行
-WORKDIR ..
-VOLUME /blivechat/data /blivechat/log /blivechat/frontend/dist
+VOLUME "${EXT_DATA_PATH}"
 EXPOSE 12450
 ENTRYPOINT ["python3", "main.py"]
 CMD ["--host", "0.0.0.0", "--port", "12450"]

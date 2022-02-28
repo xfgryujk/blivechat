@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import asyncio
 import hashlib
+import logging
 import os
 
 import tornado.web
@@ -8,6 +9,8 @@ import tornado.web
 import api.base
 import config
 import update
+
+logger = logging.getLogger(__name__)
 
 
 class MainHandler(tornado.web.StaticFileHandler):  # noqa
@@ -51,16 +54,18 @@ class UploadEmoticonHandler(api.base.ApiHandler):  # noqa
             raise tornado.web.HTTPError(415)
 
         url = await asyncio.get_event_loop().run_in_executor(
-            None, self._save_file, self.settings['WEB_ROOT'], file.body
+            None, self._save_file, file.body, self.settings['WEB_ROOT'], self.request.remote_ip
         )
         self.write({
             'url': url
         })
 
     @staticmethod
-    def _save_file(web_root, body):
+    def _save_file(body, web_root, client):
         md5 = hashlib.md5(body).hexdigest()
         rel_path = os.path.join('upload', md5 + '.png')
+        logger.info('client=%s uploaded file, path=%s, size=%d', client, rel_path, len(body))
+
         abs_path = os.path.join(web_root, rel_path)
         tmp_path = abs_path + '.tmp'
         with open(tmp_path, 'wb') as f:
