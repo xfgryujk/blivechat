@@ -124,6 +124,9 @@ server {
 		# 如果文件不存在，交给前端路由
 		try_files $uri $uri/ /index.html;
 	}
+	location /emoticons {
+		alias /PATH/TO/BLIVECHAT/data/emoticons;
+	}
 	# 动态API
 	location /api {
 		proxy_pass http://blivechat;

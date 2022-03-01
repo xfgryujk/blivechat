@@ -18,4 +18,7 @@ README.md
 # runtime data
 data/*
 !data/config.example.ini
+!data/emoticons/
+data/emoticons/*
+!data/emoticons/.gitkeep
 log/*

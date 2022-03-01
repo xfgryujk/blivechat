@@ -12,6 +12,9 @@ import update
 
 logger = logging.getLogger(__name__)
 
+EMOTICON_UPLOAD_PATH = os.path.join(config.DATA_PATH, 'emoticons')
+EMOTICON_BASE_URL = '/emoticons'
+
 
 class MainHandler(tornado.web.StaticFileHandler):  # noqa
     """为了使用Vue Router的history模式，把不存在的文件请求转发到index.html"""
@@ -54,26 +57,22 @@ class UploadEmoticonHandler(api.base.ApiHandler):  # noqa
             raise tornado.web.HTTPError(415)
 
         url = await asyncio.get_event_loop().run_in_executor(
-            None, self._save_file, file.body, self.settings['WEB_ROOT'], self.request.remote_ip
+            None, self._save_file, file.body, self.request.remote_ip
         )
         self.write({
             'url': url
         })
 
     @staticmethod
-    def _save_file(body, web_root, client):
+    def _save_file(body, client):
         md5 = hashlib.md5(body).hexdigest()
-        rel_path = os.path.join('upload', md5 + '.png')
-        logger.info('client=%s uploaded file, path=%s, size=%d', client, rel_path, len(body))
+        filename = md5 + '.png'
+        path = os.path.join(EMOTICON_UPLOAD_PATH, filename)
+        logger.info('client=%s uploaded file, path=%s, size=%d', client, path, len(body))
 
-        abs_path = os.path.join(web_root, rel_path)
-        tmp_path = abs_path + '.tmp'
+        tmp_path = path + '.tmp'
         with open(tmp_path, 'wb') as f:
             f.write(body)
-        os.replace(tmp_path, abs_path)
+        os.replace(tmp_path, path)
 
-        url = rel_path
-        if os.path.sep != '/':
-            url = url.replace(os.path.sep, '/')
-        url = '/' + url
-        return url
+        return f'{EMOTICON_BASE_URL}/{filename}'

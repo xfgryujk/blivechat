@@ -7,7 +7,7 @@ module.exports = {
         target: API_BASE_URL,
         ws: true
       },
-      '/upload': {
+      '/emoticons': {
         target: API_BASE_URL
       }
     }

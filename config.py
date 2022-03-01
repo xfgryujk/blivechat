@@ -6,9 +6,13 @@ from typing import *
 
 logger = logging.getLogger(__name__)
 
+BASE_PATH = os.path.dirname(os.path.realpath(__file__))
+WEB_ROOT = os.path.join(BASE_PATH, 'frontend', 'dist')
+DATA_PATH = os.path.join(BASE_PATH, 'data')
+
 CONFIG_PATH_LIST = [
-    os.path.join('data', 'config.ini'),
-    os.path.join('data', 'config.example.ini')
+    os.path.join(DATA_PATH, 'config.ini'),
+    os.path.join(DATA_PATH, 'config.example.ini')
 ]
 
 _config: Optional['AppConfig'] = None
