@@ -422,7 +422,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         if room is None:
             return
 
-        room.send_cmd_data(api.chat.Command.ADD_SUPER_CHAT, {
+        room.send_cmd_data(api.chat.Command.DEL_SUPER_CHAT, {
             'ids': list(map(str, message.ids))
         })
 

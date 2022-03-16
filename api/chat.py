@@ -276,7 +276,7 @@ class ChatHandler(tornado.websocket.WebSocketHandler):  # noqa
         sc_data['price'] = 100
         sc_data['content'] = '敏捷的棕色狐狸跳过了懒狗'
         self.send_cmd_data(Command.ADD_SUPER_CHAT, sc_data)
-        # self.send_message(Command.DEL_SUPER_CHAT, {'ids': [sc_data['id']]})
+        # self.send_cmd_data(Command.DEL_SUPER_CHAT, {'ids': [sc_data['id']]})
         self.send_cmd_data(Command.ADD_GIFT, gift_data)
         gift_data['id'] = uuid.uuid4().hex
         gift_data['totalCoin'] = 1245000
