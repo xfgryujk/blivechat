@@ -78,7 +78,8 @@ const MESSAGE_GENERATORS = [
           medalLevel: randInt(0, 40),
           id: getUuid4Hex(),
           translation: '',
-          emoticon: null
+          emoticon: null,
+          isBulgeDisplay: randInt(1, 2) <= 1
         }
       }
     }

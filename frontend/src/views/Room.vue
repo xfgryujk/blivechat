@@ -307,7 +307,8 @@ export default {
         richContent.push({
           type: constants.CONTENT_TYPE_IMAGE,
           text: data.content,
-          url: data.emoticon
+          url: data.emoticon,
+          isBulgeDisplay: data.isBulgeDisplay
         })
         return richContent
       }
@@ -345,7 +346,8 @@ export default {
         richContent.push({
           type: constants.CONTENT_TYPE_IMAGE,
           text: matchEmoticon.keyword,
-          url: matchEmoticon.url
+          url: matchEmoticon.url,
+          isBulgeDisplay: false
         })
         pos += matchEmoticon.keyword.length
         startPos = pos

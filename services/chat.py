@@ -335,6 +335,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             translation=translation,
             content_type=content_type,
             content_type_params=content_type_params,
+            is_bulge_display=message.emoticon_options_dict['bulge_display'],
         ))
 
         if need_translate:
