@@ -318,6 +318,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         else:
             translation = ''
 
+
         msg_id = uuid.uuid4().hex
         room.send_cmd_data(api.chat.Command.ADD_TEXT, api.chat.make_text_message_data(
             avatar_url=avatar_url,
@@ -335,6 +336,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             translation=translation,
             content_type=content_type,
             content_type_params=content_type_params,
+            is_bulge_display=message.emoticon_options_dict.get('bulge_display', 0),
         ))
 
         if need_translate:

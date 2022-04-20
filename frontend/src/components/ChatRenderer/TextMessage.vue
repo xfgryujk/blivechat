@@ -12,7 +12,7 @@
         <template v-for="(content, index) in richContent">
           <span :key="index" v-if="content.type === CONTENT_TYPE_TEXT">{{ content.text }}</span>
           <img :key="index" v-else-if="content.type === CONTENT_TYPE_IMAGE"
-            class="emoji yt-formatted-string style-scope yt-live-chat-text-message-renderer"
+            :class="content.isBulgeDisplay? 'bulge emoji yt-formatted-string style-scope yt-live-chat-text-message-renderer' : 'emoji yt-formatted-string style-scope yt-live-chat-text-message-renderer'"
             :src="content.url" :alt="content.text" :shared-tooltip-text="content.text" :id="`emoji-${content.text}`"
           >
         </template>

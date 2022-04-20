@@ -336,7 +336,8 @@ export default class ChatClientDirect {
       medalLevel: roomId === this.roomId ? medalLevel : 0,
       id: getUuid4Hex(),
       translation: '',
-      emoticon: info[0][13].url || null
+      emoticon: info[0][13].url || null,
+      isBulgeDisplay: Boolean(info[0][13].bulge_display)
     }
     this.onAddText(data)
   }

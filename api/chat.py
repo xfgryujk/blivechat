@@ -63,6 +63,7 @@ def make_text_message_data(
     translation: str = '',
     content_type: int = ContentType.TEXT,
     content_type_params: list = None,
+    is_bulge_display: int = 0,
 ):
     # 为了节省带宽用list而不是dict
     return [
@@ -96,6 +97,8 @@ def make_text_message_data(
         content_type,
         # 14: contentTypeParams
         content_type_params if content_type_params is not None else [],
+        # 15: is_bulge_display
+        1 if is_bulge_display else 0,
     ]
 
 
