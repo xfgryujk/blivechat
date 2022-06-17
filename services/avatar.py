@@ -100,7 +100,8 @@ def get_avatar_url_from_web(user_id) -> Awaitable[Optional[str]]:
         return future
     # 否则创建一个获取任务
     _uid_fetch_future_map[user_id] = future = _main_event_loop.create_future()
-    future.add_done_callback(lambda _future: _uid_fetch_future_map.pop(user_id, None))
+    future.add_done_callback(
+        lambda _future: _uid_fetch_future_map.pop(user_id, None))
     try:
         _uid_queue_to_fetch.put_nowait(user_id)
     except asyncio.QueueFull:
@@ -127,7 +128,8 @@ async def _get_avatar_url_from_web_consumer():
                 else:
                     _last_fetch_banned_time = None
 
-            asyncio.ensure_future(_get_avatar_url_from_web_coroutine(user_id, future))
+            asyncio.ensure_future(
+                _get_avatar_url_from_web_coroutine(user_id, future))
 
             # 限制频率，防止被B站ban
             cfg = config.get_config()
@@ -148,7 +150,7 @@ async def _get_avatar_url_from_web_coroutine(user_id, future):
 async def _do_get_avatar_url_from_web(user_id):
     try:
         async with utils.request.http_session.get(
-            'https://api.bilibili.com/x/space/acc/info', params={'mid': user_id}
+            'https://api.bilibili.com/x/space/app/index', params={'mid': user_id}
         ) as r:
             if r.status != 200:
                 logger.warning('Failed to fetch avatar: status=%d %s uid=%d', r.status, r.reason, user_id)
@@ -161,7 +163,7 @@ async def _do_get_avatar_url_from_web(user_id):
     except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
         return None
 
-    avatar_url = process_avatar_url(data['data']['face'])
+    avatar_url = process_avatar_url(data['data']['info']['face'])
     update_avatar_cache(user_id, avatar_url)
     return avatar_url
 
