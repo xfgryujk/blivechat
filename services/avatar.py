@@ -100,8 +100,7 @@ def get_avatar_url_from_web(user_id) -> Awaitable[Optional[str]]:
         return future
     # 否则创建一个获取任务
     _uid_fetch_future_map[user_id] = future = _main_event_loop.create_future()
-    future.add_done_callback(
-        lambda _future: _uid_fetch_future_map.pop(user_id, None))
+    future.add_done_callback(lambda _future: _uid_fetch_future_map.pop(user_id, None))
     try:
         _uid_queue_to_fetch.put_nowait(user_id)
     except asyncio.QueueFull:
@@ -128,8 +127,7 @@ async def _get_avatar_url_from_web_consumer():
                 else:
                     _last_fetch_banned_time = None
 
-            asyncio.ensure_future(
-                _get_avatar_url_from_web_coroutine(user_id, future))
+            asyncio.ensure_future(_get_avatar_url_from_web_coroutine(user_id, future))
 
             # 限制频率，防止被B站ban
             cfg = config.get_config()
