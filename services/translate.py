@@ -57,8 +57,6 @@ def create_translate_provider(cfg):
             cfg['query_interval'], cfg['max_queue_size'], cfg['source_language'],
             cfg['target_language']
         )
-    elif type_ == 'BilibiliTranslateFree':
-        return BilibiliTranslateFree(cfg['query_interval'], cfg['max_queue_size'])
     elif type_ == 'TencentTranslate':
         return TencentTranslate(
             cfg['query_interval'], cfg['max_queue_size'], cfg['source_language'],
@@ -414,38 +412,6 @@ class TencentTranslateFree(FlowControlTranslateProvider):
         self._uc_key = self._uc_iv = ''
         self._qtv = self._qtk = ''
         self._fail_count = 0
-
-
-class BilibiliTranslateFree(FlowControlTranslateProvider):
-    def __init__(self, query_interval, max_queue_size):
-        super().__init__(query_interval, max_queue_size)
-
-    async def _do_translate(self, text):
-        try:
-            async with utils.request.http_session.get(
-                'https://api.live.bilibili.com/av/v1/SuperChat/messageTranslate',
-                headers={
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)'
-                                  ' Chrome/102.0.0.0 Safari/537.36'
-                },
-                params={
-                    'room_id': '21396545',
-                    'ruid': '407106379',
-                    'parent_area_id': '9',
-                    'area_id': '371',
-                    'msg': text
-                }
-            ) as r:
-                if r.status != 200:
-                    logger.warning('BilibiliTranslateFree request failed: status=%d %s', r.status, r.reason)
-                    return None
-                data = await r.json()
-        except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
-            return None
-        if data['code'] != 0:
-            logger.warning('BilibiliTranslateFree failed: %d %s', data['code'], data['msg'])
-            return None
-        return data['data']['message_trans']
 
 
 class TencentTranslate(FlowControlTranslateProvider):
