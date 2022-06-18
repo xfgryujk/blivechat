@@ -306,7 +306,14 @@ class RoomInfoHandler(api.base.ApiHandler):  # noqa
     async def _get_room_info(room_id):
         try:
             async with utils.request.http_session.get(
-                blivedm_client.ROOM_INIT_URL, params={'room_id': room_id}
+                blivedm_client.ROOM_INIT_URL,
+                headers={
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)'
+                                  ' Chrome/102.0.0.0 Safari/537.36'
+                },
+                params={
+                    'room_id': room_id
+                }
             ) as res:
                 if res.status != 200:
                     logger.warning('room=%d _get_room_info failed: %d %s', room_id,
