@@ -150,11 +150,15 @@ async def _do_get_avatar_url_from_web(user_id):
         async with utils.request.http_session.get(
             'https://api.bilibili.com/x/space/acc/info',
             headers={
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)'
-                              ' Chrome/102.0.0.0 Safari/537.36'
+                **utils.request.BILIBILI_COMMON_HEADERS,
+                'Origin': 'https://space.bilibili.com',
+                'Referer': f'https://space.bilibili.com/{user_id}/'
             },
             params={
-                'mid': user_id
+                'mid': user_id,
+                'token': '',
+                'platform': 'web',
+                'jsonp': 'jsonp'
             }
         ) as r:
             if r.status != 200:
@@ -166,6 +170,11 @@ async def _do_get_avatar_url_from_web(user_id):
                 return None
             data = await r.json()
     except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
+        return None
+
+    if data['code'] != 0:
+        # 这里虽然失败但不会被ban一段时间
+        logger.info('Failed to fetch avatar: code=%d %s uid=%d', data['code'], data['message'], user_id)
         return None
 
     avatar_url = process_avatar_url(data['data']['face'])

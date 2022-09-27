@@ -308,8 +308,9 @@ class RoomInfoHandler(api.base.ApiHandler):  # noqa
             async with utils.request.http_session.get(
                 blivedm_client.ROOM_INIT_URL,
                 headers={
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)'
-                                  ' Chrome/102.0.0.0 Safari/537.36'
+                    **utils.request.BILIBILI_COMMON_HEADERS,
+                    'Origin': 'https://live.bilibili.com',
+                    'Referer': f'https://live.bilibili.com/{room_id}'
                 },
                 params={
                     'room_id': room_id
