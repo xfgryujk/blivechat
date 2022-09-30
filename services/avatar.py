@@ -148,17 +148,18 @@ async def _get_avatar_url_from_web_coroutine(user_id, future):
 async def _do_get_avatar_url_from_web(user_id):
     try:
         async with utils.request.http_session.get(
-            'https://api.bilibili.com/x/space/acc/info',
+            'http://api.bilibili.com/x/web-interface/card',
             headers={
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)'
-                              ' Chrome/102.0.0.0 Safari/537.36'
+                              ' Chrome/102.0.0.0 Safari/537.36',
             },
             params={
                 'mid': user_id
             }
         ) as r:
             if r.status != 200:
-                logger.warning('Failed to fetch avatar: status=%d %s uid=%d', r.status, r.reason, user_id)
+                logger.warning(
+                    'Failed to fetch avatar: status=%d %s uid=%d', r.status, r.reason, user_id)
                 if r.status == 412:
                     # 被B站ban了
                     global _last_fetch_banned_time
@@ -168,7 +169,7 @@ async def _do_get_avatar_url_from_web(user_id):
     except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
         return None
 
-    avatar_url = process_avatar_url(data['data']['face'])
+    avatar_url = process_avatar_url(data['data']['card']['face'])
     update_avatar_cache(user_id, avatar_url)
     return avatar_url
 
