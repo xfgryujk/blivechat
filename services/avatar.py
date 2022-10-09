@@ -154,6 +154,7 @@ async def _do_get_avatar_url_from_web(user_id):
                 'Origin': 'https://space.bilibili.com',
                 'Referer': f'https://space.bilibili.com/{user_id}/'
             },
+            cookies=utils.request.BILIBILI_COMMON_COOKIES,
             params={
                 'mid': user_id,
                 'token': '',
