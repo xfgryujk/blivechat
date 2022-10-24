@@ -148,15 +148,15 @@ async def _get_avatar_url_from_web_coroutine(user_id, future):
 async def _do_get_avatar_url_from_web(user_id):
     try:
         async with utils.request.http_session.get(
-            'https://api.bilibili.com/x/space/acc/info',
+            'https://api.live.bilibili.com/xlive/web-room/v1/index/getDanmuMedalAnchorInfo',
             headers={
                 **utils.request.BILIBILI_COMMON_HEADERS,
-                'Origin': 'https://space.bilibili.com',
-                'Referer': f'https://space.bilibili.com/{user_id}/'
+                'Origin': 'https://live.bilibili.com',
+                'Referer': f'https://live.bilibili.com/{user_id}/'
             },
             cookies=utils.request.BILIBILI_COMMON_COOKIES,
             params={
-                'mid': user_id,
+                'ruid': user_id,
                 'token': '',
                 'platform': 'web',
                 'jsonp': 'jsonp'
@@ -178,7 +178,7 @@ async def _do_get_avatar_url_from_web(user_id):
         logger.info('Failed to fetch avatar: code=%d %s uid=%d', data['code'], data['message'], user_id)
         return None
 
-    avatar_url = process_avatar_url(data['data']['face'])
+    avatar_url = process_avatar_url(data['data']['rface'])
     update_avatar_cache(user_id, avatar_url)
     return avatar_url
 
