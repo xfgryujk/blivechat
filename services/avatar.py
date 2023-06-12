@@ -202,8 +202,8 @@ async def _get_wbi_key() -> str | None:
     img_url: str = data['data']['wbi_img']['img_url']
     sub_url: str = data['data']['wbi_img']['sub_url']
 
-    img_key = img_url.rsplit('/', 1)[1].split(''.'')[0]
-    sub_key = sub_url.rsplit('/', 1)[1].split(''.'')[0]
+    img_key = img_url.rsplit('/', 1)[1].split('.')[0]
+    sub_key = sub_url.rsplit('/', 1)[1].split('.')[0]
 
     return "".join(
         operator.itemgetter(
