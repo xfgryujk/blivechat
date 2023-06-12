@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 import asyncio
 import datetime
+import hashlib
 import logging
+import operator
 import re
 from typing import *
-
+import urllib.parse
 import aiohttp
 import sqlalchemy
 import sqlalchemy.exc
@@ -28,6 +30,8 @@ _uid_fetch_future_map: Dict[int, asyncio.Future] = {}
 _uid_queue_to_fetch: Optional[asyncio.Queue] = None
 # 上次被B站ban时间
 _last_fetch_banned_time: Optional[datetime.datetime] = None
+# wbi鉴权口令
+_wbi_key: Optional[str] = None
 
 
 def init():
@@ -146,21 +150,21 @@ async def _get_avatar_url_from_web_coroutine(user_id, future):
 
 
 async def _do_get_avatar_url_from_web(user_id):
+    global _wbi_key
+
+    if _wbi_key is None:
+        _wbi_key = await _get_wbi_key()
+
     try:
         async with utils.request.http_session.get(
-            'https://api.bilibili.com/x/space/acc/info',
+            'https://api.bilibili.com/x/space/wbi/acc/info',
             headers={
                 **utils.request.BILIBILI_COMMON_HEADERS,
                 'Origin': 'https://space.bilibili.com',
                 'Referer': f'https://space.bilibili.com/{user_id}/'
             },
             cookies=utils.request.BILIBILI_COMMON_COOKIES,
-            params={
-                'mid': user_id,
-                'token': '',
-                'platform': 'web',
-                'jsonp': 'jsonp'
-            }
+            params=_wbi_sign({'mid': user_id}),
         ) as r:
             if r.status != 200:
                 logger.warning('Failed to fetch avatar: status=%d %s uid=%d', r.status, r.reason, user_id)
@@ -176,11 +180,51 @@ async def _do_get_avatar_url_from_web(user_id):
     if data['code'] != 0:
         # 这里虽然失败但不会被ban一段时间
         logger.info('Failed to fetch avatar: code=%d %s uid=%d', data['code'], data['message'], user_id)
+        if data['code'] == -403:
+            _wbi_key = None
         return None
 
     avatar_url = process_avatar_url(data['data']['face'])
     update_avatar_cache(user_id, avatar_url)
     return avatar_url
+
+
+async def _get_wbi_key() -> str | None:
+    try:
+        async with utils.request.http_session.get(
+            'https://api.bilibili.com/nav',
+            headers=utils.request.BILIBILI_COMMON_HEADERS,
+        ) as r:
+            data = await r.json()
+    except (aiohttp.ClientConnectionError, asyncio.TimeoutError) as e:
+        return None
+
+    img_url: str = data['data']['wbi_img']['img_url']
+    sub_url: str = data['data']['wbi_img']['sub_url']
+
+    img_key = img_url.rsplit('/', 1)[1].split(''.'')[0]
+    sub_key = sub_url.rsplit('/', 1)[1].split(''.'')[0]
+
+    return "".join(
+        operator.itemgetter(
+            *(
+                b'./\x12\x025\x08\x17 \x0f2\n\x1f:\x03-#'
+                b'\x1b+\x051!\t*\x13\x1d\x1c\x0e\'\x0c&)\r'
+            )
+        )(img_key + sub_key)
+    )
+
+
+def _wbi_sign(params):
+    if _wbi_key is None:
+        raise RuntimeError('wbi_key is not initialized')
+
+    params['wts'] = str(int(datetime.datetime.now().timestamp()))
+    params['w_rid'] = hashlib.md5(
+        (urllib.parse.urlencode(params) + _wbi_key).encode()
+    ).hexdigest()
+
+    return params
 
 
 def process_avatar_url(avatar_url):
