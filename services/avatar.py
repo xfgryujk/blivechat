@@ -189,7 +189,7 @@ async def _do_get_avatar_url_from_web(user_id):
     return avatar_url
 
 
-async def _get_wbi_key() -> str | None:
+async def _get_wbi_key() -> Optional[str]:
     try:
         async with utils.request.http_session.get(
             'https://api.bilibili.com/nav',
