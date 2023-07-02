@@ -63,6 +63,8 @@ class AppConfig:
         self.translation_cache_size = 50000
         self.translator_configs = []
 
+        self.bilibili_cookies_file = ''
+
     def load(self, path):
         try:
             config = configparser.ConfigParser()
@@ -90,6 +92,8 @@ class AppConfig:
         self.enable_translate = app_section.getboolean('enable_translate', fallback=self.enable_translate)
         self.allow_translate_rooms = _str_to_list(app_section.get('allow_translate_rooms', ''), int, set)
         self.translation_cache_size = app_section.getint('translation_cache_size', self.translation_cache_size)
+
+        self.bilibili_cookies_file = app_section.get('bilibili_cookies_file', fallback=self.bilibili_cookies_file)
 
     def _load_translator_configs(self, config: configparser.ConfigParser):
         app_section = config['app']
