@@ -70,25 +70,25 @@ class LiveClient(blivedm.BLiveClient):
     def __init__(self, room_id):
         super().__init__(room_id, session=utils.request.http_session, heartbeat_interval=self.HEARTBEAT_INTERVAL)
 
-    async def _test_bilibili_login(self):
+    async def _check_bilibili_login(self):
         cfg = config.get_config()
         try:
             async with self._session.get("https://api.bilibili.com/x/web-interface/nav") as res:
                 data = await res.json()
                 if data['code'] == 0:
                     logger.info('Connecting to danmaku server as %s' % data['data']['uname'])
+                    self._uid = data['data']['mid']
                 elif data['code'] == -101:
                     if cfg.bilibili_cookies_file:
-                        logger.warning('Bilibili cookies failed to pass validation, possbly wrong cookies or cookies has expired: %s' % data['message'])
-                    else:
-                        logger.info('Connecting to danmaku server as guest')
+                        logger.warning('Failed to login using bilibili cookies, possbly wrong cookies or cookies has expired: %s' % data['message'])
+                    logger.info('Connecting to danmaku server as guest')
                 else:
                     logger.warning('Failed to check bilibili cookies: %s %s' % (data['code'], data['message']))
         except Exception:
             logger.exception('Failed to check bilibili cookies')
 
     async def _init_host_server(self):
-        asyncio.ensure_future(self._test_bilibili_login())
+        await self._check_bilibili_login()
         await super()._init_host_server()
 
     @property
