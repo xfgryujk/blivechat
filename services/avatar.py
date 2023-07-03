@@ -13,6 +13,7 @@ import config
 import models.bilibili as bl_models
 import models.database
 import utils.request
+from .wbi import transform_params
 
 logger = logging.getLogger(__name__)
 
@@ -147,20 +148,19 @@ async def _get_avatar_url_from_web_coroutine(user_id, future):
 
 async def _do_get_avatar_url_from_web(user_id):
     try:
+        params={
+                'mid': user_id
+            }
+        signed_params = await transform_params(params)
         async with utils.request.http_session.get(
-            'https://api.bilibili.com/x/space/acc/info',
+            'https://api.bilibili.com/x/space/wbi/acc/info',
             headers={
                 **utils.request.BILIBILI_COMMON_HEADERS,
                 'Origin': 'https://space.bilibili.com',
                 'Referer': f'https://space.bilibili.com/{user_id}/'
             },
             cookies=utils.request.BILIBILI_COMMON_COOKIES,
-            params={
-                'mid': user_id,
-                'token': '',
-                'platform': 'web',
-                'jsonp': 'jsonp'
-            }
+            params = signed_params
         ) as r:
             if r.status != 200:
                 logger.warning('Failed to fetch avatar: status=%d %s uid=%d', r.status, r.reason, user_id)
