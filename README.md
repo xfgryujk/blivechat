@@ -55,7 +55,7 @@
     npm i
     npm run build
     ```
-2. 运行服务器（需要Python3.6以上版本）：
+2. 运行服务器（需要Python3.8以上版本）：
     ```sh
     pip3 install -r requirements.txt
     python3 main.py

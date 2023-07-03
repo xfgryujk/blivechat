@@ -107,7 +107,7 @@ export default class ChatClientDirect {
 
   sendAuth() {
     let authParams = {
-      uid: 0,
+      uid: this.roomOwnerUid,
       roomid: this.roomId,
       protover: 3,
       platform: 'web',
