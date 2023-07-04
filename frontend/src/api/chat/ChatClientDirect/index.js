@@ -110,7 +110,7 @@ export default class ChatClientDirect {
       uid: this.roomOwnerUid,
       roomid: this.roomId,
       protover: 3,
-      platform: 'web',
+      platform: 'danmuji',
       type: 2
     }
     this.websocket.send(this.makePacket(authParams, OP_AUTH))
