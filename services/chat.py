@@ -263,7 +263,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             price=data['price'],
             message=data['message'],
             start_time=data['start_time'],
-            id_=data['id'],
+            id=data['id'],
             uid=data['uid'],
             uname=data['user_info']['uname'],
             face=data['user_info']['face'],
