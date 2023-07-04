@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import asyncio
 import datetime
+import hashlib
 import logging
 import re
+import urllib.parse
 from typing import *
 
 import aiohttp
@@ -28,6 +30,14 @@ _uid_fetch_future_map: Dict[int, asyncio.Future] = {}
 _uid_queue_to_fetch: Optional[asyncio.Queue] = None
 # 上次被B站ban时间
 _last_fetch_banned_time: Optional[datetime.datetime] = None
+
+# wbi密码表
+WBI_KEY_INDEX_TABLE = [
+    46, 47, 18, 2, 53, 8, 23, 32, 15, 50, 10, 31, 58, 3, 45, 35,
+    27, 43, 5, 49, 33, 9, 42, 19, 29, 28, 14, 39, 12, 38, 41, 13
+]
+# wbi鉴权口令
+_wbi_key = ''
 
 
 def init():
@@ -146,21 +156,21 @@ async def _get_avatar_url_from_web_coroutine(user_id, future):
 
 
 async def _do_get_avatar_url_from_web(user_id):
+    global _wbi_key
+    if _wbi_key == '':
+        # TODO 判断一下是否正在获取
+        _wbi_key = await _get_wbi_key()
+
     try:
         async with utils.request.http_session.get(
-            'https://api.bilibili.com/x/space/acc/info',
+            'https://api.bilibili.com/x/space/wbi/acc/info',
             headers={
                 **utils.request.BILIBILI_COMMON_HEADERS,
                 'Origin': 'https://space.bilibili.com',
                 'Referer': f'https://space.bilibili.com/{user_id}/'
             },
             cookies=utils.request.BILIBILI_COMMON_COOKIES,
-            params={
-                'mid': user_id,
-                'token': '',
-                'platform': 'web',
-                'jsonp': 'jsonp'
-            }
+            params=_add_wbi_sign({'mid': user_id}),
         ) as r:
             if r.status != 200:
                 logger.warning('Failed to fetch avatar: status=%d %s uid=%d', r.status, r.reason, user_id)
@@ -176,11 +186,73 @@ async def _do_get_avatar_url_from_web(user_id):
     if data['code'] != 0:
         # 这里虽然失败但不会被ban一段时间
         logger.info('Failed to fetch avatar: code=%d %s uid=%d', data['code'], data['message'], user_id)
+        if data['code'] == -403:
+            _wbi_key = ''
         return None
 
     avatar_url = process_avatar_url(data['data']['face'])
     update_avatar_cache(user_id, avatar_url)
     return avatar_url
+
+
+async def _get_wbi_key():
+    try:
+        async with utils.request.http_session.get(
+            'https://api.bilibili.com/nav',
+            headers=utils.request.BILIBILI_COMMON_HEADERS,
+        ) as r:
+            if r.status != 200:
+                logger.warning('Failed to get wbi key: status=%d %s', r.status, r.reason)
+                return ''
+            data = await r.json()
+    except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
+        logger.exception('Failed to get wbi key:')
+        return ''
+
+    try:
+        wbi_img = data['data']['wbi_img']
+        img_key = wbi_img['img_url'].rpartition('/')[2].partition('.')[0]
+        sub_key = wbi_img['sub_url'].rpartition('/')[2].partition('.')[0]
+    except KeyError:
+        logger.warning('Failed to get wbi key: data=%s', data)
+        return ''
+
+    shuffled_key = img_key + sub_key
+    wbi_key = []
+    for index in WBI_KEY_INDEX_TABLE:
+        if index < len(shuffled_key):
+            wbi_key.append(shuffled_key[index])
+    return ''.join(wbi_key)
+
+
+def _add_wbi_sign(params: dict):
+    if _wbi_key == '':
+        return params
+
+    wts = str(int(datetime.datetime.now().timestamp()))
+    params_to_sign = {**params, 'wts': wts}
+
+    # 按key字典序排序
+    params_to_sign = {
+        key: params_to_sign[key]
+        for key in sorted(params_to_sign.keys())
+    }
+    # 过滤一些字符
+    for key, value in params_to_sign.items():
+        value = ''.join(
+            ch
+            for ch in str(value)
+            if ch not in "!'()*"
+        )
+        params_to_sign[key] = value
+
+    str_to_sign = urllib.parse.urlencode(params_to_sign) + _wbi_key
+    w_rid = hashlib.md5(str_to_sign.encode('utf-8')).hexdigest()
+    return {
+        **params,
+        'wts': wts,
+        'w_rid': w_rid
+    }
 
 
 def process_avatar_url(avatar_url):
