@@ -284,6 +284,48 @@ class ChatHandler(tornado.websocket.WebSocketHandler):  # noqa
         self.send_cmd_data(Command.ADD_GIFT, gift_data)
 
 
+class DanmuInfoHandler(api.base.ApiHandler): # noqa # 获取房间的token(作为key)，以及host_list
+    async def get(self):
+        room_id = int(self.get_query_argument('roomId'))
+        logger.info('client=%s getting danmu info, room=%d', self.request.remote_ip, room_id)
+        danmu_info = await self._get_danmu_info(room_id)
+        data = {}
+        if danmu_info != None:
+            data['token'] = danmu_info['token']
+            data['hostServerList'] = danmu_info['host_list']
+        self.write(data)
+
+    @staticmethod
+    async def _get_danmu_info(room_id):
+        try:
+            async with utils.request.http_session.get(
+                blivedm_client.DANMAKU_SERVER_CONF_URL,
+                headers={
+                    **utils.request.BILIBILI_COMMON_HEADERS,
+                    'Origin': 'https://live.bilibili.com',
+                    'Referer': f'https://live.bilibili.com/{room_id}'
+                },
+                cookies=utils.request.BILIBILI_COMMON_COOKIES,
+                params={
+                    'id': room_id
+                }
+            ) as res:
+                if res.status != 200:
+                    logger.warning('room=%d _get_danmu_info failed: %d %s', room_id,
+                                   res.status, res.reason)
+                    return None
+                data = await res.json()
+        except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
+            logger.exception('room=%d _get_danmu_info failed', room_id)
+            return None
+
+        if data['code'] != 0:
+            logger.warning('room=%d _get_danmu_info failed: %s', room_id, data['message'])
+            return None
+
+        return data['data']
+
+
 class RoomInfoHandler(api.base.ApiHandler):  # noqa
     async def get(self):
         room_id = int(self.get_query_argument('roomId'))

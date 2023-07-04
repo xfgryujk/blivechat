@@ -25,6 +25,7 @@ routes = [
 
     (r'/api/chat', api.chat.ChatHandler),
     (r'/api/room_info', api.chat.RoomInfoHandler),
+    (r'/api/danmu_info', api.chat.DanmuInfoHandler),
     (r'/api/avatar_url', api.chat.AvatarHandler),
 
     (rf'{api.main.EMOTICON_BASE_URL}/(.*)', tornado.web.StaticFileHandler, {'path': api.main.EMOTICON_UPLOAD_PATH}),
