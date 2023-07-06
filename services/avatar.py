@@ -55,6 +55,9 @@ async def get_avatar_url(user_id):
 
 
 async def get_avatar_url_or_none(user_id):
+    if user_id == 0:
+        return None
+
     avatar_url = get_avatar_url_from_memory(user_id)
     if avatar_url is not None:
         return avatar_url
@@ -169,7 +172,6 @@ async def _do_get_avatar_url_from_web(user_id):
                 'Origin': 'https://space.bilibili.com',
                 'Referer': f'https://space.bilibili.com/{user_id}/'
             },
-            cookies=utils.request.BILIBILI_COMMON_COOKIES,
             params=_add_wbi_sign({'mid': user_id}),
         ) as r:
             if r.status != 200:
