@@ -148,7 +148,7 @@ class ChatHandler(tornado.websocket.WebSocketHandler):  # noqa
         )
 
     def _on_receive_timeout(self):
-        logger.warning('client=%s timed out', self.request.remote_ip)
+        logger.info('client=%s timed out', self.request.remote_ip)
         self._receive_timeout_timer_handle = None
         self.close()
 
