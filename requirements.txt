@@ -1,4 +1,4 @@
-aiohttp==3.7.4
+aiohttp==3.8.5
 Brotli==1.0.9
 pycryptodome==3.10.1
 sqlalchemy==1.4.31
