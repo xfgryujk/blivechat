@@ -1,5 +1,4 @@
-aiohttp==3.8.5
-Brotli==1.0.9
+-r blivedm/requirements.txt
 pycryptodome==3.10.1
 sqlalchemy==1.4.31
 tornado==6.3.2
