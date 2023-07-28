@@ -244,7 +244,7 @@ class TencentTranslateFree(FlowControlTranslateProvider):
                     self._server_time_delta = int((datetime.datetime.now().timestamp() - server_time) * 1000)
                 except (KeyError, ValueError):
                     self._server_time_delta = 0
-        except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
+        except (aiohttp.ClientError, asyncio.TimeoutError):
             logger.exception('TencentTranslateFree init error:')
             return False
 
@@ -279,7 +279,7 @@ class TencentTranslateFree(FlowControlTranslateProvider):
                                    reauthuri, r.status, r.reason)
                     return False
                 data = await r.json()
-        except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
+        except (aiohttp.ClientError, asyncio.TimeoutError):
             logger.exception('TencentTranslateFree init error:')
             return False
 
@@ -345,7 +345,7 @@ class TencentTranslateFree(FlowControlTranslateProvider):
                     return None
                 self._update_uc_key(r)
                 data = await r.json()
-        except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
+        except (aiohttp.ClientError, asyncio.TimeoutError):
             return None
         if data['errCode'] != 0:
             logger.warning('TencentTranslateFree failed: %d %s', data['errCode'], data['errMsg'])
@@ -446,7 +446,7 @@ class TencentTranslate(FlowControlTranslateProvider):
                     logger.warning('TencentTranslate request failed: status=%d %s', r.status, r.reason)
                     return None
                 data = (await r.json())['Response']
-        except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
+        except (aiohttp.ClientError, asyncio.TimeoutError):
             return None
         error = data.get('Error', None)
         if error is not None:
@@ -554,7 +554,7 @@ class BaiduTranslate(FlowControlTranslateProvider):
                     logger.warning('BaiduTranslate request failed: status=%d %s', r.status, r.reason)
                     return None
                 data = await r.json()
-        except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
+        except (aiohttp.ClientError, asyncio.TimeoutError):
             return None
         error_code = data.get('error_code', None)
         if error_code is not None:

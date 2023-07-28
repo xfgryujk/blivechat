@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from typing import *
+
 import aiohttp
 
 # 不带这堆头部有时候也能成功请求，但是带上后成功的概率更高
@@ -9,4 +11,10 @@ BILIBILI_COMMON_HEADERS = {
                   ' Chrome/114.0.0.0 Safari/537.36'
 }
 
-http_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
+http_session: Optional[aiohttp.ClientSession] = None
+
+
+# ClientSession要在异步函数中创建
+async def init():
+    global http_session
+    http_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))

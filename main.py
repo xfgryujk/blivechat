@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import argparse
+import asyncio
 import logging
 import logging.handlers
 import os
@@ -16,6 +17,7 @@ import services.avatar
 import services.chat
 import services.translate
 import update
+import utils.request
 
 logger = logging.getLogger(__name__)
 
@@ -37,10 +39,14 @@ def main():
 
     init_logging(args.debug)
     config.init()
+
+    asyncio.get_event_loop().run_until_complete(utils.request.init())
     models.database.init(args.debug)
+
     services.avatar.init()
     services.translate.init()
     services.chat.init()
+
     update.check_update()
 
     run_server(args.host, args.port, args.debug)
