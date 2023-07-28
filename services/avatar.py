@@ -8,7 +8,6 @@ import urllib.parse
 from typing import *
 
 import aiohttp
-import sqlalchemy
 import sqlalchemy.exc
 
 import config
@@ -80,8 +79,10 @@ def get_avatar_url_from_database(user_id) -> Awaitable[Optional[str]]:
 def _do_get_avatar_url_from_database(user_id):
     try:
         with models.database.get_session() as session:
-            user = session.query(bl_models.BilibiliUser).filter(
-                bl_models.BilibiliUser.uid == user_id
+            user = session.scalars(
+                sqlalchemy.select(bl_models.BilibiliUser).filter(
+                    bl_models.BilibiliUser.uid == user_id
+                )
             ).one_or_none()
             if user is None:
                 return None
@@ -285,8 +286,10 @@ def _update_avatar_cache_in_memory(user_id, avatar_url):
 def _update_avatar_cache_in_database(user_id, avatar_url):
     try:
         with models.database.get_session() as session:
-            user = session.query(bl_models.BilibiliUser).filter(
-                bl_models.BilibiliUser.uid == user_id
+            user = session.scalars(
+                sqlalchemy.select(bl_models.BilibiliUser).filter(
+                    bl_models.BilibiliUser.uid == user_id
+                )
             ).one_or_none()
             if user is None:
                 user = bl_models.BilibiliUser(

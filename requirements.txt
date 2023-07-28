@@ -1,4 +1,4 @@
 -r blivedm/requirements.txt
 pycryptodome==3.10.1
-sqlalchemy==1.4.31
+sqlalchemy==2.0.19
 tornado==6.3.2

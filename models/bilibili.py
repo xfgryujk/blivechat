@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
+import datetime
+
 import sqlalchemy
+from sqlalchemy.orm import Mapped, mapped_column
 
 import models.database
 
 
 class BilibiliUser(models.database.OrmBase):
     __tablename__ = 'bilibili_users'
-    uid = sqlalchemy.Column(sqlalchemy.BigInteger, primary_key=True)  # 创建表后最好手动改成unsigned
-    avatar_url = sqlalchemy.Column(sqlalchemy.String(100))
-    update_time = sqlalchemy.Column(sqlalchemy.DateTime)
+    uid: Mapped[int] = mapped_column(sqlalchemy.BigInteger, primary_key=True)  # 创建表后最好手动改成unsigned
+    avatar_url: Mapped[str] = mapped_column(sqlalchemy.String(100))
+    update_time: Mapped[datetime.datetime]
