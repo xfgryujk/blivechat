@@ -2,13 +2,13 @@
 # 构建前端
 #
 
-FROM node:16.14.0-bullseye AS builder
+FROM node:18.17.0-bullseye AS builder
 ARG BASE_PATH='/root/blivechat'
 WORKDIR "${BASE_PATH}/frontend"
 
 # 前端依赖
 COPY frontend/package.json ./
-RUN npm i --registry=https://registry.npmmirror.com
+RUN npm i
 
 # 编译前端
 COPY frontend ./
@@ -24,8 +24,9 @@ ARG EXT_DATA_PATH='/mnt/data'
 WORKDIR "${BASE_PATH}"
 
 # 后端依赖
+COPY blivedm/requirements.txt blivedm/
 COPY requirements.txt ./
-RUN pip3 install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
+RUN pip3 install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple -r requirements.txt
 
 # 数据目录
 COPY . ./
