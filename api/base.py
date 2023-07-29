@@ -10,6 +10,8 @@ class ApiHandler(tornado.web.RequestHandler):  # noqa
         self.json_args = None
 
     def prepare(self):
+        self.set_header('Cache-Control', 'no-cache')
+
         if not self.request.headers.get('Content-Type', '').startswith('application/json'):
             return
         try:

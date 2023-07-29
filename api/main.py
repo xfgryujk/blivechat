@@ -19,13 +19,22 @@ EMOTICON_BASE_URL = '/emoticons'
 class MainHandler(tornado.web.StaticFileHandler):  # noqa
     """为了使用Vue Router的history模式，把不存在的文件请求转发到index.html"""
     async def get(self, path, include_body=True):
+        if path == '':
+            await self._get_index(include_body)
+            return
+
         try:
             await super().get(path, include_body)
         except tornado.web.HTTPError as e:
             if e.status_code != 404:
                 raise
             # 不存在的文件请求转发到index.html，交给前端路由
-            await super().get('index.html', include_body)
+            await self._get_index(include_body)
+
+    async def _get_index(self, include_body=True):
+        # index.html不缓存，防止更新后前端还是旧版
+        self.set_header('Cache-Control', 'no-cache')
+        await super().get('index.html', include_body)
 
 
 class ServerInfoHandler(api.base.ApiHandler):  # noqa

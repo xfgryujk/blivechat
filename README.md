@@ -108,6 +108,8 @@ server {
 	ssl_certificate /PATH/TO/CERT.crt;
 	ssl_certificate_key /PATH/TO/CERT_KEY.key;
 
+	set $blivechat_path /PATH/TO/BLIVECHAT;
+
 	client_body_buffer_size 256k;
 	client_max_body_size 1.1m;
 
@@ -120,12 +122,20 @@ server {
 
 	# 静态文件
 	location / {
-		root /PATH/TO/BLIVECHAT/frontend/dist;
-		# 如果文件不存在，交给前端路由
-		try_files $uri $uri/ /index.html;
+		root $blivechat_path/frontend/dist;
+		try_files $uri $uri/ @index;
+	}
+	# 不存在的文件请求转发到index.html，交给前端路由
+	location @index {
+		rewrite ^ /index.html last;
+	}
+	location = /index.html {
+		root $blivechat_path/frontend/dist;
+		# index.html不缓存，防止更新后前端还是旧版
+		add_header Cache-Control no-cache;
 	}
 	location /emoticons {
-		alias /PATH/TO/BLIVECHAT/data/emoticons;
+		alias $blivechat_path/data/emoticons;
 	}
 	# 动态API
 	location /api {

@@ -29,7 +29,7 @@ routes = [
     (r'/api/avatar_url', api.chat.AvatarHandler),
 
     (rf'{api.main.EMOTICON_BASE_URL}/(.*)', tornado.web.StaticFileHandler, {'path': api.main.EMOTICON_UPLOAD_PATH}),
-    (r'/(.*)', api.main.MainHandler, {'path': config.WEB_ROOT, 'default_filename': 'index.html'})
+    (r'/(.*)', api.main.MainHandler, {'path': config.WEB_ROOT})
 ]
 
 
@@ -98,8 +98,6 @@ def run_server(host, port, debug):
         return
     finally:
         url = 'http://localhost/' if port == 80 else f'http://localhost:{port}/'
-        # 防止更新版本后浏览器加载缓存
-        url += '?_v=' + update.VERSION
         webbrowser.open(url)
     logger.info('Server started: %s:%d', host, port)
     tornado.ioloop.IOLoop.current().start()
