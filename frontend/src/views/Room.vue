@@ -272,7 +272,7 @@ export default {
       let blockKeywordsTrie = this.blockKeywordsTrie
       for (let i = 0; i < content.length; i++) {
         let remainContent = content.substring(i)
-        if (blockKeywordsTrie.greedyMatch(remainContent) !== null) {
+        if (blockKeywordsTrie.lazyMatch(remainContent) !== null) {
           return false
         }
       }
@@ -327,7 +327,7 @@ export default {
       let pos = 0
       while (pos < data.content.length) {
         let remainContent = data.content.substring(pos)
-        let matchEmoticon = emoticonsTrie.greedyMatch(remainContent)
+        let matchEmoticon = emoticonsTrie.lazyMatch(remainContent)
         if (matchEmoticon === null) {
           pos++
           continue

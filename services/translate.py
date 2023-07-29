@@ -446,7 +446,7 @@ class TencentTranslate(FlowControlTranslateProvider):
                     logger.warning('TencentTranslate request failed: status=%d %s', r.status, r.reason)
                     return None
                 data = (await r.json())['Response']
-        except (aiohttp.ClientError, asyncio.TimeoutError):
+        except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
             return None
         error = data.get('Error', None)
         if error is not None:
@@ -554,7 +554,7 @@ class BaiduTranslate(FlowControlTranslateProvider):
                     logger.warning('BaiduTranslate request failed: status=%d %s', r.status, r.reason)
                     return None
                 data = await r.json()
-        except (aiohttp.ClientError, asyncio.TimeoutError):
+        except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
             return None
         error_code = data.get('error_code', None)
         if error_code is not None:
