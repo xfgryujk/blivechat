@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_AVATAR_URL = '//static.hdslb.com/images/member/noface.gif'
 
-_main_event_loop = asyncio.get_event_loop()
 # user_id -> avatar_url
 _avatar_url_cache: Dict[int, str] = {}
 # 正在获取头像的Future，user_id -> Future
@@ -43,7 +42,7 @@ def init():
     cfg = config.get_config()
     global _uid_queue_to_fetch
     _uid_queue_to_fetch = asyncio.Queue(cfg.fetch_avatar_max_queue_size)
-    asyncio.ensure_future(_get_avatar_url_from_web_consumer())
+    asyncio.get_event_loop().create_task(_get_avatar_url_from_web_consumer())
 
 
 async def get_avatar_url(user_id):
@@ -71,12 +70,11 @@ def get_avatar_url_from_memory(user_id):
 
 
 def get_avatar_url_from_database(user_id) -> Awaitable[Optional[str]]:
-    return asyncio.get_event_loop().run_in_executor(
-        None, _do_get_avatar_url_from_database, user_id
-    )
+    loop = asyncio.get_running_loop()
+    return loop.run_in_executor(None, _do_get_avatar_url_from_database, user_id, loop)
 
 
-def _do_get_avatar_url_from_database(user_id):
+def _do_get_avatar_url_from_database(user_id, loop: asyncio.AbstractEventLoop):
     try:
         with models.database.get_session() as session:
             user = session.scalars(
@@ -94,7 +92,7 @@ def _do_get_avatar_url_from_database(user_id):
                     _avatar_url_cache.pop(user_id, None)
                     get_avatar_url_from_web(user_id)
 
-                _main_event_loop.call_soon(refresh_cache)
+                loop.call_soon_threadsafe(refresh_cache)
             else:
                 # 否则只更新内存缓存
                 _update_avatar_cache_in_memory(user_id, avatar_url)
@@ -113,7 +111,7 @@ def get_avatar_url_from_web(user_id) -> Awaitable[Optional[str]]:
     if future is not None:
         return future
     # 否则创建一个获取任务
-    _uid_fetch_future_map[user_id] = future = _main_event_loop.create_future()
+    _uid_fetch_future_map[user_id] = future = asyncio.get_running_loop().create_future()
     future.add_done_callback(lambda _future: _uid_fetch_future_map.pop(user_id, None))
     try:
         _uid_queue_to_fetch.put_nowait(user_id)
@@ -141,7 +139,7 @@ async def _get_avatar_url_from_web_consumer():
                 else:
                     _last_fetch_banned_time = None
 
-            asyncio.ensure_future(_get_avatar_url_from_web_coroutine(user_id, future))
+            asyncio.create_task(_get_avatar_url_from_web_coroutine(user_id, future))
 
             # 限制频率，防止被B站ban
             cfg = config.get_config()
@@ -271,7 +269,7 @@ def process_avatar_url(avatar_url):
 
 def update_avatar_cache(user_id, avatar_url):
     _update_avatar_cache_in_memory(user_id, avatar_url)
-    asyncio.get_event_loop().run_in_executor(
+    asyncio.get_running_loop().run_in_executor(
         None, _update_avatar_cache_in_database, user_id, avatar_url
     )
 

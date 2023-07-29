@@ -56,7 +56,7 @@ class UploadEmoticonHandler(api.base.ApiHandler):  # noqa
         if not file.content_type.lower().startswith('image/'):
             raise tornado.web.HTTPError(415)
 
-        url = await asyncio.get_event_loop().run_in_executor(
+        url = await asyncio.get_running_loop().run_in_executor(
             None, self._save_file, file.body, self.request.remote_ip
         )
         self.write({

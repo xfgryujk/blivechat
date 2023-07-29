@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import asyncio
 from typing import *
 
 import aiohttp
@@ -14,7 +15,10 @@ BILIBILI_COMMON_HEADERS = {
 http_session: Optional[aiohttp.ClientSession] = None
 
 
-# ClientSession要在异步函数中创建
-async def init():
-    global http_session
-    http_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
+def init():
+    # ClientSession要在异步函数中创建
+    async def do_init():
+        global http_session
+        http_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
+
+    asyncio.get_event_loop().run_until_complete(do_init())

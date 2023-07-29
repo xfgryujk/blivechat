@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import argparse
-import asyncio
 import logging
 import logging.handlers
 import os
@@ -40,7 +39,7 @@ def main():
     init_logging(args.debug)
     config.init()
 
-    asyncio.get_event_loop().run_until_complete(utils.request.init())
+    utils.request.init()
     models.database.init(args.debug)
 
     services.avatar.init()

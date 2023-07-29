@@ -39,7 +39,7 @@ class LiveClientManager:
         logger.info('room=%d creating live client', room_id)
         self._live_clients[room_id] = live_client = LiveClient(room_id)
         live_client.add_handler(_live_msg_handler)
-        asyncio.ensure_future(self._init_live_client(live_client))
+        asyncio.create_task(self._init_live_client(live_client))
         logger.info('room=%d live client created, %d live clients', room_id, len(self._live_clients))
 
     async def _init_live_client(self, live_client: 'LiveClient'):
@@ -56,7 +56,7 @@ class LiveClientManager:
             return
         logger.info('room=%d removing live client', room_id)
         live_client.remove_handler(_live_msg_handler)
-        asyncio.ensure_future(live_client.stop_and_close())
+        asyncio.create_task(live_client.stop_and_close())
         logger.info('room=%d live client removed, %d live clients', room_id, len(self._live_clients))
 
         client_room_manager.del_room(room_id)
@@ -130,7 +130,7 @@ class ClientRoomManager:
 
     def delay_del_room(self, room_id, timeout):
         self._clear_delay_del_timer(room_id)
-        self._delay_del_timer_handles[room_id] = asyncio.get_event_loop().call_later(
+        self._delay_del_timer_handles[room_id] = asyncio.get_running_loop().call_later(
             timeout, self._on_delay_del_room, room_id
         )
 
@@ -279,7 +279,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
     }
 
     async def _on_danmaku(self, client: LiveClient, message: blivedm.DanmakuMessage):
-        asyncio.ensure_future(self.__on_danmaku(client, message))
+        asyncio.create_task(self.__on_danmaku(client, message))
 
     async def __on_danmaku(self, client: LiveClient, message: blivedm.DanmakuMessage):
         # 先异步调用再获取房间，因为返回时房间可能已经不存在了
@@ -364,7 +364,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         })
 
     async def _on_buy_guard(self, client: LiveClient, message: blivedm.GuardBuyMessage):
-        asyncio.ensure_future(self.__on_buy_guard(client, message))
+        asyncio.create_task(self.__on_buy_guard(client, message))
 
     @staticmethod
     async def __on_buy_guard(client: LiveClient, message: blivedm.GuardBuyMessage):
@@ -415,7 +415,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         })
 
         if need_translate:
-            asyncio.ensure_future(self._translate_and_response(message.message, room.room_id, msg_id))
+            asyncio.create_task(self._translate_and_response(message.message, room.room_id, msg_id))
 
     async def _on_super_chat_delete(self, client: LiveClient, message: blivedm.SuperChatDeleteMessage):
         room = client_room_manager.get_room(client.tmp_room_id)

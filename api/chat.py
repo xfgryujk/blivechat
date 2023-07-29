@@ -129,21 +129,21 @@ class ChatHandler(tornado.websocket.WebSocketHandler):  # noqa
 
     def open(self):
         logger.info('client=%s connected', self.request.remote_ip)
-        self._heartbeat_timer_handle = asyncio.get_event_loop().call_later(
+        self._heartbeat_timer_handle = asyncio.get_running_loop().call_later(
             self.HEARTBEAT_INTERVAL, self._on_send_heartbeat
         )
         self._refresh_receive_timeout_timer()
 
     def _on_send_heartbeat(self):
         self.send_cmd_data(Command.HEARTBEAT, {})
-        self._heartbeat_timer_handle = asyncio.get_event_loop().call_later(
+        self._heartbeat_timer_handle = asyncio.get_running_loop().call_later(
             self.HEARTBEAT_INTERVAL, self._on_send_heartbeat
         )
 
     def _refresh_receive_timeout_timer(self):
         if self._receive_timeout_timer_handle is not None:
             self._receive_timeout_timer_handle.cancel()
-        self._receive_timeout_timer_handle = asyncio.get_event_loop().call_later(
+        self._receive_timeout_timer_handle = asyncio.get_running_loop().call_later(
             self.RECEIVE_TIMEOUT, self._on_receive_timeout
         )
 
@@ -189,7 +189,7 @@ class ChatHandler(tornado.websocket.WebSocketHandler):  # noqa
                     pass
 
                 services.chat.client_room_manager.add_client(self.room_id, self)
-                asyncio.ensure_future(self._on_joined_room())
+                asyncio.create_task(self._on_joined_room())
 
             else:
                 logger.warning('client=%s unknown cmd=%d, body=%s', self.request.remote_ip, cmd, body)

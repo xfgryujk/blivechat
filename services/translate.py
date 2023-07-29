@@ -33,7 +33,7 @@ _text_future_map: Dict[str, asyncio.Future] = {}
 
 
 def init():
-    asyncio.ensure_future(_do_init())
+    asyncio.get_event_loop().create_task(_do_init())
 
 
 async def _do_init():
@@ -100,7 +100,7 @@ def translate(text) -> Awaitable[Optional[str]]:
     if future is not None:
         return future
     # 否则创建一个翻译任务
-    future = asyncio.get_event_loop().create_future()
+    future = asyncio.get_running_loop().create_future()
 
     # 查缓存
     res = _translate_cache.get(key, None)
@@ -168,7 +168,7 @@ class FlowControlTranslateProvider(TranslateProvider):
         self._text_queue = asyncio.Queue(max_queue_size)
 
     async def init(self):
-        asyncio.ensure_future(self._translate_consumer())
+        asyncio.create_task(self._translate_consumer())
         return True
 
     @property
@@ -189,7 +189,7 @@ class FlowControlTranslateProvider(TranslateProvider):
         while True:
             try:
                 text, future = await self._text_queue.get()
-                asyncio.ensure_future(self._translate_coroutine(text, future))
+                asyncio.create_task(self._translate_coroutine(text, future))
                 # 频率限制
                 await asyncio.sleep(self._query_interval)
             except Exception:  # noqa
@@ -226,7 +226,7 @@ class TencentTranslateFree(FlowControlTranslateProvider):
             return False
         if not await self._do_init():
             return False
-        self._reinit_future = asyncio.ensure_future(self._reinit_coroutine())
+        self._reinit_future = asyncio.create_task(self._reinit_coroutine())
         return True
 
     async def _do_init(self):
@@ -303,7 +303,7 @@ class TencentTranslateFree(FlowControlTranslateProvider):
             while True:
                 await asyncio.sleep(30)
                 logger.debug('TencentTranslateFree reinit')
-                asyncio.ensure_future(self._do_init())
+                asyncio.create_task(self._do_init())
         except asyncio.CancelledError:
             pass
 
@@ -515,7 +515,7 @@ class TencentTranslate(FlowControlTranslateProvider):
             # 需要手动处理，等5分钟
             sleep_time = 5 * 60
         if sleep_time != 0:
-            self._cool_down_timer_handle = asyncio.get_event_loop().call_later(
+            self._cool_down_timer_handle = asyncio.get_running_loop().call_later(
                 sleep_time, self._on_cool_down_timeout
             )
 
@@ -577,7 +577,7 @@ class BaiduTranslate(FlowControlTranslateProvider):
             # 账户余额不足，需要手动处理，等5分钟
             sleep_time = 5 * 60
         if sleep_time != 0:
-            self._cool_down_timer_handle = asyncio.get_event_loop().call_later(
+            self._cool_down_timer_handle = asyncio.get_running_loop().call_later(
                 sleep_time, self._on_cool_down_timeout
             )
 
