@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 import asyncio
+import base64
+import binascii
 import logging
 import uuid
 from typing import *
 
 import api.chat
 import blivedm.blivedm as blivedm
+import blivedm.blivedm.models.pb as blivedm_pb
 import config
 import services.avatar
 import services.translate
@@ -203,6 +206,19 @@ class LiveMsgHandler(blivedm.BaseHandler):
     # 重新定义XXX_callback是为了减少对字段名的依赖，防止B站改字段名
     def __danmu_msg_callback(self, client: LiveClient, command: dict):
         info = command['info']
+        dm_v2 = command.get('dm_v2', '')
+
+        proto: Optional[blivedm_pb.SimpleDm] = None
+        if dm_v2 != '':
+            try:
+                proto = blivedm_pb.SimpleDm.loads(base64.b64decode(dm_v2))
+            except (binascii.Error, KeyError, TypeError, ValueError):
+                pass
+        if proto is not None:
+            face = proto.user.face
+        else:
+            face = ''
+
         if len(info[3]) != 0:
             medal_level = info[3][0]
             medal_room_id = info[3][3]
@@ -220,6 +236,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
 
             uid=info[2][0],
             uname=info[2][1],
+            face=face,
             admin=info[2][2],
             urank=info[2][5],
             mobile_verify=info[2][6],
@@ -282,8 +299,12 @@ class LiveMsgHandler(blivedm.BaseHandler):
         asyncio.create_task(self.__on_danmaku(client, message))
 
     async def __on_danmaku(self, client: LiveClient, message: blivedm.DanmakuMessage):
-        # 先异步调用再获取房间，因为返回时房间可能已经不存在了
-        avatar_url = await services.avatar.get_avatar_url(message.uid)
+        avatar_url = message.face
+        if avatar_url != '':
+            services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
+        else:
+            # 先异步调用再获取房间，因为返回时房间可能已经不存在了
+            avatar_url = await services.avatar.get_avatar_url(message.uid)
 
         room = client_room_manager.get_room(client.tmp_room_id)
         if room is None:
@@ -342,8 +363,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
 
     async def _on_gift(self, client: LiveClient, message: blivedm.GiftMessage):
         avatar_url = services.avatar.process_avatar_url(message.face)
-        # 服务器白给的头像URL，直接缓存
-        services.avatar.update_avatar_cache(message.uid, avatar_url)
+        services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
 
         # 丢人
         if message.coin_type != 'gold':
@@ -385,8 +405,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
 
     async def _on_super_chat(self, client: LiveClient, message: blivedm.SuperChatMessage):
         avatar_url = services.avatar.process_avatar_url(message.face)
-        # 服务器白给的头像URL，直接缓存
-        services.avatar.update_avatar_cache(message.uid, avatar_url)
+        services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
 
         room = client_room_manager.get_room(client.tmp_room_id)
         if room is None:

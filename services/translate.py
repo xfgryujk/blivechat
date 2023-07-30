@@ -14,6 +14,7 @@ from typing import *
 import Crypto.Cipher.AES as cry_aes  # noqa
 import Crypto.Util.Padding as cry_pad  # noqa
 import aiohttp
+import cachetools
 
 import config
 import utils.request
@@ -27,12 +28,15 @@ NO_TRANSLATE_TEXTS = {
 
 _translate_providers: List['TranslateProvider'] = []
 # text -> res
-_translate_cache: Dict[str, str] = {}
+_translate_cache: Optional[cachetools.LRUCache] = None
 # 正在翻译的Future，text -> Future
 _text_future_map: Dict[str, asyncio.Future] = {}
 
 
 def init():
+    cfg = config.get_config()
+    global _translate_cache
+    _translate_cache = cachetools.LRUCache(cfg.translation_cache_size)
     asyncio.get_event_loop().create_task(_do_init())
 
 
@@ -140,9 +144,6 @@ def _on_translate_done(key, future):
     if res is None:
         return
     _translate_cache[key] = res
-    cfg = config.get_config()
-    while len(_translate_cache) > cfg.translation_cache_size:
-        _translate_cache.pop(next(iter(_translate_cache)), None)
 
 
 class TranslateProvider:
