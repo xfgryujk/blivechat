@@ -191,7 +191,7 @@ async def _get_avatar_url_from_web_consumer():
             if _last_fetch_banned_time is not None:
                 cur_time = datetime.datetime.now()
                 if (cur_time - _last_fetch_banned_time).total_seconds() < 3 * 60 + 3:
-                    # 3分钟以内被ban，解封大约要15分钟
+                    # 3分钟以内被ban
                     future.set_result(None)
                     continue
                 else:
@@ -216,7 +216,7 @@ async def _get_avatar_url_from_web_wrapper(user_id, future):
 
 
 async def _do_get_avatar_url_from_web(user_id) -> Optional[str]:
-    global _wbi_key, _refresh_wbi_key_future
+    global _wbi_key, _refresh_wbi_key_future, _last_fetch_banned_time
     if _wbi_key == '':
         if _refresh_wbi_key_future is None:
             _refresh_wbi_key_future = asyncio.create_task(_refresh_wbi_key())
@@ -236,17 +236,20 @@ async def _do_get_avatar_url_from_web(user_id) -> Optional[str]:
                 logger.warning('Failed to fetch avatar: status=%d %s uid=%d', r.status, r.reason, user_id)
                 if r.status == 412:
                     # 被B站ban了
-                    global _last_fetch_banned_time
                     _last_fetch_banned_time = datetime.datetime.now()
                 return None
             data = await r.json()
     except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
         return None
 
-    if data['code'] != 0:
-        # 这里虽然失败但不会被ban一段时间
-        logger.info('Failed to fetch avatar: code=%d %s uid=%d', data['code'], data['message'], user_id)
-        if data['code'] == -403:
+    code = data['code']
+    if code != 0:
+        logger.info('Failed to fetch avatar: code=%d %s uid=%d', code, data['message'], user_id)
+        if code == -401:
+            # 被B站ban了
+            _last_fetch_banned_time = datetime.datetime.now()
+        elif code == -403:
+            # 签名错误
             _wbi_key = ''
         return None
 

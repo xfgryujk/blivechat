@@ -67,7 +67,6 @@ def init_logging(debug):
     )
     logging.basicConfig(
         format='{asctime} {levelname} [{name}]: {message}',
-        datefmt='%Y-%m-%d %H:%M:%S',
         style='{',
         level=logging.INFO if not debug else logging.DEBUG,
         handlers=[stream_handler, file_handler]

@@ -403,8 +403,8 @@ class TencentTranslateFree(FlowControlTranslateProvider):
 
     def _on_fail(self):
         self._fail_count += 1
-        # 为了可靠性，连续失败10次时冷却直到下次重新init
-        if self._fail_count >= 10:
+        # 为了可靠性，连续失败5次时冷却直到下次重新init
+        if self._fail_count >= 5:
             self._cool_down()
 
     def _cool_down(self):
