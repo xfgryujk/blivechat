@@ -434,7 +434,9 @@ class LiveMsgHandler(blivedm.BaseHandler):
         })
 
         if need_translate:
-            asyncio.create_task(self._translate_and_response(message.message, room.room_id, msg_id))
+            asyncio.create_task(self._translate_and_response(
+                message.message, room.room_id, msg_id, services.translate.Priority.HIGH
+            ))
 
     async def _on_super_chat_delete(self, client: LiveClient, message: blivedm.SuperChatDeleteMessage):
         room = client_room_manager.get_room(client.tmp_room_id)
@@ -456,8 +458,8 @@ class LiveMsgHandler(blivedm.BaseHandler):
         )
 
     @staticmethod
-    async def _translate_and_response(text, room_id, msg_id):
-        translation = await services.translate.translate(text)
+    async def _translate_and_response(text, room_id, msg_id, priority=services.translate.Priority.NORMAL):
+        translation = await services.translate.translate(text, priority)
         if translation is None:
             return
 

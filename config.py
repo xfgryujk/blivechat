@@ -55,12 +55,13 @@ class AppConfig:
         self.open_browser_at_startup = True
         self.enable_upload_file = True
 
-        self.fetch_avatar_interval = 3.5
-        self.fetch_avatar_max_queue_size = 2
-        self.avatar_cache_size = 50000
+        self.fetch_avatar_interval = 5.5
+        self.fetch_avatar_max_queue_size = 1
+        self.avatar_cache_size = 10000
 
         self.enable_translate = True
         self.allow_translate_rooms = set()
+        self.translate_max_queue_size = 10
         self.translation_cache_size = 50000
         self.translator_configs = []
 
@@ -92,6 +93,7 @@ class AppConfig:
 
         self.enable_translate = app_section.getboolean('enable_translate', fallback=self.enable_translate)
         self.allow_translate_rooms = _str_to_list(app_section.get('allow_translate_rooms', ''), int, set)
+        self.translate_max_queue_size = app_section.getint('translate_max_queue_size', self.translate_max_queue_size)
         self.translation_cache_size = app_section.getint('translation_cache_size', self.translation_cache_size)
 
     def _load_translator_configs(self, config: configparser.ConfigParser):
@@ -106,7 +108,6 @@ class AppConfig:
                 translator_config = {
                     'type': type_,
                     'query_interval': section.getfloat('query_interval'),
-                    'max_queue_size': section.getint('max_queue_size')
                 }
                 if type_ == 'TencentTranslateFree':
                     translator_config['source_language'] = section['source_language']
