@@ -13,7 +13,7 @@
     "downloadjs": "^1.4.7",
     "element-ui": "^2.15.13",
     "lodash": "^4.17.21",
-    "vue": "^2.6.14",
+    "vue": "^2.7.14",
     "vue-i18n": "^8.28.2",
     "vue-router": "^3.6.5"
   },
@@ -25,8 +25,7 @@
     "@vue/cli-service": "~5.0.0",
     "babel-plugin-component": "^1.1.1",
     "eslint": "^7.32.0",
-    "eslint-plugin-vue": "^8.0.3",
-    "vue-template-compiler": "^2.6.14"
+    "eslint-plugin-vue": "^9.16.1"
   },
   "browserslist": [
     "> 1%",
