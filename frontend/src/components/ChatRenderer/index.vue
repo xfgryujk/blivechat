@@ -264,15 +264,19 @@ export default {
       } else {
         let curTime = new Date()
         let interval = curTime - this.lastEnqueueTime
-        // 让发消息速度变化不要太频繁
-        if (interval > 1000) {
+        // 真实的进队列时间间隔模式大概是这样：2500, 300, 300, 300, 2500, 300, ...
+        // B站消息有缓冲，会一次发多条消息。这里把波峰视为发送了一次真实的WS消息，所以要过滤掉间隔太小的
+        if (interval > 1000 || this.enqueueIntervals.length < 5) {
           this.enqueueIntervals.push(interval)
           if (this.enqueueIntervals.length > 5) {
             this.enqueueIntervals.splice(0, this.enqueueIntervals.length - 5)
           }
+          // 这边估计得尽量大，只要不太早把消息缓冲发完就是平滑的。有MESSAGE_MAX_INTERVAL保底，不会让消息延迟太大
+          // 其实可以用单调队列求最大值，偷懒不写了
           this.estimatedEnqueueInterval = Math.max(...this.enqueueIntervals)
-          this.lastEnqueueTime = curTime
         }
+        // 上次入队时间还是要设置，否则会太早把消息缓冲发完，然后较长时间没有新消息
+        this.lastEnqueueTime = curTime
       }
 
       // 把messages分成messageGroup，每个组里最多有1个需要平滑的消息
