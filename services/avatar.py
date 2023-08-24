@@ -48,6 +48,7 @@ def init():
 async def _do_init():
     fetchers = [
         UserSpaceAvatarFetcher(5.5),
+        MedalAnchorAvatarFetcher(3),
     ]
     await asyncio.gather(*(fetcher.init() for fetcher in fetchers))
     global _avatar_fetchers
@@ -331,7 +332,10 @@ class UserSpaceAvatarFetcher(AvatarFetcher):
                 params=self._add_wbi_sign({'mid': user_id}),
             ) as r:
                 if r.status != 200:
-                    logger.warning('Failed to fetch avatar: status=%d %s uid=%d', r.status, r.reason, user_id)
+                    logger.warning(
+                        'UserSpaceAvatarFetcher failed to fetch avatar: status=%d %s uid=%d',
+                        r.status, r.reason, user_id
+                    )
                     if r.status == 412:
                         # 被B站ban了
                         self._cool_down(3 * 60)
@@ -342,7 +346,10 @@ class UserSpaceAvatarFetcher(AvatarFetcher):
 
         code = data['code']
         if code != 0:
-            logger.info('Failed to fetch avatar: code=%d %s uid=%d', code, data['message'], user_id)
+            logger.info(
+                'UserSpaceAvatarFetcher failed to fetch avatar: code=%d %s uid=%d',
+                code, data['message'], user_id
+            )
             if code == -401:
                 # 被B站ban了
                 self._cool_down(3 * 60)
@@ -360,11 +367,11 @@ class UserSpaceAvatarFetcher(AvatarFetcher):
                 headers=utils.request.BILIBILI_COMMON_HEADERS,
             ) as r:
                 if r.status != 200:
-                    logger.warning('Failed to get wbi key: status=%d %s', r.status, r.reason)
+                    logger.warning('UserSpaceAvatarFetcher failed to get wbi key: status=%d %s', r.status, r.reason)
                     return ''
                 data = await r.json()
         except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
-            logger.exception('Failed to get wbi key:')
+            logger.exception('UserSpaceAvatarFetcher failed to get wbi key:')
             return ''
 
         try:
@@ -372,7 +379,7 @@ class UserSpaceAvatarFetcher(AvatarFetcher):
             img_key = wbi_img['img_url'].rpartition('/')[2].partition('.')[0]
             sub_key = wbi_img['sub_url'].rpartition('/')[2].partition('.')[0]
         except KeyError:
-            logger.warning('Failed to get wbi key: data=%s', data)
+            logger.warning('UserSpaceAvatarFetcher failed to get wbi key: data=%s', data)
             return ''
 
         shuffled_key = img_key + sub_key
@@ -410,3 +417,45 @@ class UserSpaceAvatarFetcher(AvatarFetcher):
             'wts': wts,
             'w_rid': w_rid
         }
+
+
+class MedalAnchorAvatarFetcher(AvatarFetcher):
+    async def _do_fetch(self, user_id) -> Optional[str]:
+        try:
+            async with utils.request.http_session.get(
+                'https://api.live.bilibili.com/xlive/web-room/v1/index/getDanmuMedalAnchorInfo',
+                headers={
+                    **utils.request.BILIBILI_COMMON_HEADERS,
+                    'Origin': 'https://live.bilibili.com',
+                    'Referer': 'https://live.bilibili.com/'
+                },
+                params={
+                    'ruid': user_id,
+                    'token': '',
+                    'platform': 'web',
+                    'jsonp': 'jsonp'
+                }
+            ) as r:
+                if r.status != 200:
+                    logger.warning(
+                        'MedalAnchorAvatarFetcher failed to fetch avatar: status=%d %s uid=%d',
+                        r.status, r.reason, user_id
+                    )
+                    if r.status == 412:
+                        # 被B站ban了
+                        self._cool_down(3 * 60)
+                    return None
+                data = await r.json()
+        except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
+            return None
+
+        code = data['code']
+        if code != 0:
+            # 这里虽然失败但不会被ban一段时间
+            logger.info(
+                'MedalAnchorAvatarFetcher failed to fetch avatar: code=%d %s uid=%d',
+                code, data['message'], user_id
+            )
+            return None
+
+        return process_avatar_url(data['data']['rface'])
