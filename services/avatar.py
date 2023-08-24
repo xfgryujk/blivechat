@@ -49,6 +49,8 @@ async def _do_init():
     fetchers = [
         UserSpaceAvatarFetcher(5.5),
         MedalAnchorAvatarFetcher(3),
+        UserCardAvatarFetcher(3),
+        GameUserCenterAvatarFetcher(3),
     ]
     await asyncio.gather(*(fetcher.init() for fetcher in fetchers))
     global _avatar_fetchers
@@ -459,3 +461,83 @@ class MedalAnchorAvatarFetcher(AvatarFetcher):
             return None
 
         return process_avatar_url(data['data']['rface'])
+
+
+class UserCardAvatarFetcher(AvatarFetcher):
+    async def _do_fetch(self, user_id) -> Optional[str]:
+        try:
+            async with utils.request.http_session.get(
+                'https://api.bilibili.com/x/web-interface/card',
+                headers={
+                    **utils.request.BILIBILI_COMMON_HEADERS,
+                    'Origin': 'https://t.bilibili.com',
+                    'Referer': 'https://t.bilibili.com/'
+                },
+                params={
+                    'mid': user_id,
+                    'photo': 'true'
+                }
+            ) as r:
+                if r.status != 200:
+                    logger.warning(
+                        'UserCardAvatarFetcher failed to fetch avatar: status=%d %s uid=%d',
+                        r.status, r.reason, user_id
+                    )
+                    if r.status == 412:
+                        # 被B站ban了
+                        self._cool_down(3 * 60)
+                    return None
+                data = await r.json()
+        except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
+            return None
+
+        code = data['code']
+        if code != 0:
+            # 这里虽然失败但不会被ban一段时间
+            logger.info(
+                'UserCardAvatarFetcher failed to fetch avatar: code=%d %s uid=%d',
+                code, data['message'], user_id
+            )
+            return None
+
+        return process_avatar_url(data['data']['card']['face'])
+
+
+class GameUserCenterAvatarFetcher(AvatarFetcher):
+    async def _do_fetch(self, user_id) -> Optional[str]:
+        try:
+            async with utils.request.http_session.get(
+                'https://line3-h5-mobile-api.biligame.com/game/center/h5/user/space/info',
+                headers={
+                    **utils.request.BILIBILI_COMMON_HEADERS,
+                    'Origin': 'https://app.biligame.com',
+                    'Referer': 'https://app.biligame.com/'
+                },
+                params={
+                    'uid': user_id,
+                    'sdk_type': '1'
+                }
+            ) as r:
+                if r.status != 200:
+                    logger.warning(
+                        'GameUserCenterAvatarFetcher failed to fetch avatar: status=%d %s uid=%d',
+                        r.status, r.reason, user_id
+                    )
+                    if r.status == 412:
+                        # 被B站ban了
+                        self._cool_down(3 * 60)
+                    return None
+                data = await r.json()
+        except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
+            return None
+
+        code = data['code']
+        if code != 0:
+            # 这里虽然失败但不会被ban一段时间
+            logger.info(
+                'GameUserCenterAvatarFetcher failed to fetch avatar: code=%d %s uid=%d',
+                code, data['message'], user_id
+            )
+            return None
+
+        return process_avatar_url(data['data']['face'])
