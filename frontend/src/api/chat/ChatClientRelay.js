@@ -136,7 +136,8 @@ export default class ChatClientRelay {
         medalLevel: data[10],
         id: data[11],
         translation: data[12],
-        emoticon: emoticon
+        emoticon: emoticon,
+        textEmoticons: data[15],
       }
       this.onAddText(data)
       break

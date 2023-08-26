@@ -63,6 +63,7 @@ def make_text_message_data(
     translation: str = '',
     content_type: int = ContentType.TEXT,
     content_type_params: list = None,
+    text_emoticons: Iterable[Tuple[str, str]] = None
 ):
     # 为了节省带宽用list而不是dict
     return [
@@ -96,6 +97,8 @@ def make_text_message_data(
         content_type,
         # 14: contentTypeParams
         content_type_params if content_type_params is not None else [],
+        # 15: textEmoticons
+        text_emoticons if text_emoticons is not None else [],
     ]
 
 
@@ -263,10 +266,15 @@ class ChatHandler(tornado.websocket.WebSocketHandler):  # noqa
             'translation': ''
         }
         self.send_cmd_data(Command.ADD_TEXT, text_data)
+        text_data[4] = 'te[dog]st'
+        text_data[11] = uuid.uuid4().hex
+        text_data[15] = [('[dog]', 'http://i0.hdslb.com/bfs/live/4428c84e694fbf4e0ef6c06e958d9352c3582740.png')]
+        self.send_cmd_data(Command.ADD_TEXT, text_data)
         text_data[2] = '主播'
         text_data[3] = 3
         text_data[4] = "I can eat glass, it doesn't hurt me."
         text_data[11] = uuid.uuid4().hex
+        text_data[15] = []
         self.send_cmd_data(Command.ADD_TEXT, text_data)
         self.send_cmd_data(Command.ADD_MEMBER, member_data)
         self.send_cmd_data(Command.ADD_SUPER_CHAT, sc_data)

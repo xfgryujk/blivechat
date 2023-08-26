@@ -322,6 +322,8 @@ export default class ChatClientDirect {
       authorType = 0
     }
 
+    let textEmoticons = this.parseTextEmoticons(info)
+
     let data = {
       avatarUrl: await avatar.getAvatarUrl(uid),
       timestamp: info[0][4] / 1000,
@@ -336,9 +338,24 @@ export default class ChatClientDirect {
       medalLevel: roomId === this.roomId ? medalLevel : 0,
       id: getUuid4Hex(),
       translation: '',
-      emoticon: info[0][13].url || null
+      emoticon: info[0][13].url || null,
+      textEmoticons: textEmoticons,
     }
     this.onAddText(data)
+  }
+
+  parseTextEmoticons(info) {
+    try {
+      let modeInfo = info[0][15]
+      let extra = JSON.parse(modeInfo.extra)
+      if (!extra.emots) {
+        return []
+      }
+      let res = Object.values(extra.emots).map(emoticon => [emoticon.descript, emoticon.url])
+      return res
+    } catch {
+      return []
+    }
   }
 
   sendGiftCallback(command) {

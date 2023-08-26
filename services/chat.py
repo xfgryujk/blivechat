@@ -2,6 +2,7 @@
 import asyncio
 import base64
 import binascii
+import json
 import logging
 import uuid
 from typing import *
@@ -231,6 +232,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             msg_type=info[0][9],
             dm_type=info[0][12],
             emoticon_options=info[0][13],
+            mode_info=info[0][15],
 
             msg=info[1],
 
@@ -328,6 +330,8 @@ class LiveMsgHandler(blivedm.BaseHandler):
             content_type = api.chat.ContentType.TEXT
             content_type_params = None
 
+        text_emoticons = self._parse_text_emoticons(message)
+
         need_translate = self._need_translate(message.msg, room)
         if need_translate:
             translation = services.translate.get_translation_from_cache(message.msg)
@@ -356,10 +360,28 @@ class LiveMsgHandler(blivedm.BaseHandler):
             translation=translation,
             content_type=content_type,
             content_type_params=content_type_params,
+            text_emoticons=text_emoticons,
         ))
 
         if need_translate:
             await self._translate_and_response(message.msg, room.room_id, msg_id)
+
+    @staticmethod
+    def _parse_text_emoticons(message: blivedm.DanmakuMessage):
+        try:
+            extra = json.loads(message.mode_info['extra'])
+            # {"[dog]":{"emoticon_id":208,"emoji":"[dog]","descript":"[dog]","url":"http://i0.hdslb.com/bfs/live/4428c8
+            # 4e694fbf4e0ef6c06e958d9352c3582740.png","width":20,"height":20,"emoticon_unique":"emoji_208","count":1}}
+            emoticons = extra['emots']
+            if emoticons is None:
+                return []
+            res = [
+                (emoticon['descript'], emoticon['url'])
+                for emoticon in emoticons.values()
+            ]
+            return res
+        except (json.JSONDecodeError, TypeError, KeyError):
+            return []
 
     async def _on_gift(self, client: LiveClient, message: blivedm.GiftMessage):
         avatar_url = services.avatar.process_avatar_url(message.face)
