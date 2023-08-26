@@ -165,15 +165,13 @@ class ChatHandler(tornado.websocket.WebSocketHandler):  # noqa
 
     def on_message(self, message):
         try:
-            # 超时没有加入房间也断开
-            if self.has_joined_room:
-                self._refresh_receive_timeout_timer()
-
             body = json.loads(message)
             cmd = body['cmd']
 
             if cmd == Command.HEARTBEAT:
-                pass
+                # 超时没有加入房间也断开
+                if self.has_joined_room:
+                    self._refresh_receive_timeout_timer()
 
             elif cmd == Command.JOIN_ROOM:
                 if self.has_joined_room:

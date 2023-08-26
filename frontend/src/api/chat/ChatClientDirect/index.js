@@ -183,7 +183,6 @@ export default class ChatClientDirect {
   }
 
   onWsMessage(event) {
-    this.refreshReceiveTimeoutTimer()
     if (!(event.data instanceof ArrayBuffer)) {
       console.warn('未知的websocket消息类型，data=', event.data)
       return
@@ -226,6 +225,7 @@ export default class ChatClientDirect {
     }
     case OP_HEARTBEAT_REPLY: {
       // 服务器心跳包，包含人气值，这里没用
+      this.refreshReceiveTimeoutTimer()
       break
     }
     default: {
