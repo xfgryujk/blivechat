@@ -319,7 +319,7 @@ class UserSpaceAvatarFetcher(AvatarFetcher):
 
     async def _do_fetch(self, user_id) -> Optional[str]:
         if self._wbi_key == '':
-            self._wbi_key = await self._get_wbi_key()
+            await self._refresh_wbi_key()
             if self._wbi_key == '':
                 return None
 
@@ -341,6 +341,7 @@ class UserSpaceAvatarFetcher(AvatarFetcher):
                     if r.status == 412:
                         # 被B站ban了
                         self._cool_down(3 * 60)
+                        await self._refresh_wbi_key()
                     return None
                 data = await r.json()
         except (aiohttp.ClientConnectionError, asyncio.TimeoutError):
@@ -355,12 +356,19 @@ class UserSpaceAvatarFetcher(AvatarFetcher):
             if code == -401:
                 # 被B站ban了
                 self._cool_down(3 * 60)
+                await self._refresh_wbi_key()
             elif code == -403:
                 # 签名错误
                 self._wbi_key = ''
+                await self._refresh_wbi_key()
             return None
 
         return process_avatar_url(data['data']['face'])
+
+    async def _refresh_wbi_key(self):
+        wbi_key = await self._get_wbi_key()
+        if wbi_key != '':
+            self._wbi_key = wbi_key
 
     async def _get_wbi_key(self):
         try:
@@ -519,7 +527,8 @@ class GameUserCenterAvatarFetcher(AvatarFetcher):
                 }
             ) as r:
                 if r.status != 200:
-                    logger.warning(
+                    # 这个接口经常502
+                    logger.info(
                         'GameUserCenterAvatarFetcher failed to fetch avatar: status=%d %s uid=%d',
                         r.status, r.reason, user_id
                     )
