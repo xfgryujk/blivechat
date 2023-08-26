@@ -49,6 +49,8 @@ def get_config():
 
 class AppConfig:
     def __init__(self):
+        self.host = '127.0.0.1'
+        self.port = 12450
         self.database_url = 'sqlite:///data/database.db'
         self.tornado_xheaders = False
         self.loader_url = ''
@@ -78,6 +80,8 @@ class AppConfig:
 
     def _load_app_config(self, config: configparser.ConfigParser):
         app_section = config['app']
+        self.host = app_section.get('host', self.host)
+        self.port = app_section.getint('port', fallback=self.port)
         self.database_url = app_section.get('database_url', self.database_url)
         self.tornado_xheaders = app_section.getboolean('tornado_xheaders', fallback=self.tornado_xheaders)
         self.loader_url = app_section.get('loader_url', self.loader_url)

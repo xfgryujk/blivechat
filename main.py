@@ -53,8 +53,8 @@ def main():
 
 def parse_args():
     parser = argparse.ArgumentParser(description='用于OBS的仿YouTube风格的bilibili直播评论栏')
-    parser.add_argument('--host', help='服务器host，默认为127.0.0.1', default='127.0.0.1')
-    parser.add_argument('--port', help='服务器端口，默认为12450', type=int, default=12450)
+    parser.add_argument('--host', help='服务器host，默认和配置中的一样', default=None)
+    parser.add_argument('--port', help='服务器端口，默认和配置中的一样', type=int, default=None)
     parser.add_argument('--debug', help='调试模式', action='store_true')
     return parser.parse_args()
 
@@ -77,13 +77,18 @@ def init_logging(debug):
 
 
 def run_server(host, port, debug):
+    cfg = config.get_config()
+    if host is None:
+        host = cfg.host
+    if port is None:
+        port = cfg.port
+
     app = tornado.web.Application(
         routes,
         websocket_ping_interval=10,
         debug=debug,
         autoreload=False
     )
-    cfg = config.get_config()
     try:
         app.listen(
             port,
