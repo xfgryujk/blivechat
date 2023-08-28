@@ -332,7 +332,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
 
         text_emoticons = self._parse_text_emoticons(message)
 
-        need_translate = self._need_translate(message.msg, room)
+        need_translate = content_type != api.chat.ContentType.EMOTICON and self._need_translate(message.msg, room)
         if need_translate:
             translation = services.translate.get_translation_from_cache(message.msg)
             if translation is None:
