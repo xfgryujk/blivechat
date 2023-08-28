@@ -184,7 +184,7 @@ async def _pop_task() -> TranslateTask:
             return queue.get_nowait()
 
     done_future_set, pending_future_set = await asyncio.wait(
-        [queue.get() for queue in _task_queues],
+        [asyncio.create_task(queue.get()) for queue in _task_queues],
         return_when=asyncio.FIRST_COMPLETED
     )
     for future in pending_future_set:
