@@ -115,7 +115,8 @@ const MESSAGE_GENERATORS = [
           medalLevel: randInt(0, 40),
           id: getUuid4Hex(),
           translation: '',
-          emoticon: null
+          emoticon: null,
+          textEmoticons: [],
         }
       }
     }
@@ -139,7 +140,8 @@ const MESSAGE_GENERATORS = [
           medalLevel: randInt(0, 40),
           id: getUuid4Hex(),
           translation: '',
-          emoticon: randomChoose(EMOTICONS)
+          emoticon: randomChoose(EMOTICONS),
+          textEmoticons: [],
         }
       }
     }
