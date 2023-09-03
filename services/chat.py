@@ -9,7 +9,8 @@ from typing import *
 
 import api.chat
 import blivedm.blivedm as blivedm
-import blivedm.blivedm.models.pb as blivedm_pb
+import blivedm.blivedm.models.web as dm_web_models
+import blivedm.blivedm.models.pb as dm_pb_models
 import config
 import services.avatar
 import services.translate
@@ -42,24 +43,17 @@ class LiveClientManager:
             return
         logger.info('room=%d creating live client', room_id)
         self._live_clients[room_id] = live_client = LiveClient(room_id)
-        live_client.add_handler(_live_msg_handler)
-        asyncio.create_task(self._init_live_client(live_client))
-        logger.info('room=%d live client created, %d live clients', room_id, len(self._live_clients))
-
-    async def _init_live_client(self, live_client: 'LiveClient'):
-        if not await live_client.init_room():
-            logger.warning('room=%d live client init failed', live_client.tmp_room_id)
-            self.del_live_client(live_client.tmp_room_id)
-            return
-        logger.info('room=%d (%d) live client init succeeded', live_client.tmp_room_id, live_client.room_id)
+        live_client.set_handler(_live_msg_handler)
+        # 直接启动吧，这里不用管init_room失败的情况，万一失败了会在on_stopped_by_exception里删除掉这个客户端
         live_client.start()
+        logger.info('room=%d live client created, %d live clients', room_id, len(self._live_clients))
 
     def del_live_client(self, room_id):
         live_client = self._live_clients.pop(room_id, None)
         if live_client is None:
             return
         logger.info('room=%d removing live client', room_id)
-        live_client.remove_handler(_live_msg_handler)
+        live_client.set_handler(None)
         asyncio.create_task(live_client.stop_and_close())
         logger.info('room=%d live client removed, %d live clients', room_id, len(self._live_clients))
 
@@ -70,12 +64,7 @@ class LiveClient(blivedm.BLiveClient):
     HEARTBEAT_INTERVAL = 10
 
     def __init__(self, room_id):
-        super().__init__(room_id, session=utils.request.http_session, heartbeat_interval=self.HEARTBEAT_INTERVAL)
-
-    @property
-    def tmp_room_id(self):
-        """初始化参数传入的房间ID，room_id可能改变，这个不会变"""
-        return self._tmp_room_id
+        super().__init__(room_id, uid=0, session=utils.request.http_session, heartbeat_interval=self.HEARTBEAT_INTERVAL)
 
     async def init_room(self):
         await super().init_room()
@@ -209,10 +198,10 @@ class LiveMsgHandler(blivedm.BaseHandler):
         info = command['info']
         dm_v2 = command.get('dm_v2', '')
 
-        proto: Optional[blivedm_pb.SimpleDm] = None
+        proto: Optional[dm_pb_models.SimpleDm] = None
         if dm_v2 != '':
             try:
-                proto = blivedm_pb.SimpleDm.loads(base64.b64decode(dm_v2))
+                proto = dm_pb_models.SimpleDm.loads(base64.b64decode(dm_v2))
             except (binascii.Error, KeyError, TypeError, ValueError):
                 pass
         if proto is not None:
@@ -227,7 +216,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             medal_level = 0
             medal_room_id = 0
 
-        message = blivedm.DanmakuMessage(
+        message = dm_web_models.DanmakuMessage(
             timestamp=info[0][4],
             msg_type=info[0][9],
             dm_type=info[0][12],
@@ -254,7 +243,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
 
     def __send_gift_callback(self, client: LiveClient, command: dict):
         data = command['data']
-        message = blivedm.GiftMessage(
+        message = dm_web_models.GiftMessage(
             gift_name=data['giftName'],
             num=data['num'],
             uname=data['uname'],
@@ -268,7 +257,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
 
     def __guard_buy_callback(self, client: LiveClient, command: dict):
         data = command['data']
-        message = blivedm.GuardBuyMessage(
+        message = dm_web_models.GuardBuyMessage(
             uid=data['uid'],
             username=data['username'],
             guard_level=data['guard_level'],
@@ -278,7 +267,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
 
     def __super_chat_message_callback(self, client: LiveClient, command: dict):
         data = command['data']
-        message = blivedm.SuperChatMessage(
+        message = dm_web_models.SuperChatMessage(
             price=data['price'],
             message=data['message'],
             start_time=data['start_time'],
@@ -297,10 +286,13 @@ class LiveMsgHandler(blivedm.BaseHandler):
         'SUPER_CHAT_MESSAGE': __super_chat_message_callback
     }
 
-    async def _on_danmaku(self, client: LiveClient, message: blivedm.DanmakuMessage):
+    def on_stopped_by_exception(self, client: LiveClient, exception: Exception):
+        _live_client_manager.del_live_client(client.tmp_room_id)
+
+    def _on_danmaku(self, client: LiveClient, message: dm_web_models.DanmakuMessage):
         asyncio.create_task(self.__on_danmaku(client, message))
 
-    async def __on_danmaku(self, client: LiveClient, message: blivedm.DanmakuMessage):
+    async def __on_danmaku(self, client: LiveClient, message: dm_web_models.DanmakuMessage):
         avatar_url = message.face
         if avatar_url != '':
             services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
@@ -367,7 +359,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             await self._translate_and_response(message.msg, room.room_id, msg_id)
 
     @staticmethod
-    def _parse_text_emoticons(message: blivedm.DanmakuMessage):
+    def _parse_text_emoticons(message: dm_web_models.DanmakuMessage):
         try:
             extra = json.loads(message.mode_info['extra'])
             # {"[dog]":{"emoticon_id":208,"emoji":"[dog]","descript":"[dog]","url":"http://i0.hdslb.com/bfs/live/4428c8
@@ -383,7 +375,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         except (json.JSONDecodeError, TypeError, KeyError):
             return []
 
-    async def _on_gift(self, client: LiveClient, message: blivedm.GiftMessage):
+    def _on_gift(self, client: LiveClient, message: dm_web_models.GiftMessage):
         avatar_url = services.avatar.process_avatar_url(message.face)
         services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
 
@@ -405,11 +397,11 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'num': message.num
         })
 
-    async def _on_buy_guard(self, client: LiveClient, message: blivedm.GuardBuyMessage):
+    def _on_buy_guard(self, client: LiveClient, message: dm_web_models.GuardBuyMessage):
         asyncio.create_task(self.__on_buy_guard(client, message))
 
     @staticmethod
-    async def __on_buy_guard(client: LiveClient, message: blivedm.GuardBuyMessage):
+    async def __on_buy_guard(client: LiveClient, message: dm_web_models.GuardBuyMessage):
         # 先异步调用再获取房间，因为返回时房间可能已经不存在了
         avatar_url = await services.avatar.get_avatar_url(message.uid)
 
@@ -425,7 +417,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'privilegeType': message.guard_level
         })
 
-    async def _on_super_chat(self, client: LiveClient, message: blivedm.SuperChatMessage):
+    def _on_super_chat(self, client: LiveClient, message: dm_web_models.SuperChatMessage):
         avatar_url = services.avatar.process_avatar_url(message.face)
         services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
 
@@ -460,7 +452,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
                 message.message, room.room_id, msg_id, services.translate.Priority.HIGH
             ))
 
-    async def _on_super_chat_delete(self, client: LiveClient, message: blivedm.SuperChatDeleteMessage):
+    def _on_super_chat_delete(self, client: LiveClient, message: dm_web_models.SuperChatDeleteMessage):
         room = client_room_manager.get_room(client.tmp_room_id)
         if room is None:
             return

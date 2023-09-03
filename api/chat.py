@@ -12,7 +12,7 @@ import aiohttp
 import tornado.websocket
 
 import api.base
-import blivedm.blivedm.client as blivedm_client
+import blivedm.blivedm.clients.web as dm_web_cli
 import config
 import services.avatar
 import services.chat
@@ -312,7 +312,7 @@ class RoomInfoHandler(api.base.ApiHandler):  # noqa
     async def _get_room_info(room_id):
         try:
             async with utils.request.http_session.get(
-                blivedm_client.ROOM_INIT_URL,
+                dm_web_cli.ROOM_INIT_URL,
                 headers={
                     **utils.request.BILIBILI_COMMON_HEADERS,
                     'Origin': 'https://live.bilibili.com',
@@ -341,7 +341,7 @@ class RoomInfoHandler(api.base.ApiHandler):  # noqa
     @staticmethod
     async def _get_server_host_list(_room_id):
         # 连接其他host必须要key
-        return blivedm_client.DEFAULT_DANMAKU_SERVER_LIST
+        return dm_web_cli.DEFAULT_DANMAKU_SERVER_LIST
 
 
 class AvatarHandler(api.base.ApiHandler):  # noqa

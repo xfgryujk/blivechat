@@ -100,6 +100,8 @@ async def _refresh_avatar_cache_from_web(user_id):
 
 
 def update_avatar_cache(user_id, avatar_url):
+    if user_id == 0:
+        return
     _update_avatar_cache_in_memory(user_id, avatar_url)
     _update_avatar_cache_in_database(user_id, avatar_url)
 
