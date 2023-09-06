@@ -57,14 +57,24 @@ class AppConfig:
         self.open_browser_at_startup = True
         self.enable_upload_file = True
 
-        self.fetch_avatar_max_queue_size = 1
+        self.fetch_avatar_max_queue_size = 4
         self.avatar_cache_size = 10000
+
+        self.open_live_access_key_id = ''
+        self.open_live_access_key_secret = ''
+        self.open_live_app_id = 0
 
         self.enable_translate = True
         self.allow_translate_rooms = set()
         self.translate_max_queue_size = 10
         self.translation_cache_size = 50000
         self.translator_configs = []
+
+    @property
+    def is_open_live_configured(self):
+        return (
+            self.open_live_access_key_id != '' and self.open_live_access_key_secret != '' and self.open_live_app_id != 0
+        )
 
     def load(self, path):
         try:
@@ -81,19 +91,25 @@ class AppConfig:
     def _load_app_config(self, config: configparser.ConfigParser):
         app_section = config['app']
         self.host = app_section.get('host', self.host)
-        self.port = app_section.getint('port', fallback=self.port)
+        self.port = app_section.getint('port', self.port)
         self.database_url = app_section.get('database_url', self.database_url)
-        self.tornado_xheaders = app_section.getboolean('tornado_xheaders', fallback=self.tornado_xheaders)
+        self.tornado_xheaders = app_section.getboolean('tornado_xheaders', self.tornado_xheaders)
         self.loader_url = app_section.get('loader_url', self.loader_url)
-        self.open_browser_at_startup = app_section.getboolean('open_browser_at_startup',
-                                                              fallback=self.open_browser_at_startup)
-        self.enable_upload_file = app_section.getboolean('enable_upload_file', fallback=self.enable_upload_file)
+        self.open_browser_at_startup = app_section.getboolean('open_browser_at_startup', self.open_browser_at_startup)
+        self.enable_upload_file = app_section.getboolean('enable_upload_file', self.enable_upload_file)
 
-        self.fetch_avatar_max_queue_size = app_section.getint('fetch_avatar_max_queue_size',
-                                                              fallback=self.fetch_avatar_max_queue_size)
-        self.avatar_cache_size = app_section.getint('avatar_cache_size', fallback=self.avatar_cache_size)
+        self.fetch_avatar_max_queue_size = app_section.getint(
+            'fetch_avatar_max_queue_size', self.fetch_avatar_max_queue_size
+        )
+        self.avatar_cache_size = app_section.getint('avatar_cache_size', self.avatar_cache_size)
 
-        self.enable_translate = app_section.getboolean('enable_translate', fallback=self.enable_translate)
+        self.open_live_access_key_id = app_section.get('open_live_access_key_id', self.open_live_access_key_id)
+        self.open_live_access_key_secret = app_section.get(
+            'open_live_access_key_secret', self.open_live_access_key_secret
+        )
+        self.open_live_app_id = app_section.getint('open_live_app_id', self.open_live_app_id)
+
+        self.enable_translate = app_section.getboolean('enable_translate', self.enable_translate)
         self.allow_translate_rooms = _str_to_list(app_section.get('allow_translate_rooms', ''), int, set)
         self.translate_max_queue_size = app_section.getint('translate_max_queue_size', self.translate_max_queue_size)
         self.translation_cache_size = app_section.getint('translation_cache_size', self.translation_cache_size)

@@ -127,7 +127,7 @@ class ChatHandler(tornado.websocket.WebSocketHandler):  # noqa
         self._heartbeat_timer_handle = None
         self._receive_timeout_timer_handle = None
 
-        self.room_id = None
+        self.room_key: Optional[services.chat.RoomKey] = None
         self.auto_translate = False
 
     def open(self):
@@ -156,9 +156,9 @@ class ChatHandler(tornado.websocket.WebSocketHandler):  # noqa
         self.close()
 
     def on_close(self):
-        logger.info('client=%s disconnected, room=%s', self.request.remote_ip, str(self.room_id))
+        logger.info('client=%s disconnected, room=%s', self.request.remote_ip, self.room_key)
         if self.has_joined_room:
-            services.chat.client_room_manager.del_client(self.room_id, self)
+            services.chat.client_room_manager.del_client(self.room_key, self)
         if self._heartbeat_timer_handle is not None:
             self._heartbeat_timer_handle.cancel()
             self._heartbeat_timer_handle = None
@@ -169,7 +169,7 @@ class ChatHandler(tornado.websocket.WebSocketHandler):  # noqa
     def on_message(self, message):
         try:
             body = json.loads(message)
-            cmd = body['cmd']
+            cmd = int(body['cmd'])
 
             if cmd == Command.HEARTBEAT:
                 # 超时没有加入房间也断开
@@ -177,26 +177,48 @@ class ChatHandler(tornado.websocket.WebSocketHandler):  # noqa
                     self._refresh_receive_timeout_timer()
 
             elif cmd == Command.JOIN_ROOM:
-                if self.has_joined_room:
-                    return
-                self._refresh_receive_timeout_timer()
-
-                self.room_id = int(body['data']['roomId'])
-                logger.info('client=%s joining room %d', self.request.remote_ip, self.room_id)
-                try:
-                    cfg = body['data']['config']
-                    self.auto_translate = bool(cfg['autoTranslate'])
-                except KeyError:
-                    pass
-
-                services.chat.client_room_manager.add_client(self.room_id, self)
-                asyncio.create_task(self._on_joined_room())
+                self._on_join_room_req(body)
 
             else:
                 logger.warning('client=%s unknown cmd=%d, body=%s', self.request.remote_ip, cmd, body)
 
         except Exception:  # noqa
             logger.exception('client=%s on_message error, message=%s', self.request.remote_ip, message)
+
+    def _on_join_room_req(self, body: dict):
+        if self.has_joined_room:
+            return
+        data = body['data']
+
+        room_key_dict = data.get('roomKey', None)
+        if room_key_dict is not None:
+            room_key_type = services.chat.RoomKeyType(room_key_dict['type'])
+            room_key_value = room_key_dict['value']
+            if room_key_type == services.chat.RoomKeyType.ROOM_ID:
+                if not isinstance(room_key_value, int):
+                    raise TypeError(f'Room key value type error, value={room_key_value}')
+            elif room_key_type == services.chat.RoomKeyType.AUTH_CODE:
+                if not isinstance(room_key_value, str):
+                    raise TypeError(f'Room key value type error, value={room_key_value}')
+            else:
+                raise ValueError(f'Unknown RoomKeyType={room_key_type}')
+        else:
+            # 兼容旧版客户端 TODO 过几个版本可以移除
+            room_key_type = services.chat.RoomKeyType.ROOM_ID
+            room_key_value = int(data['roomId'])
+        self.room_key = services.chat.RoomKey(room_key_type, room_key_value)
+        logger.info('client=%s joining room %s', self.request.remote_ip, self.room_key)
+
+        try:
+            cfg = data['config']
+            self.auto_translate = bool(cfg['autoTranslate'])
+        except KeyError:
+            pass
+
+        services.chat.client_room_manager.add_client(self.room_key, self)
+        asyncio.create_task(self._on_joined_room())
+
+        self._refresh_receive_timeout_timer()
 
     # 跨域测试用
     def check_origin(self, origin):
@@ -206,7 +228,7 @@ class ChatHandler(tornado.websocket.WebSocketHandler):  # noqa
 
     @property
     def has_joined_room(self):
-        return self.room_id is not None
+        return self.room_key is not None
 
     def send_cmd_data(self, cmd, data):
         self.send_body_no_raise(make_message_body(cmd, data))
@@ -224,7 +246,12 @@ class ChatHandler(tornado.websocket.WebSocketHandler):  # noqa
         # 不允许自动翻译的提示
         if self.auto_translate:
             cfg = config.get_config()
-            if cfg.allow_translate_rooms and self.room_id not in cfg.allow_translate_rooms:
+            if (
+                cfg.allow_translate_rooms
+                # 身份码就不管了吧，反正配置正确的情况下不会看到这个提示
+                and self.room_key.type == services.chat.RoomKeyType.ROOM_ID
+                and self.room_key.value not in cfg.allow_translate_rooms
+            ):
                 self.send_cmd_data(Command.ADD_TEXT, make_text_message_data(
                     author_name='blivechat',
                     author_type=2,
@@ -295,7 +322,8 @@ class RoomInfoHandler(api.base.ApiHandler):  # noqa
         room_id = int(self.get_query_argument('roomId'))
         logger.info('client=%s getting room info, room=%d', self.request.remote_ip, room_id)
         room_id, owner_uid = await self._get_room_info(room_id)
-        host_server_list = await self._get_server_host_list(room_id)
+        # 连接其他host必须要key
+        host_server_list = dm_web_cli.DEFAULT_DANMAKU_SERVER_LIST
         if owner_uid == 0:
             # 缓存3分钟
             self.set_header('Cache-Control', 'private, max-age=180')
@@ -337,11 +365,6 @@ class RoomInfoHandler(api.base.ApiHandler):  # noqa
 
         room_info = data['data']['room_info']
         return room_info['room_id'], room_info['uid']
-
-    @staticmethod
-    async def _get_server_host_list(_room_id):
-        # 连接其他host必须要key
-        return dm_web_cli.DEFAULT_DANMAKU_SERVER_LIST
 
 
 class AvatarHandler(api.base.ApiHandler):  # noqa

@@ -2,6 +2,7 @@
 import asyncio
 import base64
 import binascii
+import enum
 import json
 import logging
 import uuid
@@ -17,6 +18,29 @@ import services.translate
 import utils.request
 
 logger = logging.getLogger(__name__)
+
+
+class RoomKeyType(enum.IntEnum):
+    ROOM_ID = 1
+    AUTH_CODE = 2
+
+
+class RoomKey(NamedTuple):
+    """内部用来标识一个房间，由客户端加入房间时传入"""
+    type: RoomKeyType
+    value: Union[int, str]
+
+    def __str__(self):
+        res = str(self.value)
+        if self.type == RoomKeyType.AUTH_CODE:
+            # 身份码要脱敏
+            res = '***' + res[-3:]
+        return res
+    __repr__ = __str__
+
+
+# 用于类型标注的类型别名
+LiveClientType = Union['WebLiveClient', 'OpenLiveClient']
 
 # 到B站的连接管理
 _live_client_manager: Optional['LiveClientManager'] = None
@@ -43,51 +67,111 @@ async def shut_down():
 class LiveClientManager:
     """管理到B站的连接"""
     def __init__(self):
-        self._live_clients: Dict[int, WebLiveClient] = {}
+        self._live_clients: Dict[RoomKey, LiveClientType] = {}
         self._close_client_futures: Set[asyncio.Future] = set()
 
     async def shut_down(self):
         while len(self._live_clients) != 0:
-            room_id = next(iter(self._live_clients))
-            self.del_live_client(room_id)
+            room_key = next(iter(self._live_clients))
+            self.del_live_client(room_key)
 
         await asyncio.gather(*self._close_client_futures, return_exceptions=True)
 
-    def add_live_client(self, room_id):
-        if room_id in self._live_clients:
+    def add_live_client(self, room_key: RoomKey):
+        if room_key in self._live_clients:
             return
-        logger.info('room=%d creating live client', room_id)
-        self._live_clients[room_id] = live_client = WebLiveClient(room_id)
+
+        logger.info('room=%s creating live client', room_key)
+
+        self._live_clients[room_key] = live_client = self._create_live_client(room_key)
         live_client.set_handler(_live_msg_handler)
         # 直接启动吧，这里不用管init_room失败的情况，万一失败了会在on_client_stopped里删除掉这个客户端
         live_client.start()
-        logger.info('room=%d live client created, %d live clients', room_id, len(self._live_clients))
 
-    def del_live_client(self, room_id):
-        live_client = self._live_clients.pop(room_id, None)
+        logger.info('room=%s live client created, %d live clients', room_key, len(self._live_clients))
+
+    @staticmethod
+    def _create_live_client(room_key: RoomKey):
+        if room_key.type == RoomKeyType.ROOM_ID:
+            return WebLiveClient(room_key)
+        elif room_key.type == RoomKeyType.AUTH_CODE:
+            return OpenLiveClient(room_key)
+        raise ValueError(f'Unknown RoomKeyType={room_key.type}')
+
+    def del_live_client(self, room_key: RoomKey):
+        live_client = self._live_clients.pop(room_key, None)
         if live_client is None:
             return
-        logger.info('room=%d removing live client', room_id)
-        live_client.set_handler(None)
 
+        logger.info('room=%s removing live client', room_key)
+
+        live_client.set_handler(None)
         future = asyncio.create_task(live_client.stop_and_close())
         self._close_client_futures.add(future)
         future.add_done_callback(lambda _future: self._close_client_futures.discard(future))
 
-        logger.info('room=%d live client removed, %d live clients', room_id, len(self._live_clients))
+        logger.info('room=%s live client removed, %d live clients', room_key, len(self._live_clients))
 
-        client_room_manager.del_room(room_id)
+        client_room_manager.del_room(room_key)
+
+    def get_live_client(self, room_key: RoomKey):
+        return self._live_clients.get(room_key, None)
 
 
 class WebLiveClient(blivedm.BLiveClient):
     HEARTBEAT_INTERVAL = 10
 
-    def __init__(self, room_id):
-        super().__init__(room_id, uid=0, session=utils.request.http_session, heartbeat_interval=self.HEARTBEAT_INTERVAL)
+    def __init__(self, room_key: RoomKey):
+        assert room_key.type == RoomKeyType.ROOM_ID
+        super().__init__(
+            room_key.value,
+            uid=0,
+            session=utils.request.http_session,
+            heartbeat_interval=self.HEARTBEAT_INTERVAL,
+        )
+
+    @property
+    def room_key(self):
+        return RoomKey(RoomKeyType.ROOM_ID, self.tmp_room_id)
 
     async def init_room(self):
-        await super().init_room()
+        res = await super().init_room()
+        if res:
+            logger.info('room=%s live client init succeeded, room_id=%d', self.room_key, self.room_id)
+        else:
+            logger.info('room=%s live client init with a downgrade, room_id=%d', self.room_key, self.room_id)
+        # 允许降级
         return True
+
+
+class OpenLiveClient(blivedm.OpenLiveClient):
+    HEARTBEAT_INTERVAL = 10
+
+    def __init__(self, room_key: RoomKey):
+        assert room_key.type == RoomKeyType.AUTH_CODE
+        cfg = config.get_config()
+        super().__init__(
+            access_key_id=cfg.open_live_access_key_id,
+            access_key_secret=cfg.open_live_access_key_secret,
+            app_id=cfg.open_live_app_id,
+            room_owner_auth_code=room_key.value,
+            session=utils.request.http_session,
+            heartbeat_interval=self.HEARTBEAT_INTERVAL,
+        )
+
+    @property
+    def room_key(self):
+        return RoomKey(RoomKeyType.AUTH_CODE, self.room_owner_auth_code)
+
+    async def init_room(self):
+        res = await super().init_room()
+        if res:
+            logger.info('room=%s live client init succeeded, room_id=%d', self.room_key, self.room_id)
+        else:
+            logger.info('room=%s live client init failed', self.room_key)
+        return res
+
+    # TODO 如果没有配置access_key，则请求公共服务器
 
 
 class ClientRoomManager:
@@ -96,84 +180,85 @@ class ClientRoomManager:
     DELAY_DEL_ROOM_TIMEOUT = 10
 
     def __init__(self):
-        self._rooms: Dict[int, ClientRoom] = {}
-        # room_id -> timer_handle
-        self._delay_del_timer_handles: Dict[int, asyncio.TimerHandle] = {}
+        self._rooms: Dict[RoomKey, ClientRoom] = {}
+        self._delay_del_timer_handles: Dict[RoomKey, asyncio.TimerHandle] = {}
 
     def shut_down(self):
         while len(self._rooms) != 0:
-            room_id = next(iter(self._rooms))
-            self.del_room(room_id)
+            room_key = next(iter(self._rooms))
+            self.del_room(room_key)
 
         for timer_handle in self._delay_del_timer_handles.values():
             timer_handle.cancel()
         self._delay_del_timer_handles.clear()
 
-    def add_client(self, room_id, client: 'api.chat.ChatHandler'):
-        room = self._get_or_add_room(room_id)
+    def add_client(self, room_key: RoomKey, client: 'api.chat.ChatHandler'):
+        room = self._get_or_add_room(room_key)
         room.add_client(client)
 
-        self._clear_delay_del_timer(room_id)
+        self._clear_delay_del_timer(room_key)
 
-    def del_client(self, room_id, client: 'api.chat.ChatHandler'):
-        room = self.get_room(room_id)
+    def del_client(self, room_key: RoomKey, client: 'api.chat.ChatHandler'):
+        room = self.get_room(room_key)
         if room is None:
             return
+
         room.del_client(client)
 
         if room.client_count == 0:
-            self.delay_del_room(room_id, self.DELAY_DEL_ROOM_TIMEOUT)
+            self.delay_del_room(room_key, self.DELAY_DEL_ROOM_TIMEOUT)
 
-    def get_room(self, room_id):
-        return self._rooms.get(room_id, None)
+    def get_room(self, room_key: RoomKey):
+        return self._rooms.get(room_key, None)
 
-    def _get_or_add_room(self, room_id):
-        room = self._rooms.get(room_id, None)
+    def _get_or_add_room(self, room_key: RoomKey):
+        room = self._rooms.get(room_key, None)
         if room is None:
-            logger.info('room=%d creating client room', room_id)
-            self._rooms[room_id] = room = ClientRoom(room_id)
-            logger.info('room=%d client room created, %d client rooms', room_id, len(self._rooms))
+            logger.info('room=%s creating client room', room_key)
+            self._rooms[room_key] = room = ClientRoom(room_key)
+            logger.info('room=%s client room created, %d client rooms', room_key, len(self._rooms))
 
-            _live_client_manager.add_live_client(room_id)
+            _live_client_manager.add_live_client(room_key)
         return room
 
-    def del_room(self, room_id):
-        self._clear_delay_del_timer(room_id)
+    def del_room(self, room_key: RoomKey):
+        self._clear_delay_del_timer(room_key)
 
-        room = self._rooms.pop(room_id, None)
+        room = self._rooms.pop(room_key, None)
         if room is None:
             return
-        logger.info('room=%d removing client room', room_id)
+
+        logger.info('room=%s removing client room', room_key)
         room.clear_clients()
-        logger.info('room=%d client room removed, %d client rooms', room_id, len(self._rooms))
+        logger.info('room=%s client room removed, %d client rooms', room_key, len(self._rooms))
 
-        _live_client_manager.del_live_client(room_id)
+        _live_client_manager.del_live_client(room_key)
 
-    def delay_del_room(self, room_id, timeout):
-        self._clear_delay_del_timer(room_id)
-        self._delay_del_timer_handles[room_id] = asyncio.get_running_loop().call_later(
-            timeout, self._on_delay_del_room, room_id
+    def delay_del_room(self, room_key: RoomKey, timeout):
+        self._clear_delay_del_timer(room_key)
+        self._delay_del_timer_handles[room_key] = asyncio.get_running_loop().call_later(
+            timeout, self._on_delay_del_room, room_key
         )
 
-    def _clear_delay_del_timer(self, room_id):
-        timer_handle = self._delay_del_timer_handles.pop(room_id, None)
+    def _clear_delay_del_timer(self, room_key: RoomKey):
+        timer_handle = self._delay_del_timer_handles.pop(room_key, None)
         if timer_handle is not None:
             timer_handle.cancel()
 
-    def _on_delay_del_room(self, room_id):
-        self._delay_del_timer_handles.pop(room_id, None)
-        self.del_room(room_id)
+    def _on_delay_del_room(self, room_key: RoomKey):
+        self._delay_del_timer_handles.pop(room_key, None)
+        self.del_room(room_key)
 
 
 class ClientRoom:
-    def __init__(self, room_id):
-        self._room_id = room_id
+    def __init__(self, room_key: RoomKey):
+        self._room_key = room_key
         self._clients: List[api.chat.ChatHandler] = []
         self._auto_translate_count = 0
 
     @property
-    def room_id(self):
-        return self._room_id
+    def room_key(self) -> RoomKey:
+        return self._room_key
 
     @property
     def client_count(self):
@@ -184,11 +269,13 @@ class ClientRoom:
         return self._auto_translate_count > 0
 
     def add_client(self, client: 'api.chat.ChatHandler'):
-        logger.info('room=%d addding client %s', self._room_id, client.request.remote_ip)
+        logger.info('room=%s addding client %s', self._room_key, client.request.remote_ip)
+
         self._clients.append(client)
         if client.auto_translate:
             self._auto_translate_count += 1
-        logger.info('room=%d added client %s, %d clients', self._room_id, client.request.remote_ip,
+
+        logger.info('room=%s added client %s, %d clients', self._room_key, client.request.remote_ip,
                     self.client_count)
 
     def del_client(self, client: 'api.chat.ChatHandler'):
@@ -199,11 +286,13 @@ class ClientRoom:
             return
         if client.auto_translate:
             self._auto_translate_count -= 1
-        logger.info('room=%d removed client %s, %d clients', self._room_id, client.request.remote_ip,
+
+        logger.info('room=%s removed client %s, %d clients', self._room_key, client.request.remote_ip,
                     self.client_count)
 
     def clear_clients(self):
-        logger.info('room=%d clearing %d clients', self._room_id, self.client_count)
+        logger.info('room=%s clearing %d clients', self._room_key, self.client_count)
+
         for client in self._clients:
             client.close()
         self._clients.clear()
@@ -222,7 +311,7 @@ class ClientRoom:
 
 class LiveMsgHandler(blivedm.BaseHandler):
     # 重新定义XXX_callback是为了减少对字段名的依赖，防止B站改字段名
-    def __danmu_msg_callback(self, client: WebLiveClient, command: dict):
+    def __danmu_msg_callback(self, client: LiveClientType, command: dict):
         info = command['info']
         dm_v2 = command.get('dm_v2', '')
 
@@ -269,7 +358,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         )
         return self._on_danmaku(client, message)
 
-    def __send_gift_callback(self, client: WebLiveClient, command: dict):
+    def __send_gift_callback(self, client: LiveClientType, command: dict):
         data = command['data']
         message = dm_web_models.GiftMessage(
             gift_name=data['giftName'],
@@ -283,7 +372,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         )
         return self._on_gift(client, message)
 
-    def __guard_buy_callback(self, client: WebLiveClient, command: dict):
+    def __guard_buy_callback(self, client: LiveClientType, command: dict):
         data = command['data']
         message = dm_web_models.GuardBuyMessage(
             uid=data['uid'],
@@ -293,7 +382,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         )
         return self._on_buy_guard(client, message)
 
-    def __super_chat_message_callback(self, client: WebLiveClient, command: dict):
+    def __super_chat_message_callback(self, client: LiveClientType, command: dict):
         data = command['data']
         message = dm_web_models.SuperChatMessage(
             price=data['price'],
@@ -314,13 +403,13 @@ class LiveMsgHandler(blivedm.BaseHandler):
         'SUPER_CHAT_MESSAGE': __super_chat_message_callback
     }
 
-    def on_client_stopped(self, client: WebLiveClient, exception: Optional[Exception]):
-        _live_client_manager.del_live_client(client.tmp_room_id)
+    def on_client_stopped(self, client: LiveClientType, exception: Optional[Exception]):
+        _live_client_manager.del_live_client(client.room_key)
 
-    def _on_danmaku(self, client: WebLiveClient, message: dm_web_models.DanmakuMessage):
+    def _on_danmaku(self, client: LiveClientType, message: dm_web_models.DanmakuMessage):
         asyncio.create_task(self.__on_danmaku(client, message))
 
-    async def __on_danmaku(self, client: WebLiveClient, message: dm_web_models.DanmakuMessage):
+    async def __on_danmaku(self, client: LiveClientType, message: dm_web_models.DanmakuMessage):
         avatar_url = message.face
         if avatar_url != '':
             services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
@@ -328,7 +417,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             # 先异步调用再获取房间，因为返回时房间可能已经不存在了
             avatar_url = await services.avatar.get_avatar_url(message.uid)
 
-        room = client_room_manager.get_room(client.tmp_room_id)
+        room = client_room_manager.get_room(client.room_key)
         if room is None:
             return
 
@@ -352,7 +441,9 @@ class LiveMsgHandler(blivedm.BaseHandler):
 
         text_emoticons = self._parse_text_emoticons(message)
 
-        need_translate = content_type != api.chat.ContentType.EMOTICON and self._need_translate(message.msg, room)
+        need_translate = (
+            content_type != api.chat.ContentType.EMOTICON and self._need_translate(message.msg, room, client)
+        )
         if need_translate:
             translation = services.translate.get_translation_from_cache(message.msg)
             if translation is None:
@@ -384,7 +475,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         ))
 
         if need_translate:
-            await self._translate_and_response(message.msg, room.room_id, msg_id)
+            await self._translate_and_response(message.msg, room.room_key, msg_id)
 
     @staticmethod
     def _parse_text_emoticons(message: dm_web_models.DanmakuMessage):
@@ -403,7 +494,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         except (json.JSONDecodeError, TypeError, KeyError):
             return []
 
-    def _on_gift(self, client: WebLiveClient, message: dm_web_models.GiftMessage):
+    def _on_gift(self, client: LiveClientType, message: dm_web_models.GiftMessage):
         avatar_url = services.avatar.process_avatar_url(message.face)
         services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
 
@@ -411,7 +502,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         if message.coin_type != 'gold':
             return
 
-        room = client_room_manager.get_room(client.tmp_room_id)
+        room = client_room_manager.get_room(client.room_key)
         if room is None:
             return
 
@@ -425,15 +516,15 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'num': message.num
         })
 
-    def _on_buy_guard(self, client: WebLiveClient, message: dm_web_models.GuardBuyMessage):
+    def _on_buy_guard(self, client: LiveClientType, message: dm_web_models.GuardBuyMessage):
         asyncio.create_task(self.__on_buy_guard(client, message))
 
     @staticmethod
-    async def __on_buy_guard(client: WebLiveClient, message: dm_web_models.GuardBuyMessage):
+    async def __on_buy_guard(client: LiveClientType, message: dm_web_models.GuardBuyMessage):
         # 先异步调用再获取房间，因为返回时房间可能已经不存在了
         avatar_url = await services.avatar.get_avatar_url(message.uid)
 
-        room = client_room_manager.get_room(client.tmp_room_id)
+        room = client_room_manager.get_room(client.room_key)
         if room is None:
             return
 
@@ -445,15 +536,15 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'privilegeType': message.guard_level
         })
 
-    def _on_super_chat(self, client: WebLiveClient, message: dm_web_models.SuperChatMessage):
+    def _on_super_chat(self, client: LiveClientType, message: dm_web_models.SuperChatMessage):
         avatar_url = services.avatar.process_avatar_url(message.face)
         services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
 
-        room = client_room_manager.get_room(client.tmp_room_id)
+        room = client_room_manager.get_room(client.room_key)
         if room is None:
             return
 
-        need_translate = self._need_translate(message.message, room)
+        need_translate = self._need_translate(message.message, room, client)
         if need_translate:
             translation = services.translate.get_translation_from_cache(message.message)
             if translation is None:
@@ -477,11 +568,11 @@ class LiveMsgHandler(blivedm.BaseHandler):
 
         if need_translate:
             asyncio.create_task(self._translate_and_response(
-                message.message, room.room_id, msg_id, services.translate.Priority.HIGH
+                message.message, room.room_key, msg_id, services.translate.Priority.HIGH
             ))
 
-    def _on_super_chat_delete(self, client: WebLiveClient, message: dm_web_models.SuperChatDeleteMessage):
-        room = client_room_manager.get_room(client.tmp_room_id)
+    def _on_super_chat_delete(self, client: LiveClientType, message: dm_web_models.SuperChatDeleteMessage):
+        room = client_room_manager.get_room(client.room_key)
         if room is None:
             return
 
@@ -490,22 +581,22 @@ class LiveMsgHandler(blivedm.BaseHandler):
         })
 
     @staticmethod
-    def _need_translate(text, room: ClientRoom):
+    def _need_translate(text, room: ClientRoom, client: LiveClientType):
         cfg = config.get_config()
         return (
             cfg.enable_translate
             and room.need_translate
-            and (not cfg.allow_translate_rooms or room.room_id in cfg.allow_translate_rooms)
+            and (not cfg.allow_translate_rooms or client.room_id in cfg.allow_translate_rooms)
             and services.translate.need_translate(text)
         )
 
     @staticmethod
-    async def _translate_and_response(text, room_id, msg_id, priority=services.translate.Priority.NORMAL):
+    async def _translate_and_response(text, room_key: RoomKey, msg_id, priority=services.translate.Priority.NORMAL):
         translation = await services.translate.translate(text, priority)
         if translation is None:
             return
 
-        room = client_room_manager.get_room(room_id)
+        room = client_room_manager.get_room(room_key)
         if room is None:
             return
 
