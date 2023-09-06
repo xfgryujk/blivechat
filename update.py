@@ -9,7 +9,7 @@ VERSION = 'v1.7.0'
 
 
 def check_update():
-    asyncio.get_event_loop().create_task(_do_check_update())
+    asyncio.get_running_loop().create_task(_do_check_update())
 
 
 async def _do_check_update():

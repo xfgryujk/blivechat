@@ -42,7 +42,7 @@ def init():
     global _avatar_url_cache, _task_queue
     _avatar_url_cache = cachetools.TTLCache(cfg.avatar_cache_size, 10 * 60)
     _task_queue = asyncio.Queue(cfg.fetch_avatar_max_queue_size)
-    asyncio.get_event_loop().create_task(_do_init())
+    asyncio.get_running_loop().create_task(_do_init())
 
 
 async def _do_init():

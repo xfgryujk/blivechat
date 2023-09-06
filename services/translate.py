@@ -56,7 +56,7 @@ def init():
     _translate_cache = cachetools.LRUCache(cfg.translation_cache_size)
     # 总队列长度会超过translate_max_queue_size，不用这么严格
     _task_queues = [asyncio.Queue(cfg.translate_max_queue_size) for _ in range(len(Priority))]
-    asyncio.get_event_loop().create_task(_do_init())
+    asyncio.get_running_loop().create_task(_do_init())
 
 
 async def _do_init():
@@ -386,21 +386,16 @@ class TencentTranslateFree(TranslateProvider):
         return True
 
     async def _reinit_coroutine(self):
-        try:
-            while True:
-                logger.debug('TencentTranslateFree reinit')
-                start_time = datetime.datetime.now()
-                try:
-                    await self._do_init()
-                except asyncio.CancelledError:
-                    raise
-                except BaseException:  # noqa
-                    pass
-                cost_time = (datetime.datetime.now() - start_time).total_seconds()
+        while True:
+            logger.debug('TencentTranslateFree reinit')
+            start_time = datetime.datetime.now()
+            try:
+                await self._do_init()
+            except Exception:  # noqa
+                pass
+            cost_time = (datetime.datetime.now() - start_time).total_seconds()
 
-                await asyncio.sleep(30 - cost_time)
-        except asyncio.CancelledError:
-            pass
+            await asyncio.sleep(30 - cost_time)
 
     @property
     def is_available(self):

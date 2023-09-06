@@ -33,18 +33,33 @@ def init():
     _live_msg_handler = LiveMsgHandler()
 
 
+async def shut_down():
+    if client_room_manager is not None:
+        client_room_manager.shut_down()
+    if _live_client_manager is not None:
+        await _live_client_manager.shut_down()
+
+
 class LiveClientManager:
     """管理到B站的连接"""
     def __init__(self):
-        self._live_clients: Dict[int, LiveClient] = {}
+        self._live_clients: Dict[int, WebLiveClient] = {}
+        self._close_client_futures: Set[asyncio.Future] = set()
+
+    async def shut_down(self):
+        while len(self._live_clients) != 0:
+            room_id = next(iter(self._live_clients))
+            self.del_live_client(room_id)
+
+        await asyncio.gather(*self._close_client_futures, return_exceptions=True)
 
     def add_live_client(self, room_id):
         if room_id in self._live_clients:
             return
         logger.info('room=%d creating live client', room_id)
-        self._live_clients[room_id] = live_client = LiveClient(room_id)
+        self._live_clients[room_id] = live_client = WebLiveClient(room_id)
         live_client.set_handler(_live_msg_handler)
-        # 直接启动吧，这里不用管init_room失败的情况，万一失败了会在on_stopped_by_exception里删除掉这个客户端
+        # 直接启动吧，这里不用管init_room失败的情况，万一失败了会在on_client_stopped里删除掉这个客户端
         live_client.start()
         logger.info('room=%d live client created, %d live clients', room_id, len(self._live_clients))
 
@@ -54,13 +69,17 @@ class LiveClientManager:
             return
         logger.info('room=%d removing live client', room_id)
         live_client.set_handler(None)
-        asyncio.create_task(live_client.stop_and_close())
+
+        future = asyncio.create_task(live_client.stop_and_close())
+        self._close_client_futures.add(future)
+        future.add_done_callback(lambda _future: self._close_client_futures.discard(future))
+
         logger.info('room=%d live client removed, %d live clients', room_id, len(self._live_clients))
 
         client_room_manager.del_room(room_id)
 
 
-class LiveClient(blivedm.BLiveClient):
+class WebLiveClient(blivedm.BLiveClient):
     HEARTBEAT_INTERVAL = 10
 
     def __init__(self, room_id):
@@ -80,6 +99,15 @@ class ClientRoomManager:
         self._rooms: Dict[int, ClientRoom] = {}
         # room_id -> timer_handle
         self._delay_del_timer_handles: Dict[int, asyncio.TimerHandle] = {}
+
+    def shut_down(self):
+        while len(self._rooms) != 0:
+            room_id = next(iter(self._rooms))
+            self.del_room(room_id)
+
+        for timer_handle in self._delay_del_timer_handles.values():
+            timer_handle.cancel()
+        self._delay_del_timer_handles.clear()
 
     def add_client(self, room_id, client: 'api.chat.ChatHandler'):
         room = self._get_or_add_room(room_id)
@@ -194,7 +222,7 @@ class ClientRoom:
 
 class LiveMsgHandler(blivedm.BaseHandler):
     # 重新定义XXX_callback是为了减少对字段名的依赖，防止B站改字段名
-    def __danmu_msg_callback(self, client: LiveClient, command: dict):
+    def __danmu_msg_callback(self, client: WebLiveClient, command: dict):
         info = command['info']
         dm_v2 = command.get('dm_v2', '')
 
@@ -241,7 +269,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         )
         return self._on_danmaku(client, message)
 
-    def __send_gift_callback(self, client: LiveClient, command: dict):
+    def __send_gift_callback(self, client: WebLiveClient, command: dict):
         data = command['data']
         message = dm_web_models.GiftMessage(
             gift_name=data['giftName'],
@@ -255,7 +283,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         )
         return self._on_gift(client, message)
 
-    def __guard_buy_callback(self, client: LiveClient, command: dict):
+    def __guard_buy_callback(self, client: WebLiveClient, command: dict):
         data = command['data']
         message = dm_web_models.GuardBuyMessage(
             uid=data['uid'],
@@ -265,7 +293,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         )
         return self._on_buy_guard(client, message)
 
-    def __super_chat_message_callback(self, client: LiveClient, command: dict):
+    def __super_chat_message_callback(self, client: WebLiveClient, command: dict):
         data = command['data']
         message = dm_web_models.SuperChatMessage(
             price=data['price'],
@@ -286,13 +314,13 @@ class LiveMsgHandler(blivedm.BaseHandler):
         'SUPER_CHAT_MESSAGE': __super_chat_message_callback
     }
 
-    def on_stopped_by_exception(self, client: LiveClient, exception: Exception):
+    def on_client_stopped(self, client: WebLiveClient, exception: Optional[Exception]):
         _live_client_manager.del_live_client(client.tmp_room_id)
 
-    def _on_danmaku(self, client: LiveClient, message: dm_web_models.DanmakuMessage):
+    def _on_danmaku(self, client: WebLiveClient, message: dm_web_models.DanmakuMessage):
         asyncio.create_task(self.__on_danmaku(client, message))
 
-    async def __on_danmaku(self, client: LiveClient, message: dm_web_models.DanmakuMessage):
+    async def __on_danmaku(self, client: WebLiveClient, message: dm_web_models.DanmakuMessage):
         avatar_url = message.face
         if avatar_url != '':
             services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
@@ -375,7 +403,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         except (json.JSONDecodeError, TypeError, KeyError):
             return []
 
-    def _on_gift(self, client: LiveClient, message: dm_web_models.GiftMessage):
+    def _on_gift(self, client: WebLiveClient, message: dm_web_models.GiftMessage):
         avatar_url = services.avatar.process_avatar_url(message.face)
         services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
 
@@ -397,11 +425,11 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'num': message.num
         })
 
-    def _on_buy_guard(self, client: LiveClient, message: dm_web_models.GuardBuyMessage):
+    def _on_buy_guard(self, client: WebLiveClient, message: dm_web_models.GuardBuyMessage):
         asyncio.create_task(self.__on_buy_guard(client, message))
 
     @staticmethod
-    async def __on_buy_guard(client: LiveClient, message: dm_web_models.GuardBuyMessage):
+    async def __on_buy_guard(client: WebLiveClient, message: dm_web_models.GuardBuyMessage):
         # 先异步调用再获取房间，因为返回时房间可能已经不存在了
         avatar_url = await services.avatar.get_avatar_url(message.uid)
 
@@ -417,7 +445,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'privilegeType': message.guard_level
         })
 
-    def _on_super_chat(self, client: LiveClient, message: dm_web_models.SuperChatMessage):
+    def _on_super_chat(self, client: WebLiveClient, message: dm_web_models.SuperChatMessage):
         avatar_url = services.avatar.process_avatar_url(message.face)
         services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
 
@@ -452,7 +480,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
                 message.message, room.room_id, msg_id, services.translate.Priority.HIGH
             ))
 
-    def _on_super_chat_delete(self, client: LiveClient, message: dm_web_models.SuperChatDeleteMessage):
+    def _on_super_chat_delete(self, client: WebLiveClient, message: dm_web_models.SuperChatDeleteMessage):
         room = client_room_manager.get_room(client.tmp_room_id)
         if room is None:
             return

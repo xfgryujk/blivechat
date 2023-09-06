@@ -16,9 +16,10 @@ http_session: Optional[aiohttp.ClientSession] = None
 
 
 def init():
-    # ClientSession要在异步函数中创建
-    async def do_init():
-        global http_session
-        http_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
+    global http_session
+    http_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
 
-    asyncio.get_event_loop().run_until_complete(do_init())
+
+async def shut_down():
+    if http_session is not None:
+        await http_session.close()
