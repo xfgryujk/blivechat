@@ -3,7 +3,6 @@ import asyncio
 from typing import *
 
 import aiohttp
-import config
 import http.cookies
 
 # 不带这堆头部有时候也能成功请求，但是带上后成功的概率更高
