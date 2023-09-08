@@ -59,7 +59,7 @@ def init():
     logger.info('App started, initializing')
     config.init()
 
-    utils.request.init()
+    utils.request.init(config.get_config().sessdata)
     models.database.init(args.debug)
 
     services.avatar.init()

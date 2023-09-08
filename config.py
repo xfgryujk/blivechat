@@ -56,10 +56,10 @@ class AppConfig:
         self.loader_url = ''
         self.open_browser_at_startup = True
         self.enable_upload_file = True
-
         self.fetch_avatar_max_queue_size = 4
         self.avatar_cache_size = 10000
 
+        self.sessdata =''
         self.open_live_access_key_id = ''
         self.open_live_access_key_secret = ''
         self.open_live_app_id = 0
@@ -108,6 +108,7 @@ class AppConfig:
             'open_live_access_key_secret', self.open_live_access_key_secret
         )
         self.open_live_app_id = app_section.getint('open_live_app_id', self.open_live_app_id)
+        self.sessdata =  app_section.get('sessdata', self.sessdata)
 
         self.enable_translate = app_section.getboolean('enable_translate', self.enable_translate)
         self.allow_translate_rooms = _str_to_list(app_section.get('allow_translate_rooms', ''), int, set)
