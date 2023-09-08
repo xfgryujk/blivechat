@@ -107,11 +107,12 @@ export default class ChatClientDirect {
 
   sendAuth() {
     let authParams = {
-      uid: this.roomOwnerUid,
+      uid: 0,
       roomid: this.roomId,
       protover: 3,
       platform: 'web',
-      type: 2
+      type: 2,
+      buvid: '',
     }
     this.websocket.send(this.makePacket(authParams, OP_AUTH))
   }
