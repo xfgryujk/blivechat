@@ -26,3 +26,13 @@ export async function getAvatarUrl(uid) {
   }
   return res.avatarUrl
 }
+
+export async function getTextEmoticons() {
+  let res
+  try {
+    res = (await axios.get('/api/text_emoticon_mappings')).data
+  } catch {
+    return []
+  }
+  return res.textEmoticons
+}

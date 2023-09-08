@@ -2,7 +2,7 @@ import axios from 'axios'
 
 import { BrotliDecode } from './brotli_decode'
 import { getUuid4Hex } from '@/utils'
-import * as avatar from '../avatar'
+import * as chat from '..'
 
 const HEADER_SIZE = 16
 
@@ -326,7 +326,7 @@ export default class ChatClientDirect {
     let textEmoticons = this.parseTextEmoticons(info)
 
     let data = {
-      avatarUrl: await avatar.getAvatarUrl(uid),
+      avatarUrl: await chat.getAvatarUrl(uid),
       timestamp: info[0][4] / 1000,
       authorName: info[2][1],
       authorType: authorType,
@@ -370,7 +370,7 @@ export default class ChatClientDirect {
 
     data = {
       id: getUuid4Hex(),
-      avatarUrl: avatar.processAvatarUrl(data.face),
+      avatarUrl: chat.processAvatarUrl(data.face),
       timestamp: data.timestamp,
       authorName: data.uname,
       totalCoin: data.total_coin,
@@ -388,7 +388,7 @@ export default class ChatClientDirect {
     let data = command.data
     data = {
       id: getUuid4Hex(),
-      avatarUrl: await avatar.getAvatarUrl(data.uid),
+      avatarUrl: await chat.getAvatarUrl(data.uid),
       timestamp: data.start_time,
       authorName: data.username,
       privilegeType: data.guard_level
@@ -404,7 +404,7 @@ export default class ChatClientDirect {
     let data = command.data
     data = {
       id: data.id.toString(),
-      avatarUrl: avatar.processAvatarUrl(data.user_info.face),
+      avatarUrl: chat.processAvatarUrl(data.user_info.face),
       timestamp: data.start_time,
       authorName: data.user_info.uname,
       price: data.price,

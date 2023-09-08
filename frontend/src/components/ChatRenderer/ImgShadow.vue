@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import * as avatar from '@/api/chat/avatar'
+import * as chat from '@/api/chat'
 
 export default {
   name: 'ImgShadow',
@@ -26,8 +26,8 @@ export default {
   },
   methods: {
     onLoadError() {
-      if (this.showImgUrl !== avatar.DEFAULT_AVATAR_URL) {
-        this.showImgUrl = avatar.DEFAULT_AVATAR_URL
+      if (this.showImgUrl !== chat.DEFAULT_AVATAR_URL) {
+        this.showImgUrl = chat.DEFAULT_AVATAR_URL
       }
     }
   }

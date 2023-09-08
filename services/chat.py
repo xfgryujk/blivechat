@@ -666,3 +666,5 @@ class LiveMsgHandler(blivedm.BaseHandler):
                 translation
             )
         )
+
+    # TODO 开放平台消息处理

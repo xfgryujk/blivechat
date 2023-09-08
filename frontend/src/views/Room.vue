@@ -8,6 +8,7 @@ import { mergeConfig, toBool, toInt } from '@/utils'
 import * as trie from '@/utils/trie'
 import * as pronunciation from '@/utils/pronunciation'
 import * as chatConfig from '@/api/chatConfig'
+import * as chat from '@/api/chat'
 import ChatClientTest from '@/api/chat/ChatClientTest'
 import ChatClientDirect from '@/api/chat/ChatClientDirect'
 import ChatClientRelay from '@/api/chat/ChatClientRelay'
@@ -34,7 +35,7 @@ export default {
       config: chatConfig.deepCloneDefaultConfig(),
       chatClient: null,
       pronunciationConverter: null,
-      textEmoticons: {}, // 官方的文本表情，运行时从弹幕消息收集
+      textEmoticons: [], // 官方的文本表情
     }
   },
   computed: {
@@ -60,13 +61,12 @@ export default {
     },
     emoticonsTrie() {
       let res = new trie.Trie()
-      for (let emoticon of this.config.emoticons) {
-        if (emoticon.keyword !== '' && emoticon.url !== '') {
-          res.set(emoticon.keyword, emoticon)
+      for (let emoticons of [this.config.emoticons, this.textEmoticons]) {
+        for (let emoticon of emoticons) {
+          if (emoticon.keyword !== '' && emoticon.url !== '') {
+            res.set(emoticon.keyword, emoticon)
+          }
         }
-      }
-      for (let emoticon of Object.values(this.textEmoticons)) {
-        res.set(emoticon.keyword, emoticon)
       }
       return res
     }
@@ -74,6 +74,7 @@ export default {
   mounted() {
     this.initConfig()
     this.initChatClient()
+    this.initTextEmoticons()
     if (this.config.giftUsernamePronunciation !== '') {
       this.pronunciationConverter = new pronunciation.PronunciationConverter()
       this.pronunciationConverter.loadDict(this.config.giftUsernamePronunciation)
@@ -155,6 +156,9 @@ export default {
       this.chatClient.onUpdateTranslation = this.onUpdateTranslation
       this.chatClient.start()
     },
+    async initTextEmoticons() {
+      this.textEmoticons = await chat.getTextEmoticons()
+    },
 
     start() {
       this.chatClient.start()
@@ -167,15 +171,6 @@ export default {
       if (!this.config.showDanmaku || !this.filterTextMessage(data) || this.mergeSimilarText(data.content)) {
         return
       }
-
-      // 更新官方文本表情
-      for (let [keyword, url] of data.textEmoticons) {
-        if (!(keyword in this.textEmoticons)) {
-          let emoticon = { keyword, url }
-          this.$set(this.textEmoticons, keyword, emoticon)
-        }
-      }
-
       let message = {
         id: data.id,
         type: constants.MESSAGE_TYPE_TEXT,
@@ -326,7 +321,7 @@ export default {
       }
 
       // 没有文本表情，只能是纯文本
-      if (this.config.emoticons.length === 0 && Object.keys(this.textEmoticons).length === 0) {
+      if (this.config.emoticons.length === 0 && this.textEmoticons.length === 0) {
         richContent.push({
           type: constants.CONTENT_TYPE_TEXT,
           text: data.content

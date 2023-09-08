@@ -378,13 +378,13 @@ class AvatarHandler(api.base.ApiHandler):
         else:
             # 缓存1天
             self.set_header('Cache-Control', 'private, max-age=86400')
-        self.write({
-            'avatarUrl': avatar_url
-        })
+        self.write({'avatarUrl': avatar_url})
 
 
 class TextEmoticonMappingsHandler(api.base.ApiHandler):
     async def get(self):
+        # 缓存1天
+        self.set_header('Cache-Control', 'private, max-age=86400')
         cfg = config.get_config()
         self.write({'textEmoticons': cfg.text_emoticons})
 

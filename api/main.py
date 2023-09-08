@@ -68,9 +68,7 @@ class UploadEmoticonHandler(api.base.ApiHandler):
         url = await asyncio.get_running_loop().run_in_executor(
             None, self._save_file, file.body, self.request.remote_ip
         )
-        self.write({
-            'url': url
-        })
+        self.write({'url': url})
 
     @staticmethod
     def _save_file(body, client):
