@@ -13,6 +13,7 @@ import tornado.web
 
 import api.chat
 import api.main
+import api.open_live
 import config
 import models.database
 import services.avatar
@@ -24,15 +25,10 @@ import utils.request
 logger = logging.getLogger(__name__)
 
 ROUTES = [
-    (r'/api/server_info', api.main.ServerInfoHandler),
-    (r'/api/emoticon', api.main.UploadEmoticonHandler),
-
-    (r'/api/chat', api.chat.ChatHandler),
-    (r'/api/room_info', api.chat.RoomInfoHandler),
-    (r'/api/avatar_url', api.chat.AvatarHandler),
-
-    (rf'{api.main.EMOTICON_BASE_URL}/(.*)', tornado.web.StaticFileHandler, {'path': api.main.EMOTICON_UPLOAD_PATH}),
-    (r'/(.*)', api.main.MainHandler, {'path': config.WEB_ROOT}),
+    *api.main.ROUTES,
+    *api.chat.ROUTES,
+    *api.open_live.ROUTES,
+    *api.main.LAST_ROUTES,
 ]
 
 server: Optional[tornado.httpserver.HTTPServer] = None

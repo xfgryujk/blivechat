@@ -16,7 +16,7 @@ EMOTICON_UPLOAD_PATH = os.path.join(config.DATA_PATH, 'emoticons')
 EMOTICON_BASE_URL = '/emoticons'
 
 
-class MainHandler(tornado.web.StaticFileHandler):  # noqa
+class MainHandler(tornado.web.StaticFileHandler):
     """为了使用Vue Router的history模式，把不存在的文件请求转发到index.html"""
     async def get(self, path, include_body=True):
         if path == '':
@@ -37,7 +37,7 @@ class MainHandler(tornado.web.StaticFileHandler):  # noqa
         await super().get('index.html', include_body)
 
 
-class ServerInfoHandler(api.base.ApiHandler):  # noqa
+class ServerInfoHandler(api.base.ApiHandler):
     async def get(self):
         cfg = config.get_config()
         self.write({
@@ -50,7 +50,7 @@ class ServerInfoHandler(api.base.ApiHandler):  # noqa
         })
 
 
-class UploadEmoticonHandler(api.base.ApiHandler):  # noqa
+class UploadEmoticonHandler(api.base.ApiHandler):
     async def post(self):
         cfg = config.get_config()
         if not cfg.enable_upload_file:
@@ -85,3 +85,14 @@ class UploadEmoticonHandler(api.base.ApiHandler):  # noqa
         os.replace(tmp_path, path)
 
         return f'{EMOTICON_BASE_URL}/{filename}'
+
+
+ROUTES = [
+    (r'/api/server_info', ServerInfoHandler),
+    (r'/api/emoticon', UploadEmoticonHandler),
+]
+# 通配的放在最后
+LAST_ROUTES = [
+    (rf'{EMOTICON_BASE_URL}/(.*)', tornado.web.StaticFileHandler, {'path': EMOTICON_UPLOAD_PATH}),
+    (r'/(.*)', MainHandler, {'path': config.WEB_ROOT}),
+]

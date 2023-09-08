@@ -9,6 +9,7 @@ import uuid
 from typing import *
 
 import api.chat
+import api.open_live as api_open_live
 import blivedm.blivedm as blivedm
 import blivedm.blivedm.models.web as dm_web_models
 import blivedm.blivedm.models.pb as dm_pb_models
@@ -114,9 +115,6 @@ class LiveClientManager:
 
         client_room_manager.del_room(room_key)
 
-    def get_live_client(self, room_key: RoomKey):
-        return self._live_clients.get(room_key, None)
-
 
 class WebLiveClient(blivedm.BLiveClient):
     HEARTBEAT_INTERVAL = 10
@@ -171,7 +169,67 @@ class OpenLiveClient(blivedm.OpenLiveClient):
             logger.info('room=%s live client init failed', self.room_key)
         return res
 
-    # TODO 如果没有配置access_key，则请求公共服务器
+    async def _start_game(self):
+        try:
+            data = await api_open_live.request_open_live_or_common_server(
+                api_open_live.START_GAME_OPEN_LIVE_URL,
+                api_open_live.START_GAME_COMMON_SERVER_URL,
+                {'code': self._room_owner_auth_code, 'app_id': self._app_id}
+            )
+        except api_open_live.TransportError:
+            logger.error('_start_game() failed')
+            return False
+        except api_open_live.BusinessError:
+            logger.warning('_start_game() failed')
+            return False
+        return self._parse_start_game(data['data'])
+
+    async def _end_game(self):
+        if self._game_id in (None, ''):
+            return True
+
+        try:
+            await api_open_live.request_open_live_or_common_server(
+                api_open_live.END_GAME_OPEN_LIVE_URL,
+                api_open_live.END_GAME_COMMON_SERVER_URL,
+                {'app_id': self._app_id, 'game_id': self._game_id}
+            )
+        except api_open_live.TransportError:
+            logger.error('room=%d _end_game() failed', self.room_id)
+            return False
+        except api_open_live.BusinessError as e:
+            if e.code in (7000, 7003):
+                # 项目已经关闭了也算成功
+                return True
+            logger.warning('room=%d _end_game() failed', self.room_id)
+            return False
+        return True
+
+    async def _send_game_heartbeat(self):
+        if self._game_id in (None, ''):
+            logger.warning('game=%d _send_game_heartbeat() failed, game_id not found', self._game_id)
+            return False
+
+        # 保存一下，防止await之后game_id改变
+        game_id = self._game_id
+        try:
+            await api_open_live.request_open_live_or_common_server(
+                api_open_live.GAME_HEARTBEAT_OPEN_LIVE_URL,
+                api_open_live.GAME_HEARTBEAT_COMMON_SERVER_URL,
+                {'game_id': game_id}
+            )
+        except api_open_live.TransportError:
+            logger.error('room=%d _send_game_heartbeat() failed', self.room_id)
+            return False
+        except api_open_live.BusinessError as e:
+            logger.warning('room=%d _send_game_heartbeat() failed', self.room_id)
+            if e.code == 7003 and self._game_id == game_id:
+                # 项目异常关闭，可能是心跳超时，需要重新开启项目
+                self._need_init_room = True
+                if self._websocket is not None and not self._websocket.closed:
+                    await self._websocket.close()
+            return False
+        return True
 
 
 class ClientRoomManager:
