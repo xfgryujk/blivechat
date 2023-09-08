@@ -383,8 +383,15 @@ class AvatarHandler(api.base.ApiHandler):
         })
 
 
+class TextEmoticonMappingsHandler(api.base.ApiHandler):
+    async def get(self):
+        cfg = config.get_config()
+        self.write({'textEmoticons': cfg.text_emoticons})
+
+
 ROUTES = [
     (r'/api/chat', ChatHandler),
     (r'/api/room_info', RoomInfoHandler),
     (r'/api/avatar_url', AvatarHandler),
+    (r'/api/text_emoticon_mappings', TextEmoticonMappingsHandler),
 ]

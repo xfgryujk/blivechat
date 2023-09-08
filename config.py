@@ -70,6 +70,8 @@ class AppConfig:
         self.translation_cache_size = 50000
         self.translator_configs = []
 
+        self.text_emoticons = []
+
     @property
     def is_open_live_configured(self):
         return (
@@ -83,6 +85,7 @@ class AppConfig:
 
             self._load_app_config(config)
             self._load_translator_configs(config)
+            self._load_text_emoticons(config)
         except Exception:  # noqa
             logger.exception('Failed to load config:')
             return False
@@ -151,6 +154,14 @@ class AppConfig:
 
             translator_configs.append(translator_config)
         self.translator_configs = translator_configs
+
+    def _load_text_emoticons(self, config: configparser.ConfigParser):
+        mappings_section = config['text_emoticon_mappings']
+        text_emoticons = []
+        for value in mappings_section.values():
+            keyword, _, url = value.partition(',')
+            text_emoticons.append({'keyword': keyword, 'url': url})
+        self.text_emoticons = text_emoticons
 
 
 def _str_to_list(value, item_type: Type = str, container_type: Type = list):
