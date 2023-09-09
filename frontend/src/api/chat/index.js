@@ -8,10 +8,6 @@ export function processAvatarUrl(avatarUrl) {
   if (m) {
     avatarUrl = m[1]
   }
-  // 缩小图片加快传输
-  if (!avatarUrl.endsWith('noface.gif')) {
-    avatarUrl += '@48w_48h'
-  }
   return avatarUrl
 }
 

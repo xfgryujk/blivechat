@@ -114,9 +114,6 @@ def process_avatar_url(avatar_url):
     m = re.fullmatch(r'(?:https?:)?(.*)', avatar_url)
     if m is not None:
         avatar_url = m[1]
-    # 缩小图片加快传输
-    if not avatar_url.endswith('noface.gif'):
-        avatar_url += '@48w_48h'
     return avatar_url
 
 
