@@ -1,40 +1,37 @@
-import axios from 'axios'
-
 import { BrotliDecode } from './brotli_decode'
-import { getUuid4Hex } from '@/utils'
-import * as chat from '..'
+import { inflate } from 'pako'
 
 const HEADER_SIZE = 16
 
-// const WS_BODY_PROTOCOL_VERSION_NORMAL = 0
-// const WS_BODY_PROTOCOL_VERSION_HEARTBEAT = 1
-// const WS_BODY_PROTOCOL_VERSION_DEFLATE = 2
-const WS_BODY_PROTOCOL_VERSION_BROTLI = 3
+export const WS_BODY_PROTOCOL_VERSION_NORMAL = 0
+export const WS_BODY_PROTOCOL_VERSION_HEARTBEAT = 1
+export const WS_BODY_PROTOCOL_VERSION_DEFLATE = 2
+export const WS_BODY_PROTOCOL_VERSION_BROTLI = 3
 
-// const OP_HANDSHAKE = 0
-// const OP_HANDSHAKE_REPLY = 1
-const OP_HEARTBEAT = 2
-const OP_HEARTBEAT_REPLY = 3
-// const OP_SEND_MSG = 4
-const OP_SEND_MSG_REPLY = 5
-// const OP_DISCONNECT_REPLY = 6
-const OP_AUTH = 7
-const OP_AUTH_REPLY = 8
-// const OP_RAW = 9
-// const OP_PROTO_READY = 10
-// const OP_PROTO_FINISH = 11
-// const OP_CHANGE_ROOM = 12
-// const OP_CHANGE_ROOM_REPLY = 13
-// const OP_REGISTER = 14
-// const OP_REGISTER_REPLY = 15
-// const OP_UNREGISTER = 16
-// const OP_UNREGISTER_REPLY = 17
+export const OP_HANDSHAKE = 0
+export const OP_HANDSHAKE_REPLY = 1
+export const OP_HEARTBEAT = 2
+export const OP_HEARTBEAT_REPLY = 3
+export const OP_SEND_MSG = 4
+export const OP_SEND_MSG_REPLY = 5
+export const OP_DISCONNECT_REPLY = 6
+export const OP_AUTH = 7
+export const OP_AUTH_REPLY = 8
+export const OP_RAW = 9
+export const OP_PROTO_READY = 10
+export const OP_PROTO_FINISH = 11
+export const OP_CHANGE_ROOM = 12
+export const OP_CHANGE_ROOM_REPLY = 13
+export const OP_REGISTER = 14
+export const OP_REGISTER_REPLY = 15
+export const OP_UNREGISTER = 16
+export const OP_UNREGISTER_REPLY = 17
 // B站业务自定义OP
-// const MinBusinessOp = 1000
-// const MaxBusinessOp = 10000
+// export const MinBusinessOp = 1000
+// export const MaxBusinessOp = 10000
 
-const AUTH_REPLY_CODE_OK = 0
-// const AUTH_REPLY_CODE_TOKEN_ERROR = -101
+export const AUTH_REPLY_CODE_OK = 0
+export const AUTH_REPLY_CODE_TOKEN_ERROR = -101
 
 const HEARTBEAT_INTERVAL = 10 * 1000
 const RECEIVE_TIMEOUT = HEARTBEAT_INTERVAL + (5 * 1000)
@@ -42,14 +39,9 @@ const RECEIVE_TIMEOUT = HEARTBEAT_INTERVAL + (5 * 1000)
 let textEncoder = new TextEncoder()
 let textDecoder = new TextDecoder()
 
-export default class ChatClientDirect {
-  constructor(roomId) {
-    // 调用initRoom后初始化，如果失败，使用这里的默认值
-    this.roomId = roomId
-    this.roomOwnerUid = 0
-    this.hostServerList = [
-      { host: "broadcastlv.chat.bilibili.com", port: 2243, wss_port: 443, ws_port: 2244 }
-    ]
+export default class ChatClientOfficialBase {
+  constructor() {
+    this.CMD_CALLBACK_MAP = {}
 
     this.onAddText = null
     this.onAddGift = null
@@ -58,6 +50,7 @@ export default class ChatClientDirect {
     this.onDelSuperChat = null
     this.onUpdateTranslation = null
 
+    this.needInitRoom = true
     this.websocket = null
     this.retryCount = 0
     this.isDestroying = false
@@ -65,8 +58,7 @@ export default class ChatClientDirect {
     this.receiveTimeoutTimerId = null
   }
 
-  async start() {
-    await this.initRoom()
+  start() {
     this.wsConnect()
   }
 
@@ -78,23 +70,16 @@ export default class ChatClientDirect {
   }
 
   async initRoom() {
-    let res
-    try {
-      res = (await axios.get('/api/room_info', { params: {
-        roomId: this.roomId
-      } })).data
-    } catch {
-      return
-    }
-    this.roomId = res.roomId
-    this.roomOwnerUid = res.ownerUid
-    if (res.hostServerList.length !== 0) {
-      this.hostServerList = res.hostServerList
-    }
+    throw Error('Not implemented')
   }
 
   makePacket(data, operation) {
-    let body = textEncoder.encode(JSON.stringify(data))
+    let body
+    if (typeof data === 'object') {
+      body = textEncoder.encode(JSON.stringify(data))
+    } else { // string
+      body = textEncoder.encode(data)
+    }
     let header = new ArrayBuffer(HEADER_SIZE)
     let headerView = new DataView(header)
     headerView.setUint32(0, HEADER_SIZE + body.byteLength)   // pack_len
@@ -106,28 +91,40 @@ export default class ChatClientDirect {
   }
 
   sendAuth() {
-    let authParams = {
-      uid: 0,
-      roomid: this.roomId,
-      protover: 3,
-      platform: 'web',
-      type: 2,
-      buvid: '',
-    }
-    this.websocket.send(this.makePacket(authParams, OP_AUTH))
+    throw Error('Not implemented')
   }
 
-  wsConnect() {
+  async wsConnect() {
     if (this.isDestroying) {
       return
     }
-    let hostServer = this.hostServerList[this.retryCount % this.hostServerList.length]
-    const url = `wss://${hostServer.host}:${hostServer.wss_port}/sub`
-    this.websocket = new WebSocket(url)
+
+    await this.onBeforeWsConnect()
+    if (this.isDestroying) {
+      return
+    }
+
+    this.websocket = new WebSocket(this.getWsUrl())
     this.websocket.binaryType = 'arraybuffer'
     this.websocket.onopen = this.onWsOpen.bind(this)
     this.websocket.onclose = this.onWsClose.bind(this)
     this.websocket.onmessage = this.onWsMessage.bind(this)
+  }
+
+  async onBeforeWsConnect() {
+    if (!this.needInitRoom) {
+      return
+    }
+
+    if (!await this.initRoom()) {
+      this.onWsClose()
+      throw Error('initRoom failed')
+    }
+    this.needInitRoom = false
+  }
+
+  getWsUrl() {
+    throw Error('Not implemented')
   }
 
   onWsOpen() {
@@ -249,6 +246,10 @@ export default class ChatClientDirect {
         // 压缩过的先解压
         body = BrotliDecode(body)
         this.parseWsMessage(body)
+      } else if (ver == WS_BODY_PROTOCOL_VERSION_DEFLATE) {
+        // web端已经不用zlib压缩了，但是开放平台会用
+        body = inflate(body)
+        this.parseWsMessage(body)
       } else {
         // 没压缩过的直接反序列化
         if (body.length !== 0) {
@@ -268,7 +269,7 @@ export default class ChatClientDirect {
       body = JSON.parse(textDecoder.decode(body))
       if (body.code !== AUTH_REPLY_CODE_OK) {
         console.error('认证响应错误，body=', body)
-        // 这里应该重新获取token再重连的，但前端没有用到token，所以不重新init了
+        this.needInitRoom = true
         this.discardWebsocket()
         throw new Error('认证响应错误')
       }
@@ -289,148 +290,9 @@ export default class ChatClientDirect {
     if (pos != -1) {
       cmd = cmd.substr(0, pos)
     }
-    let callback = CMD_CALLBACK_MAP[cmd]
+    let callback = this.CMD_CALLBACK_MAP[cmd]
     if (callback) {
       callback.call(this, command)
     }
   }
-
-  async danmuMsgCallback(command) {
-    if (!this.onAddText) {
-      return
-    }
-    let info = command.info
-
-    let roomId, medalLevel
-    if (info[3]) {
-      roomId = info[3][3]
-      medalLevel = info[3][0]
-    } else {
-      roomId = medalLevel = 0
-    }
-
-    let uid = info[2][0]
-    let isAdmin = info[2][2]
-    let privilegeType = info[7]
-    let authorType
-    if (uid === this.roomOwnerUid) {
-      authorType = 3
-    } else if (isAdmin) {
-      authorType = 2
-    } else if (privilegeType !== 0) {
-      authorType = 1
-    } else {
-      authorType = 0
-    }
-
-    let textEmoticons = this.parseTextEmoticons(info)
-
-    let data = {
-      avatarUrl: await chat.getAvatarUrl(uid),
-      timestamp: info[0][4] / 1000,
-      authorName: info[2][1],
-      authorType: authorType,
-      content: info[1],
-      privilegeType: privilegeType,
-      isGiftDanmaku: Boolean(info[0][9]),
-      authorLevel: info[4][0],
-      isNewbie: info[2][5] < 10000,
-      isMobileVerified: Boolean(info[2][6]),
-      medalLevel: roomId === this.roomId ? medalLevel : 0,
-      id: getUuid4Hex(),
-      translation: '',
-      emoticon: info[0][13].url || null,
-      textEmoticons: textEmoticons,
-    }
-    this.onAddText(data)
-  }
-
-  parseTextEmoticons(info) {
-    try {
-      let modeInfo = info[0][15]
-      let extra = JSON.parse(modeInfo.extra)
-      if (!extra.emots) {
-        return []
-      }
-      let res = Object.values(extra.emots).map(emoticon => [emoticon.descript, emoticon.url])
-      return res
-    } catch {
-      return []
-    }
-  }
-
-  sendGiftCallback(command) {
-    if (!this.onAddGift) {
-      return
-    }
-    let data = command.data
-    if (data.coin_type !== 'gold') { // 丢人
-      return
-    }
-
-    data = {
-      id: getUuid4Hex(),
-      avatarUrl: chat.processAvatarUrl(data.face),
-      timestamp: data.timestamp,
-      authorName: data.uname,
-      totalCoin: data.total_coin,
-      giftName: data.giftName,
-      num: data.num
-    }
-    this.onAddGift(data)
-  }
-
-  async guardBuyCallback(command) {
-    if (!this.onAddMember) {
-      return
-    }
-
-    let data = command.data
-    data = {
-      id: getUuid4Hex(),
-      avatarUrl: await chat.getAvatarUrl(data.uid),
-      timestamp: data.start_time,
-      authorName: data.username,
-      privilegeType: data.guard_level
-    }
-    this.onAddMember(data)
-  }
-
-  superChatMessageCallback(command) {
-    if (!this.onAddSuperChat) {
-      return
-    }
-
-    let data = command.data
-    data = {
-      id: data.id.toString(),
-      avatarUrl: chat.processAvatarUrl(data.user_info.face),
-      timestamp: data.start_time,
-      authorName: data.user_info.uname,
-      price: data.price,
-      content: data.message,
-      translation: ''
-    }
-    this.onAddSuperChat(data)
-  }
-
-  superChatMessageDeleteCallback(command) {
-    if (!this.onDelSuperChat) {
-      return
-    }
-
-    let ids = []
-    for (let id of command.data.ids) {
-      ids.push(id.toString())
-    }
-    this.onDelSuperChat({ ids })
-  }
-}
-
-const CMD_CALLBACK_MAP = {
-  DANMU_MSG: ChatClientDirect.prototype.danmuMsgCallback,
-  SEND_GIFT: ChatClientDirect.prototype.sendGiftCallback,
-  GUARD_BUY: ChatClientDirect.prototype.guardBuyCallback,
-  SUPER_CHAT_MESSAGE: ChatClientDirect.prototype.superChatMessageCallback,
-  SUPER_CHAT_MESSAGE_DELETE: ChatClientDirect.prototype.superChatMessageDeleteCallback
 }

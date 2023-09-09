@@ -116,7 +116,6 @@ const MESSAGE_GENERATORS = [
           id: getUuid4Hex(),
           translation: '',
           emoticon: null,
-          textEmoticons: [],
         }
       }
     }
@@ -141,7 +140,6 @@ const MESSAGE_GENERATORS = [
           id: getUuid4Hex(),
           translation: '',
           emoticon: randomChoose(EMOTICONS),
-          textEmoticons: [],
         }
       }
     }
