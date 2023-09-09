@@ -122,6 +122,15 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
     return true
   }
 
+  async onBeforeWsConnect() {
+    // 重连次数太多则重新init_room，保险
+    let reinitPeriod = Math.max(3, (this.hostServerUrlList || []).length)
+    if (this.retryCount > 0 && this.retryCount % reinitPeriod === 0) {
+      this.needInitRoom = true
+    }
+    return super.onBeforeWsConnect()
+  }
+
   getWsUrl() {
     return this.hostServerUrlList[this.retryCount % this.hostServerUrlList.length]
   }

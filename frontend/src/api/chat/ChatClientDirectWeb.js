@@ -35,6 +35,15 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
     return true
   }
 
+  async onBeforeWsConnect() {
+    // 重连次数太多则重新init_room，保险
+    let reinitPeriod = Math.max(3, (this.hostServerList || []).length)
+    if (this.retryCount > 0 && this.retryCount % reinitPeriod === 0) {
+      this.needInitRoom = true
+    }
+    return super.onBeforeWsConnect()
+  }
+
   getWsUrl() {
     let hostServer = this.hostServerList[this.retryCount % this.hostServerList.length]
     return `wss://${hostServer.host}:${hostServer.wss_port}/sub`
