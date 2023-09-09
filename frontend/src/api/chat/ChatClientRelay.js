@@ -13,8 +13,8 @@ const CONTENT_TYPE_EMOTICON = 1
 const RECEIVE_TIMEOUT = 15 * 1000
 
 export default class ChatClientRelay {
-  constructor(roomId, autoTranslate) {
-    this.roomId = roomId
+  constructor(roomKey, autoTranslate) {
+    this.roomKey = roomKey
     this.autoTranslate = autoTranslate
 
     this.onAddText = null
@@ -58,7 +58,7 @@ export default class ChatClientRelay {
     this.websocket.send(JSON.stringify({
       cmd: COMMAND_JOIN_ROOM,
       data: {
-        roomId: this.roomId,
+        roomKey: this.roomKey,
         config: {
           autoTranslate: this.autoTranslate
         }

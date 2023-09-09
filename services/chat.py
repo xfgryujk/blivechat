@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 import asyncio
-import base64
-import binascii
 import enum
-import json
 import logging
 import uuid
 from typing import *
@@ -11,8 +8,8 @@ from typing import *
 import api.chat
 import api.open_live as api_open_live
 import blivedm.blivedm as blivedm
+import blivedm.blivedm.models.open_live as dm_open_models
 import blivedm.blivedm.models.web as dm_web_models
-import blivedm.blivedm.models.pb as dm_pb_models
 import config
 import services.avatar
 import services.translate
@@ -368,106 +365,13 @@ class ClientRoom:
 
 
 class LiveMsgHandler(blivedm.BaseHandler):
-    # 重新定义XXX_callback是为了减少对字段名的依赖，防止B站改字段名
-    def __danmu_msg_callback(self, client: LiveClientType, command: dict):
-        info = command['info']
-        dm_v2 = command.get('dm_v2', '')
-
-        proto: Optional[dm_pb_models.SimpleDm] = None
-        if dm_v2 != '':
-            try:
-                proto = dm_pb_models.SimpleDm.loads(base64.b64decode(dm_v2))
-            except (binascii.Error, KeyError, TypeError, ValueError):
-                pass
-        if proto is not None:
-            face = proto.user.face
-        else:
-            face = ''
-
-        if len(info[3]) != 0:
-            medal_level = info[3][0]
-            medal_room_id = info[3][3]
-        else:
-            medal_level = 0
-            medal_room_id = 0
-
-        message = dm_web_models.DanmakuMessage(
-            timestamp=info[0][4],
-            msg_type=info[0][9],
-            dm_type=info[0][12],
-            emoticon_options=info[0][13],
-            mode_info=info[0][15],
-
-            msg=info[1],
-
-            uid=info[2][0],
-            uname=info[2][1],
-            face=face,
-            admin=info[2][2],
-            urank=info[2][5],
-            mobile_verify=info[2][6],
-
-            medal_level=medal_level,
-            medal_room_id=medal_room_id,
-
-            user_level=info[4][0],
-
-            privilege_type=info[7],
-        )
-        return self._on_danmaku(client, message)
-
-    def __send_gift_callback(self, client: LiveClientType, command: dict):
-        data = command['data']
-        message = dm_web_models.GiftMessage(
-            gift_name=data['giftName'],
-            num=data['num'],
-            uname=data['uname'],
-            face=data['face'],
-            uid=data['uid'],
-            timestamp=data['timestamp'],
-            coin_type=data['coin_type'],
-            total_coin=data['total_coin'],
-        )
-        return self._on_gift(client, message)
-
-    def __guard_buy_callback(self, client: LiveClientType, command: dict):
-        data = command['data']
-        message = dm_web_models.GuardBuyMessage(
-            uid=data['uid'],
-            username=data['username'],
-            guard_level=data['guard_level'],
-            start_time=data['start_time'],
-        )
-        return self._on_buy_guard(client, message)
-
-    def __super_chat_message_callback(self, client: LiveClientType, command: dict):
-        data = command['data']
-        message = dm_web_models.SuperChatMessage(
-            price=data['price'],
-            message=data['message'],
-            start_time=data['start_time'],
-            id=data['id'],
-            uid=data['uid'],
-            uname=data['user_info']['uname'],
-            face=data['user_info']['face'],
-        )
-        return self._on_super_chat(client, message)
-
-    _CMD_CALLBACK_DICT = {
-        **blivedm.BaseHandler._CMD_CALLBACK_DICT,
-        'DANMU_MSG': __danmu_msg_callback,
-        'SEND_GIFT': __send_gift_callback,
-        'GUARD_BUY': __guard_buy_callback,
-        'SUPER_CHAT_MESSAGE': __super_chat_message_callback
-    }
-
     def on_client_stopped(self, client: LiveClientType, exception: Optional[Exception]):
         _live_client_manager.del_live_client(client.room_key)
 
-    def _on_danmaku(self, client: LiveClientType, message: dm_web_models.DanmakuMessage):
+    def _on_danmaku(self, client: WebLiveClient, message: dm_web_models.DanmakuMessage):
         asyncio.create_task(self.__on_danmaku(client, message))
 
-    async def __on_danmaku(self, client: LiveClientType, message: dm_web_models.DanmakuMessage):
+    async def __on_danmaku(self, client: WebLiveClient, message: dm_web_models.DanmakuMessage):
         avatar_url = message.face
         if avatar_url != '':
             services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
@@ -496,8 +400,6 @@ class LiveMsgHandler(blivedm.BaseHandler):
         else:
             content_type = api.chat.ContentType.TEXT
             content_type_params = None
-
-        text_emoticons = self._parse_text_emoticons(message)
 
         need_translate = (
             content_type != api.chat.ContentType.EMOTICON and self._need_translate(message.msg, room, client)
@@ -529,30 +431,12 @@ class LiveMsgHandler(blivedm.BaseHandler):
             translation=translation,
             content_type=content_type,
             content_type_params=content_type_params,
-            text_emoticons=text_emoticons,
         ))
 
         if need_translate:
             await self._translate_and_response(message.msg, room.room_key, msg_id)
 
-    @staticmethod
-    def _parse_text_emoticons(message: dm_web_models.DanmakuMessage):
-        try:
-            extra = json.loads(message.mode_info['extra'])
-            # {"[dog]":{"emoticon_id":208,"emoji":"[dog]","descript":"[dog]","url":"http://i0.hdslb.com/bfs/live/4428c8
-            # 4e694fbf4e0ef6c06e958d9352c3582740.png","width":20,"height":20,"emoticon_unique":"emoji_208","count":1}}
-            emoticons = extra['emots']
-            if emoticons is None:
-                return []
-            res = [
-                (emoticon['descript'], emoticon['url'])
-                for emoticon in emoticons.values()
-            ]
-            return res
-        except (json.JSONDecodeError, TypeError, KeyError):
-            return []
-
-    def _on_gift(self, client: LiveClientType, message: dm_web_models.GiftMessage):
+    def _on_gift(self, client: WebLiveClient, message: dm_web_models.GiftMessage):
         avatar_url = services.avatar.process_avatar_url(message.face)
         services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
 
@@ -574,11 +458,11 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'num': message.num
         })
 
-    def _on_buy_guard(self, client: LiveClientType, message: dm_web_models.GuardBuyMessage):
+    def _on_buy_guard(self, client: WebLiveClient, message: dm_web_models.GuardBuyMessage):
         asyncio.create_task(self.__on_buy_guard(client, message))
 
     @staticmethod
-    async def __on_buy_guard(client: LiveClientType, message: dm_web_models.GuardBuyMessage):
+    async def __on_buy_guard(client: WebLiveClient, message: dm_web_models.GuardBuyMessage):
         # 先异步调用再获取房间，因为返回时房间可能已经不存在了
         avatar_url = await services.avatar.get_avatar_url(message.uid)
 
@@ -594,7 +478,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'privilegeType': message.guard_level
         })
 
-    def _on_super_chat(self, client: LiveClientType, message: dm_web_models.SuperChatMessage):
+    def _on_super_chat(self, client: WebLiveClient, message: dm_web_models.SuperChatMessage):
         avatar_url = services.avatar.process_avatar_url(message.face)
         services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
 
@@ -629,7 +513,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
                 message.message, room.room_key, msg_id, services.translate.Priority.HIGH
             ))
 
-    def _on_super_chat_delete(self, client: LiveClientType, message: dm_web_models.SuperChatDeleteMessage):
+    def _on_super_chat_delete(self, client: WebLiveClient, message: dm_web_models.SuperChatDeleteMessage):
         room = client_room_manager.get_room(client.room_key)
         if room is None:
             return
@@ -667,4 +551,140 @@ class LiveMsgHandler(blivedm.BaseHandler):
             )
         )
 
-    # TODO 开放平台消息处理
+    #
+    # 开放平台消息
+    #
+
+    def _on_open_live_danmaku(self, client: OpenLiveClient, message: dm_open_models.DanmakuMessage):
+        avatar_url = message.uface
+        services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
+
+        room = client_room_manager.get_room(client.room_key)
+        if room is None:
+            return
+
+        if message.uid == client.room_owner_uid:
+            author_type = 3  # 主播
+        elif message.guard_level != 0:  # 1总督，2提督，3舰长
+            author_type = 1  # 舰队
+        else:
+            author_type = 0
+
+        if message.dm_type == 1:
+            content_type = api.chat.ContentType.EMOTICON
+            content_type_params = api.chat.make_emoticon_params(message.emoji_img_url)
+        else:
+            content_type = api.chat.ContentType.TEXT
+            content_type_params = None
+
+        need_translate = (
+            content_type != api.chat.ContentType.EMOTICON and self._need_translate(message.msg, room, client)
+        )
+        if need_translate:
+            translation = services.translate.get_translation_from_cache(message.msg)
+            if translation is None:
+                # 没有缓存，需要后面异步翻译后通知
+                translation = ''
+            else:
+                need_translate = False
+        else:
+            translation = ''
+
+        room.send_cmd_data(api.chat.Command.ADD_TEXT, api.chat.make_text_message_data(
+            avatar_url=avatar_url,
+            timestamp=message.timestamp,
+            author_name=message.uname,
+            author_type=author_type,
+            content=message.msg,
+            privilege_type=message.guard_level,
+            medal_level=0 if not message.fans_medal_wearing_status else message.fans_medal_level,
+            id_=message.msg_id,
+            translation=translation,
+            content_type=content_type,
+            content_type_params=content_type_params,
+        ))
+
+        if need_translate:
+            asyncio.create_task(self._translate_and_response(message.msg, room.room_key, message.msg_id))
+
+    def _on_open_live_gift(self, client: OpenLiveClient, message: dm_open_models.GiftMessage):
+        avatar_url = services.avatar.process_avatar_url(message.uface)
+        services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
+
+        # 丢人
+        if not message.paid:
+            return
+
+        room = client_room_manager.get_room(client.room_key)
+        if room is None:
+            return
+
+        room.send_cmd_data(api.chat.Command.ADD_GIFT, {
+            'id': message.msg_id,
+            'avatarUrl': avatar_url,
+            'timestamp': message.timestamp,
+            'authorName': message.uname,
+            'totalCoin': message.price,
+            'giftName': message.gift_name,
+            'num': message.gift_num
+        })
+
+    def _on_open_live_buy_guard(self, client: OpenLiveClient, message: dm_open_models.GuardBuyMessage):
+        avatar_url = message.user_info.uface
+        services.avatar.update_avatar_cache_if_expired(message.user_info.uid, avatar_url)
+
+        room = client_room_manager.get_room(client.room_key)
+        if room is None:
+            return
+
+        room.send_cmd_data(api.chat.Command.ADD_MEMBER, {
+            'id': message.msg_id,
+            'avatarUrl': avatar_url,
+            'timestamp': message.timestamp,
+            'authorName': message.user_info.uname,
+            'privilegeType': message.guard_level
+        })
+
+    def _on_open_live_super_chat(self, client: OpenLiveClient, message: dm_open_models.SuperChatMessage):
+        avatar_url = services.avatar.process_avatar_url(message.uface)
+        services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
+
+        room = client_room_manager.get_room(client.room_key)
+        if room is None:
+            return
+
+        need_translate = self._need_translate(message.message, room, client)
+        if need_translate:
+            translation = services.translate.get_translation_from_cache(message.message)
+            if translation is None:
+                # 没有缓存，需要后面异步翻译后通知
+                translation = ''
+            else:
+                need_translate = False
+        else:
+            translation = ''
+
+        msg_id = str(message.message_id)
+        room.send_cmd_data(api.chat.Command.ADD_SUPER_CHAT, {
+            'id': msg_id,
+            'avatarUrl': avatar_url,
+            'timestamp': message.start_time,
+            'authorName': message.uname,
+            'price': message.rmb,
+            'content': message.message,
+            'translation': translation
+        })
+
+        if need_translate:
+            asyncio.create_task(self._translate_and_response(
+                message.message, room.room_key, msg_id, services.translate.Priority.HIGH
+            ))
+
+    def _on_open_live_super_chat_delete(self, client: OpenLiveClient, message: dm_open_models.SuperChatDeleteMessage):
+        room = client_room_manager.get_room(client.room_key)
+        if room is None:
+            return
+
+        room.send_cmd_data(api.chat.Command.DEL_SUPER_CHAT, {
+            'ids': list(map(str, message.message_ids))
+        })

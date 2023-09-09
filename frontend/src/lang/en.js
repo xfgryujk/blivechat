@@ -9,9 +9,12 @@ export default {
   home: {
     roomIdEmpty: "Room ID can't be empty",
     roomIdInteger: 'Room ID must be positive integer',
+    authCodeEmpty: "Identity code can't be empty",
 
     general: 'General',
+    room: 'Room',
     roomId: 'Room ID',
+    authCode: 'Identity code',
     showDanmaku: 'Show messages',
     showGift: 'Show Super Chats',
     showGiftName: 'Show gift name',

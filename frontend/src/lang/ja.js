@@ -9,9 +9,12 @@ export default {
   home: {
     roomIdEmpty: 'ルームのIDを空白にすることはできません',
     roomIdInteger: 'ルームは正の整数でなければなりません',
+    authCodeEmpty: 'アイデンティティコードを空白にすることはできません',
 
     general: '常規',
+    room: 'ルーム',
     roomId: 'ルームID',
+    authCode: 'アイデンティティコード',
     showDanmaku: 'コメントを表示する',
     showGift: 'スーパーチャットと新メンバーを表示する',
     showGiftName: 'ギフト名を表示する',

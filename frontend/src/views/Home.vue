@@ -1,16 +1,31 @@
 <template>
   <div>
     <p>
-      <el-form :model="form" ref="form" label-width="150px" :rules="{
-        roomId: [
-          {required: true, message: $t('home.roomIdEmpty'), trigger: 'blur'},
-          {type: 'integer', min: 1, message: $t('home.roomIdInteger'), trigger: 'blur'}
-        ]
-      }">
+      <el-form :model="form" ref="form" label-width="150px">
         <el-tabs type="border-card">
           <el-tab-pane :label="$t('home.general')">
-            <el-form-item :label="$t('home.roomId')" required prop="roomId">
-              <el-input v-model.number="form.roomId" type="number" min="1"></el-input>
+            <el-form-item :label="$t('home.room')" required :prop="form.roomKeyType === 1 ? 'roomId' : 'authCode'">
+              <el-row>
+                <el-col :span="6">
+                  <el-select v-model="form.roomKeyType" style="width: 100%">
+                    <el-option :label="$t('home.authCode')" :value="2"></el-option>
+                    <el-option :label="$t('home.roomId')" :value="1"></el-option>
+                  </el-select>
+                </el-col>
+                <el-col :span="18">
+                  <el-input v-if="form.roomKeyType === 1"
+                    v-model.number="form.roomId" type="number" min="1" :rules="[
+                      {required: true, message: $t('home.roomIdEmpty'), trigger: 'blur'},
+                      {type: 'integer', min: 1, message: $t('home.roomIdInteger'), trigger: 'blur'}
+                    ]"
+                  ></el-input>
+                  <el-input v-else
+                    v-model.number="form.authCode" :rules="[
+                      {required: true, message: $t('home.authCodeEmpty'), trigger: 'blur'}
+                    ]"
+                  ></el-input>
+                </el-col>
+              </el-row>
             </el-form-item>
             <el-row :gutter="20">
               <el-col :xs="24" :sm="8">
@@ -184,11 +199,20 @@ export default {
       },
       form: {
         ...chatConfig.getLocalConfig(),
-        roomId: parseInt(window.localStorage.roomId || '1')
+        roomKeyType: parseInt(window.localStorage.roomKeyType || '2'),
+        roomId: parseInt(window.localStorage.roomId || '1'),
+        authCode: window.localStorage.authCode || '',
       }
     }
   },
   computed: {
+    roomKeyValue() {
+      if (this.form.roomKeyType === 1) {
+        return this.form.roomId
+      } else {
+        return this.form.authCode
+      }
+    },
     roomUrl() {
       return this.getRoomUrl(false)
     },
@@ -206,7 +230,9 @@ export default {
   },
   watch: {
     roomUrl: _.debounce(function() {
+      window.localStorage.roomKeyType = this.form.roomKeyType
       window.localStorage.roomId = this.form.roomId
+      window.localStorage.authCode = this.form.authCode
       chatConfig.setLocalConfig(this.form)
     }, 500)
   },
@@ -256,13 +282,13 @@ export default {
     },
 
     enterRoom() {
-      window.open(this.roomUrl, `room ${this.form.roomId}`, 'menubar=0,location=0,scrollbars=0,toolbar=0,width=600,height=600')
+      window.open(this.roomUrl, `room ${this.roomKeyValue}`, 'menubar=0,location=0,scrollbars=0,toolbar=0,width=600,height=600')
     },
     enterTestRoom() {
       window.open(this.getRoomUrl(true), 'test room', 'menubar=0,location=0,scrollbars=0,toolbar=0,width=600,height=600')
     },
     getRoomUrl(isTestRoom) {
-      if (!isTestRoom && this.form.roomId === '') {
+      if (!isTestRoom && !this.roomKeyValue) {
         return ''
       }
 
@@ -272,12 +298,13 @@ export default {
         lang: this.$i18n.locale
       }
       delete query.roomId
+      delete query.authCode
 
       let resolved
       if (isTestRoom) {
         resolved = this.$router.resolve({ name: 'test_room', query })
       } else {
-        resolved = this.$router.resolve({ name: 'room', params: { roomId: this.form.roomId }, query })
+        resolved = this.$router.resolve({ name: 'room', params: { roomKeyValue: this.roomKeyValue }, query })
       }
       return `${window.location.protocol}//${window.location.host}${resolved.href}`
     },
@@ -314,7 +341,9 @@ export default {
       chatConfig.sanitizeConfig(cfg)
       this.form = {
         ...cfg,
-        roomId: this.form.roomId
+        roomKeyType: this.form.roomKeyType,
+        roomId: this.form.roomId,
+        authCode: this.form.authCode
       }
     }
   }

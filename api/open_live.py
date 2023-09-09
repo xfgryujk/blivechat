@@ -42,20 +42,14 @@ class BusinessError(Exception):
         return self.data['code']
 
 
-async def request_open_live_or_common_server(open_live_url, common_server_url, body: Union[dict, str, bytes]) -> dict:
+async def request_open_live_or_common_server(open_live_url, common_server_url, body: dict) -> dict:
     """如果配置了开放平台，则直接请求，否则转发请求到公共服务器的内部接口"""
     cfg = config.get_config()
     if cfg.is_open_live_configured:
         return await _request_open_live(open_live_url, body)
 
-    post_params = {'headers': {'Content-Type': 'application/json'}}
-    if isinstance(body, dict):
-        post_params['json'] = body
-    else:
-        post_params['data'] = body
-    req_ctx_mgr = utils.request.http_session.post(common_server_url, **post_params)
-
     try:
+        req_ctx_mgr = utils.request.http_session.post(common_server_url, json=body)
         return await _read_response(req_ctx_mgr)
     except TransportError:
         logger.exception('Request common server failed:')
@@ -65,17 +59,11 @@ async def request_open_live_or_common_server(open_live_url, common_server_url, b
         raise
 
 
-async def _request_open_live(url, body: Union[dict, str, bytes]) -> dict:
+async def _request_open_live(url, body: dict) -> dict:
     cfg = config.get_config()
     assert cfg.is_open_live_configured
 
-    if isinstance(body, dict):
-        body_bytes = json.dumps(body).encode('utf-8')
-    elif isinstance(body, str):
-        body_bytes = body.encode('utf-8')
-    else:
-        body_bytes = body
-
+    body_bytes = json.dumps(body).encode('utf-8')
     headers = {
         'x-bili-accesskeyid': cfg.open_live_access_key_id,
         'x-bili-content-md5': hashlib.md5(body_bytes).hexdigest(),
@@ -96,9 +84,9 @@ async def _request_open_live(url, body: Union[dict, str, bytes]) -> dict:
 
     headers['Content-Type'] = 'application/json'
     headers['Accept'] = 'application/json'
-    req_ctx_mgr = utils.request.http_session.post(url, headers=headers, data=body_bytes)
 
     try:
+        req_ctx_mgr = utils.request.http_session.post(url, headers=headers, data=body_bytes)
         return await _read_response(req_ctx_mgr)
     except TransportError:
         logger.exception('Request open live failed:')
@@ -124,9 +112,13 @@ async def _read_response(req_ctx_mgr: AsyncContextManager[aiohttp.ClientResponse
 class _OpenLiveHandlerBase(api.base.ApiHandler):
     def prepare(self):
         super().prepare()
-        # 做一些简单的检查
         if not isinstance(self.json_args, dict):
             raise tornado.web.MissingArgumentError('body')
+
+        if 'app_id' in self.json_args:
+            cfg = config.get_config()
+            self.json_args['app_id'] = cfg.open_live_app_id
+
         logger.info('client=%s requesting open live, cls=%s', self.request.remote_ip, type(self).__name__)
 
 
@@ -138,7 +130,7 @@ class _PublicHandlerBase(_OpenLiveHandlerBase):
     async def post(self):
         try:
             res = await request_open_live_or_common_server(
-                self._OPEN_LIVE_URL, self._COMMON_SERVER_URL, self.request.body
+                self._OPEN_LIVE_URL, self._COMMON_SERVER_URL, self.json_args
             )
         except TransportError:
             raise tornado.web.HTTPError(500)
@@ -157,7 +149,7 @@ class _PrivateHandlerBase(_OpenLiveHandlerBase):
             raise tornado.web.HTTPError(501)
 
         try:
-            res = await _request_open_live(self._OPEN_LIVE_URL, self.request.body)
+            res = await _request_open_live(self._OPEN_LIVE_URL, self.json_args)
         except TransportError:
             raise tornado.web.HTTPError(500)
         except BusinessError as e:

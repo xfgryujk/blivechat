@@ -9,9 +9,12 @@ export default {
   home: {
     roomIdEmpty: '房间ID不能为空',
     roomIdInteger: '房间ID必须为正整数',
+    authCodeEmpty: '身份码不能为空',
 
     general: '常规',
+    room: '房间',
     roomId: '房间ID',
+    authCode: '身份码',
     showDanmaku: '显示弹幕',
     showGift: '显示打赏和新舰长',
     showGiftName: '显示礼物名',

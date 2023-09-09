@@ -77,15 +77,22 @@ const router = new VueRouter({
       props: route => ({ strConfig: route.query })
     },
     {
-      path: '/room/:roomId',
+      path: '/room/:roomKeyValue',
       name: 'room',
       component: Room,
       props(route) {
-        let roomId = parseInt(route.params.roomId)
-        if (isNaN(roomId)) {
-          roomId = null
+        let roomKeyType = parseInt(route.query.roomKeyType) || 1
+        if (roomKeyType < 1 || roomKeyType > 2) {
+          roomKeyType = 1
         }
-        return { roomId, strConfig: route.query }
+
+        let roomKeyValue = route.params.roomKeyValue
+        if (roomKeyType === 1) {
+          roomKeyValue = parseInt(roomKeyValue) || null
+        } else {
+          roomKeyValue = roomKeyValue || null
+        }
+        return { roomKeyType, roomKeyValue, strConfig: route.query }
       }
     },
     { path: '*', component: NotFound }
