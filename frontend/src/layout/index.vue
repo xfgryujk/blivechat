@@ -3,7 +3,7 @@
     <div v-show="isMobile && !hideSidebar" class="drawer-bg" @click="hideSidebar = true"></div>
     <el-aside width="230px" class="sidebar-container" :class="{ 'hide-sidebar': hideSidebar }">
       <div class="logo-container">
-        <router-link to="/">
+        <router-link :to="{ name: 'home' }">
           <img src="@/assets/img/logo.png" class="sidebar-logo">
           <h1 class="sidebar-title">blivechat</h1>
         </router-link>

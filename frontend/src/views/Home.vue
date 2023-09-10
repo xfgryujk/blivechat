@@ -5,6 +5,11 @@
         <el-tabs type="border-card">
           <el-tab-pane :label="$t('home.general')">
             <el-form-item :label="$t('home.room')" required :prop="form.roomKeyType === 1 ? 'roomId' : 'authCode'">
+              <template slot="label">{{ $t('home.room') }}
+                <router-link :to="{ name: 'help' }">
+                  <i class="el-icon-question"></i>
+                </router-link>
+              </template>
               <el-row>
                 <el-col :span="6">
                   <el-select v-model="form.roomKeyType" style="width: 100%">
@@ -26,6 +31,7 @@
                   ></el-input>
                 </el-col>
               </el-row>
+              <el-row v-if="form.roomKeyType === 1" style="color: red">{{ $t('home.useAuthCodeWarning') }}</el-row>
             </el-form-item>
             <el-row :gutter="20">
               <el-col :xs="24" :sm="8">

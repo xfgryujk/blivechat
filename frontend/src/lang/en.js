@@ -10,6 +10,7 @@ export default {
     roomIdEmpty: "Room ID can't be empty",
     roomIdInteger: 'Room ID must be positive integer',
     authCodeEmpty: "Identity code can't be empty",
+    useAuthCodeWarning: 'Please prioritize the identity code',
 
     general: 'General',
     room: 'Room',
@@ -133,8 +134,8 @@ export default {
   },
   help: {
     help: 'Help',
-    p1: '1. Copy the room ID from the Bilibili live room webpage',
-    p2: '2. Enter the room ID into the room ID on the home page. Copy the room URL',
+    p1: '1. Copy the identity code (身份码) from the webpage where you start streaming',
+    p2: '2. Enter the identity code into the room configuration on the home page. Copy the room URL',
     p3: '3. Generate styles with the style generator. Copy the CSS',
     p4: '4. Add browser source in OBS',
     p5: '5. Enter the previously copied room URL at URL, and enter the previously copied CSS at custom CSS'

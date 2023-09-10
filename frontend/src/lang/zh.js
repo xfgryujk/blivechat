@@ -10,6 +10,7 @@ export default {
     roomIdEmpty: '房间ID不能为空',
     roomIdInteger: '房间ID必须为正整数',
     authCodeEmpty: '身份码不能为空',
+    useAuthCodeWarning: '请优先使用身份码',
 
     general: '常规',
     room: '房间',
@@ -133,8 +134,8 @@ export default {
   },
   help: {
     help: '帮助',
-    p1: '1. 从B站直播间网页复制房间ID',
-    p2: '2. 把房间ID输入到首页的房间ID，复制房间URL',
+    p1: '1. 从开始直播的页面复制身份码',
+    p2: '2. 把身份码输入到首页的房间配置，复制房间URL',
     p3: '3. 使用样式生成器生成样式，复制CSS',
     p4: '4. 在OBS中添加浏览器源',
     p5: '5. URL处输入之前复制的房间URL，自定义CSS处输入之前复制的CSS'
