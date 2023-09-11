@@ -120,7 +120,6 @@ class WebLiveClient(blivedm.BLiveClient):
         assert room_key.type == RoomKeyType.ROOM_ID
         super().__init__(
             room_key.value,
-            uid=0,
             session=utils.request.http_session,
             heartbeat_interval=self.HEARTBEAT_INTERVAL,
         )
