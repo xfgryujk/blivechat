@@ -6,6 +6,7 @@ import hmac
 import json
 import logging
 import random
+import re
 from typing import *
 
 import aiohttp
@@ -63,6 +64,10 @@ async def _request_open_live(url, body: dict) -> dict:
     cfg = config.get_config()
     assert cfg.is_open_live_configured
 
+    # 输错身份码的人太多了，临时处理屏蔽请求，不然要被B站下架了
+    if url == START_GAME_OPEN_LIVE_URL:
+        _validate_auth_code(body.get('code', ''))
+
     body_bytes = json.dumps(body).encode('utf-8')
     headers = {
         'x-bili-accesskeyid': cfg.open_live_access_key_id,
@@ -107,6 +112,19 @@ async def _read_response(req_ctx_mgr: AsyncContextManager[aiohttp.ClientResponse
             return data
     except (aiohttp.ClientError, asyncio.TimeoutError) as e:
         raise TransportError(f'{type(e).__name__}: {e}')
+
+
+def _validate_auth_code(auth_code):
+    if re.fullmatch(r'[0-9A-Z]{11,16}', auth_code):
+        return
+
+    logger.warning('Auth code error! auth_code=%s', auth_code)
+    raise BusinessError({
+        'code': 7007,
+        'message': '身份码错误',
+        'data': {},
+        'request_id': '0'
+    })
 
 
 class _OpenLiveHandlerBase(api.base.ApiHandler):
