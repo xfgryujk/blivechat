@@ -10,6 +10,7 @@ import re
 from typing import *
 
 import aiohttp
+import cachetools
 import tornado.web
 
 import api.base
@@ -26,6 +27,8 @@ COMMON_SERVER_BASE_URL = 'https://chat.bilisc.com'
 START_GAME_COMMON_SERVER_URL = COMMON_SERVER_BASE_URL + '/api/internal/open_live/start_game'
 END_GAME_COMMON_SERVER_URL = COMMON_SERVER_BASE_URL + '/api/internal/open_live/end_game'
 GAME_HEARTBEAT_COMMON_SERVER_URL = COMMON_SERVER_BASE_URL + '/api/internal/open_live/game_heartbeat'
+
+_error_auth_code_cache = cachetools.LRUCache(256)
 
 
 class TransportError(Exception):
@@ -66,7 +69,10 @@ async def _request_open_live(url, body: dict) -> dict:
 
     # 输错身份码的人太多了，临时处理屏蔽请求，不然要被B站下架了
     if url == START_GAME_OPEN_LIVE_URL:
-        _validate_auth_code(body.get('code', ''))
+        auth_code = body.get('code', '')
+        _validate_auth_code(auth_code)
+    else:
+        auth_code = ''
 
     body_bytes = json.dumps(body).encode('utf-8')
     headers = {
@@ -98,6 +104,8 @@ async def _request_open_live(url, body: dict) -> dict:
         raise
     except BusinessError as e:
         logger.warning('Request open live failed: %s', e)
+        if e.code == 7007:
+            _error_auth_code_cache[auth_code] = True
         raise
 
 
@@ -115,15 +123,17 @@ async def _read_response(req_ctx_mgr: AsyncContextManager[aiohttp.ClientResponse
 
 
 def _validate_auth_code(auth_code):
-    # 我也不知道是不是一定是这个格式，先临时这么处理
-    if re.fullmatch(r'[0-9A-Z]{12,14}', auth_code):
-        return
-    raise BusinessError({
-        'code': 7007,
-        'message': '身份码错误',
-        'request_id': '0',
-        'data': None
-    })
+    if (
+        auth_code in _error_auth_code_cache
+        # 我也不知道是不是一定是这个格式，先临时这么处理
+        or not re.fullmatch(r'[0-9A-Z]{12,14}', auth_code)
+    ):
+        raise BusinessError({
+            'code': 7007,
+            'message': 'oi！oi！oi！你的身份码错误了！别再重试了！！！！！！！！！！',
+            'request_id': '0',
+            'data': None
+        })
 
 
 class _OpenLiveHandlerBase(api.base.ApiHandler):
