@@ -1,6 +1,8 @@
 import { BrotliDecode } from './brotli_decode'
 import { inflate } from 'pako'
 
+import * as chat from '..'
+
 const HEADER_SIZE = 16
 
 export const WS_BODY_PROTOCOL_VERSION_NORMAL = 0
@@ -49,6 +51,8 @@ export default class ChatClientOfficialBase {
     this.onAddSuperChat = null
     this.onDelSuperChat = null
     this.onUpdateTranslation = null
+
+    this.onFatalError = null
 
     this.needInitRoom = true
     this.websocket = null
@@ -116,7 +120,18 @@ export default class ChatClientOfficialBase {
       return
     }
 
-    if (!await this.initRoom()) {
+    let res
+    try {
+      res = await this.initRoom()
+    } catch (e) {
+      res = false
+      console.error('initRoom exception:', e)
+      if (e instanceof chat.ChatClientFatalError && this.onFatalError) {
+        this.onFatalError(e)
+      }
+    }
+
+    if (!res) {
       this.onWsClose()
       throw Error('initRoom failed')
     }

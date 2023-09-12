@@ -176,8 +176,20 @@ class OpenLiveClient(blivedm.OpenLiveClient):
         except api_open_live.TransportError:
             logger.error('_start_game() failed')
             return False
-        except api_open_live.BusinessError:
+        except api_open_live.BusinessError as e:
             logger.warning('_start_game() failed')
+
+            if e.code == 7007:
+                # 身份码错误
+                # 让我看看是哪个混蛋把房间ID、UID当做身份码
+                logger.warning('Auth code error! auth_code=%s', self._room_owner_auth_code)
+                room = client_room_manager.get_room(self.room_key)
+                if room is not None:
+                    room.send_cmd_data(api.chat.Command.FATAL_ERROR, {
+                        'type': api.chat.FatalErrorType.AUTH_CODE_ERROR,
+                        'msg': str(e)
+                    })
+
             return False
         return self._parse_start_game(data['data'])
 

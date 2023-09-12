@@ -51,10 +51,18 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
         app_id: 0
       })).data
       if (res.code !== 0) {
-        throw Error(`code=${res.code}, message=${res.message}, request_id=${res.request_id}`)
+        let msg = `code=${res.code}, message=${res.message}, request_id=${res.request_id}`
+        if (res.code === 7007) {
+          // 身份码错误
+          throw new chat.ChatClientFatalError(chat.FATAL_ERROR_TYPE_AUTH_CODE_ERROR, msg)
+        }
+        throw Error(msg)
       }
     } catch (e) {
       console.error('startGame failed:', e)
+      if (e instanceof chat.ChatClientFatalError) {
+        throw e
+      }
       return false
     }
 

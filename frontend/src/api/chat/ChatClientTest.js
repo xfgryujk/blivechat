@@ -238,6 +238,8 @@ export default class ChatClientTest {
     this.onDelSuperChat = null
     this.onUpdateTranslation = null
 
+    this.onFatalError = null
+
     this.timerId = null
   }
 

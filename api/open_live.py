@@ -35,7 +35,7 @@ class TransportError(Exception):
 class BusinessError(Exception):
     """业务返回码错误"""
     def __init__(self, data: dict):
-        super().__init__(f"message={data['message']}, request_id={data['request_id']}")
+        super().__init__(f"code={data['code']}, message={data['message']}, request_id={data['request_id']}")
         self.data = data
 
     @property
@@ -115,19 +115,22 @@ async def _read_response(req_ctx_mgr: AsyncContextManager[aiohttp.ClientResponse
 
 
 def _validate_auth_code(auth_code):
-    if re.fullmatch(r'[0-9A-Z]{11,16}', auth_code):
+    # 我也不知道是不是一定是这个格式，先临时这么处理
+    if re.fullmatch(r'[0-9A-Z]{12,14}', auth_code):
         return
-
-    logger.warning('Auth code error! auth_code=%s', auth_code)
     raise BusinessError({
         'code': 7007,
         'message': '身份码错误',
-        'data': {},
-        'request_id': '0'
+        'request_id': '0',
+        'data': None
     })
 
 
 class _OpenLiveHandlerBase(api.base.ApiHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.res: Optional[dict] = None
+
     def prepare(self):
         super().prepare()
         if not isinstance(self.json_args, dict):
@@ -147,14 +150,14 @@ class _PublicHandlerBase(_OpenLiveHandlerBase):
 
     async def post(self):
         try:
-            res = await request_open_live_or_common_server(
+            self.res = await request_open_live_or_common_server(
                 self._OPEN_LIVE_URL, self._COMMON_SERVER_URL, self.json_args
             )
         except TransportError:
             raise tornado.web.HTTPError(500)
         except BusinessError as e:
-            res = e.data
-        self.write(res)
+            self.res = e.data
+        self.write(self.res)
 
 
 class _PrivateHandlerBase(_OpenLiveHandlerBase):
@@ -167,21 +170,41 @@ class _PrivateHandlerBase(_OpenLiveHandlerBase):
             raise tornado.web.HTTPError(501)
 
         try:
-            res = await _request_open_live(self._OPEN_LIVE_URL, self.json_args)
+            self.res = await _request_open_live(self._OPEN_LIVE_URL, self.json_args)
         except TransportError:
             raise tornado.web.HTTPError(500)
         except BusinessError as e:
-            res = e.data
-        self.write(res)
+            self.res = e.data
+        self.write(self.res)
 
 
-class StartGamePublicHandler(_PublicHandlerBase):
+class _StartGameMixin(_OpenLiveHandlerBase):
     _OPEN_LIVE_URL = START_GAME_OPEN_LIVE_URL
     _COMMON_SERVER_URL = START_GAME_COMMON_SERVER_URL
 
+    async def post(self):
+        await super().post()  # noqa
+        if self.res is None:
+            return
 
-class StartGamePrivateHandler(_PrivateHandlerBase):
-    _OPEN_LIVE_URL = START_GAME_OPEN_LIVE_URL
+        try:
+            room_id = self.res['data']['anchor_info']['room_id']
+        except (TypeError, KeyError):
+            room_id = None
+        code = self.res['code']
+        logger.info('room_id=%s start game res: %s %s', room_id, code, self.res['message'])
+        if code == 7007:
+            # 身份码错误
+            # 让我看看是哪个混蛋把房间ID、UID当做身份码
+            logger.warning('Auth code error! auth_code=%s', self.json_args.get('code', None))
+
+
+class StartGamePublicHandler(_StartGameMixin, _PublicHandlerBase):
+    pass
+
+
+class StartGamePrivateHandler(_StartGameMixin, _PrivateHandlerBase):
+    pass
 
 
 class EndGamePublicHandler(_PublicHandlerBase):

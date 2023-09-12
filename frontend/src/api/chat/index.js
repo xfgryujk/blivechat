@@ -1,5 +1,14 @@
 import axios from 'axios'
 
+export const FATAL_ERROR_TYPE_AUTH_CODE_ERROR = 1
+
+export class ChatClientFatalError extends Error {
+  constructor(type, message) {
+    super(message)
+    this.type = type
+  }
+}
+
 export const DEFAULT_AVATAR_URL = '//static.hdslb.com/images/member/noface.gif'
 
 export function processAvatarUrl(avatarUrl) {

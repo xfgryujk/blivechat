@@ -31,11 +31,16 @@ class Command(enum.IntEnum):
     ADD_SUPER_CHAT = 5
     DEL_SUPER_CHAT = 6
     UPDATE_TRANSLATION = 7
+    FATAL_ERROR = 8
 
 
 class ContentType(enum.IntEnum):
     TEXT = 0
     EMOTICON = 1
+
+
+class FatalErrorType(enum.IntEnum):
+    AUTH_CODE_ERROR = 1
 
 
 def make_message_body(cmd, data):
