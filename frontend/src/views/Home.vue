@@ -4,7 +4,32 @@
       <el-form :model="form" ref="form" label-width="150px">
         <el-tabs type="border-card">
           <el-tab-pane :label="$t('home.general')">
-            <el-form-item :label="$t('home.room')" required :prop="form.roomKeyType === 1 ? 'roomId' : 'authCode'">
+            <el-form-item v-if="form.roomKeyType === 1"
+              :label="$t('home.room')" prop="roomId" :rules="[
+                { required: true, message: $t('home.roomIdEmpty') },
+                { type: 'integer', min: 1, message: $t('home.roomIdInteger') }
+              ]"
+            >
+              <el-row>
+                <el-col :span="6">
+                  <el-select v-model="form.roomKeyType" style="width: 100%">
+                    <el-option :label="$t('home.authCode')" :value="2"></el-option>
+                    <el-option :label="$t('home.roomId')" :value="1"></el-option>
+                  </el-select>
+                </el-col>
+                <el-col :span="18">
+                  <el-input v-model.number="form.roomId" type="number" min="1"></el-input>
+                </el-col>
+              </el-row>
+              <el-row style="color: red">{{ $t('home.useAuthCodeWarning') }}</el-row>
+            </el-form-item>
+
+            <el-form-item v-else-if="form.roomKeyType === 2"
+              :label="$t('home.room')" prop="authCode" :rules="[
+                { required: true, message: $t('home.authCodeEmpty') },
+                { pattern: AUTH_CODE_REG, message: $t('home.authCodeFormatError') }
+              ]"
+            >
               <template slot="label">{{ $t('home.room') }}
                 <router-link :to="{ name: 'help' }">
                   <i class="el-icon-question"></i>
@@ -18,21 +43,19 @@
                   </el-select>
                 </el-col>
                 <el-col :span="18">
-                  <el-input v-if="form.roomKeyType === 1"
-                    v-model.number="form.roomId" type="number" min="1" :rules="[
-                      {required: true, message: $t('home.roomIdEmpty'), trigger: 'blur'},
-                      {type: 'integer', min: 1, message: $t('home.roomIdInteger'), trigger: 'blur'}
-                    ]"
-                  ></el-input>
-                  <el-input v-else
-                    v-model.number="form.authCode" :rules="[
-                      {required: true, message: $t('home.authCodeEmpty'), trigger: 'blur'}
-                    ]"
-                  ></el-input>
+                  <el-tooltip placement="top-start">
+                    <div slot="content">
+                      <!-- 不知道为什么router-link获取不到$router，还是用el-link了，不过会有一次丑陋的刷新 -->
+                      <el-link
+                        type="primary" :href="$router.resolve({ name: 'help' }).href"
+                      >{{ $t('home.howToGetAuthCode') }}</el-link>
+                    </div>
+                    <el-input v-model.number="form.authCode"></el-input>
+                  </el-tooltip>
                 </el-col>
               </el-row>
-              <el-row v-if="form.roomKeyType === 1" style="color: red">{{ $t('home.useAuthCodeWarning') }}</el-row>
             </el-form-item>
+
             <el-row :gutter="20">
               <el-col :xs="24" :sm="8">
                 <el-form-item :label="$t('home.showDanmaku')">
@@ -198,6 +221,8 @@ export default {
   name: 'Home',
   data() {
     return {
+      AUTH_CODE_REG: /^[0-9A-Z]{12,14}$/,
+
       serverConfig: {
         enableTranslate: true,
         enableUploadFile: true,
@@ -294,7 +319,7 @@ export default {
       window.open(this.getRoomUrl(true), 'test room', 'menubar=0,location=0,scrollbars=0,toolbar=0,width=600,height=600')
     },
     getRoomUrl(isTestRoom) {
-      if (!isTestRoom && !this.roomKeyValue) {
+      if (!isTestRoom && !this.validateForm()) {
         return ''
       }
 
@@ -313,6 +338,15 @@ export default {
         resolved = this.$router.resolve({ name: 'room', params: { roomKeyValue: this.roomKeyValue }, query })
       }
       return `${window.location.protocol}//${window.location.host}${resolved.href}`
+    },
+    // 因为要用在计算属性里，所以不能用this.$refs.form.validate
+    validateForm() {
+      if (this.form.roomKeyType === 1) {
+        return this.roomKeyValue > 0
+      } else if (this.form.roomKeyType === 2) {
+        return this.AUTH_CODE_REG.test(this.roomKeyValue)
+      }
+      return true
     },
     copyUrl() {
       this.$refs.roomUrlInput.select()

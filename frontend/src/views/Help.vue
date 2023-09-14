@@ -1,7 +1,7 @@
 <template>
   <div>
     <h1>{{ $t('help.help') }}</h1>
-    <p>{{ $t('help.p1') }}</p>
+    <p>{{ $t('help.p1_1') }} <a href="https://play-live.bilibili.com/" target="_blank">https://play-live.bilibili.com/</a> {{ $t('help.p1_2') }}</p>
     <p class="img-container"><el-image fit="scale-down" src="/static/img/tutorial/tutorial-1.png"></el-image></p>
     <p>{{ $t('help.p2') }}</p>
     <p class="img-container large-img"><el-image fit="scale-down" src="/static/img/tutorial/tutorial-2.png"></el-image></p>
