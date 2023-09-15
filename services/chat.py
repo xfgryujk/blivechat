@@ -10,6 +10,7 @@ import api.open_live as api_open_live
 import blivedm.blivedm as blivedm
 import blivedm.blivedm.models.open_live as dm_open_models
 import blivedm.blivedm.models.web as dm_web_models
+import blivedm.blivedm.utils as dm_utils
 import config
 import services.avatar
 import services.translate
@@ -115,6 +116,7 @@ class LiveClientManager:
 
 class WebLiveClient(blivedm.BLiveClient):
     HEARTBEAT_INTERVAL = 10
+    RECONNECT_POLICY = dm_utils.make_linear_retry_policy(1, 2, 10)
 
     def __init__(self, room_key: RoomKey):
         assert room_key.type == RoomKeyType.ROOM_ID
@@ -124,6 +126,7 @@ class WebLiveClient(blivedm.BLiveClient):
             session=utils.request.http_session,
             heartbeat_interval=self.HEARTBEAT_INTERVAL,
         )
+        self.set_reconnect_policy(self.RECONNECT_POLICY)
 
     @property
     def room_key(self):
@@ -141,6 +144,7 @@ class WebLiveClient(blivedm.BLiveClient):
 
 class OpenLiveClient(blivedm.OpenLiveClient):
     HEARTBEAT_INTERVAL = 10
+    RECONNECT_POLICY = dm_utils.make_linear_retry_policy(1, 2, 10)
 
     def __init__(self, room_key: RoomKey):
         assert room_key.type == RoomKeyType.AUTH_CODE
@@ -153,6 +157,7 @@ class OpenLiveClient(blivedm.OpenLiveClient):
             session=utils.request.http_session,
             heartbeat_interval=self.HEARTBEAT_INTERVAL,
         )
+        self.set_reconnect_policy(self.RECONNECT_POLICY)
 
     @property
     def room_key(self):
