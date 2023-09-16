@@ -187,7 +187,7 @@ class OpenLiveClient(blivedm.OpenLiveClient):
             if e.code == 7007:
                 # 身份码错误
                 # 让我看看是哪个混蛋把房间ID、UID当做身份码
-                logger.warning('Auth code error! auth_code=%s', self._room_owner_auth_code)
+                logger.info('Auth code error! auth_code=%s', self._room_owner_auth_code)
                 room = client_room_manager.get_room(self.room_key)
                 if room is not None:
                     room.send_cmd_data(api.chat.Command.FATAL_ERROR, {

@@ -67,7 +67,7 @@ async def _request_open_live(url, body: dict) -> dict:
     cfg = config.get_config()
     assert cfg.is_open_live_configured
 
-    # 输错身份码的人太多了，临时处理屏蔽请求，不然要被B站下架了
+    # 输错身份码的人太多了，屏蔽掉明显错误的请求，防止B站抱怨
     if url == START_GAME_OPEN_LIVE_URL:
         auth_code = body.get('code', '')
         _validate_auth_code(auth_code)
@@ -125,7 +125,7 @@ async def _read_response(req_ctx_mgr: AsyncContextManager[aiohttp.ClientResponse
 def _validate_auth_code(auth_code):
     if (
         auth_code in _error_auth_code_cache
-        # 我也不知道是不是一定是这个格式，先临时这么处理
+        # 我也不知道是不是一定是这个格式，先这么处理
         or not re.fullmatch(r'[0-9A-Z]{12,14}', auth_code)
     ):
         raise BusinessError({
@@ -206,7 +206,7 @@ class _StartGameMixin(_OpenLiveHandlerBase):
         if code == 7007:
             # 身份码错误
             # 让我看看是哪个混蛋把房间ID、UID当做身份码
-            logger.warning('Auth code error! auth_code=%s', self.json_args.get('code', None))
+            logger.info('Auth code error! auth_code=%s', self.json_args.get('code', None))
 
 
 class StartGamePublicHandler(_StartGameMixin, _PublicHandlerBase):
