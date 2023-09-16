@@ -114,9 +114,11 @@ class LiveClientManager:
         client_room_manager.del_room(room_key)
 
 
+RECONNECT_POLICY = dm_utils.make_linear_retry_policy(1, 2, 10)
+
+
 class WebLiveClient(blivedm.BLiveClient):
     HEARTBEAT_INTERVAL = 10
-    RECONNECT_POLICY = dm_utils.make_linear_retry_policy(1, 2, 10)
 
     def __init__(self, room_key: RoomKey):
         assert room_key.type == RoomKeyType.ROOM_ID
@@ -126,7 +128,7 @@ class WebLiveClient(blivedm.BLiveClient):
             session=utils.request.http_session,
             heartbeat_interval=self.HEARTBEAT_INTERVAL,
         )
-        self.set_reconnect_policy(self.RECONNECT_POLICY)
+        self.set_reconnect_policy(RECONNECT_POLICY)
 
     @property
     def room_key(self):
@@ -144,7 +146,6 @@ class WebLiveClient(blivedm.BLiveClient):
 
 class OpenLiveClient(blivedm.OpenLiveClient):
     HEARTBEAT_INTERVAL = 10
-    RECONNECT_POLICY = dm_utils.make_linear_retry_policy(1, 2, 10)
 
     def __init__(self, room_key: RoomKey):
         assert room_key.type == RoomKeyType.AUTH_CODE
@@ -157,7 +158,7 @@ class OpenLiveClient(blivedm.OpenLiveClient):
             session=utils.request.http_session,
             heartbeat_interval=self.HEARTBEAT_INTERVAL,
         )
-        self.set_reconnect_policy(self.RECONNECT_POLICY)
+        self.set_reconnect_policy(RECONNECT_POLICY)
 
     @property
     def room_key(self):
