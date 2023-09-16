@@ -266,7 +266,7 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
     # 测试用
     async def _send_test_message(self):
         base_data = {
-            'avatarUrl': await services.avatar.get_avatar_url(300474),
+            'avatarUrl': await services.avatar.get_avatar_url(300474, 'xfgryujk'),
             'timestamp': int(time.time()),
             'authorName': 'xfgryujk',
         }
@@ -372,9 +372,10 @@ class RoomInfoHandler(api.base.ApiHandler):
 class AvatarHandler(api.base.ApiHandler):
     async def get(self):
         uid = int(self.get_query_argument('uid'))
+        username = self.get_query_argument('username', '')
         avatar_url = await services.avatar.get_avatar_url_or_none(uid)
         if avatar_url is None:
-            avatar_url = services.avatar.DEFAULT_AVATAR_URL
+            avatar_url = services.avatar.get_default_avatar_url(uid, username)
             # 缓存3分钟
             self.set_header('Cache-Control', 'private, max-age=180')
         else:

@@ -89,10 +89,11 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
       authorType = 0
     }
 
+    let authorName = info[2][1]
     let data = {
-      avatarUrl: await chat.getAvatarUrl(uid),
+      avatarUrl: await chat.getAvatarUrl(uid, authorName),
       timestamp: info[0][4] / 1000,
-      authorName: info[2][1],
+      authorName: authorName,
       authorType: authorType,
       content: info[1],
       privilegeType: privilegeType,
@@ -137,7 +138,7 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
     let data = command.data
     data = {
       id: getUuid4Hex(),
-      avatarUrl: await chat.getAvatarUrl(data.uid),
+      avatarUrl: await chat.getAvatarUrl(data.uid, data.username),
       timestamp: data.start_time,
       authorName: data.username,
       privilegeType: data.guard_level

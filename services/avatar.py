@@ -2,6 +2,7 @@
 import asyncio
 import dataclasses
 import datetime
+import hashlib
 import logging
 import re
 from typing import *
@@ -54,11 +55,22 @@ async def _do_init():
     _avatar_fetchers = fetchers
 
 
-async def get_avatar_url(user_id) -> str:
+async def get_avatar_url(user_id, username) -> str:
     avatar_url = await get_avatar_url_or_none(user_id)
     if avatar_url is None:
-        avatar_url = DEFAULT_AVATAR_URL
+        avatar_url = get_default_avatar_url(user_id, username)
     return avatar_url
+
+
+def get_default_avatar_url(user_id=0, username=''):
+    if user_id != 0:
+        str_to_hash = str(user_id)
+    elif username != '':
+        str_to_hash = username
+    else:
+        return DEFAULT_AVATAR_URL
+    id_hash = hashlib.md5(str_to_hash.encode('utf-8')).hexdigest()
+    return f'//cravatar.cn/avatar/{id_hash}?s=256&d=robohash&f=y'
 
 
 async def get_avatar_url_or_none(user_id) -> Optional[str]:
