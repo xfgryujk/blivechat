@@ -642,7 +642,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'avatarUrl': avatar_url,
             'timestamp': message.timestamp,
             'authorName': message.uname,
-            'totalCoin': message.price,
+            'totalCoin': message.price * message.gift_num,
             'giftName': message.gift_name,
             'num': message.gift_num
         })

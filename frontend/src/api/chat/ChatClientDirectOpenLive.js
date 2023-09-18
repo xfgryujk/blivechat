@@ -200,7 +200,7 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
       avatarUrl: chat.processAvatarUrl(data.uface),
       timestamp: data.timestamp,
       authorName: data.uname,
-      totalCoin: data.price,
+      totalCoin: data.price * data.gift_num,
       giftName: data.gift_name,
       num: data.gift_num
     }
