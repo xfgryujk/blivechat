@@ -174,7 +174,7 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
       authorType: authorType,
       content: data.msg,
       privilegeType: data.guard_level,
-      isGiftDanmaku: false,
+      isGiftDanmaku: chat.isGiftDanmakuByContent(data.msg),
       authorLevel: 1,
       isNewbie: false,
       isMobileVerified: true,
