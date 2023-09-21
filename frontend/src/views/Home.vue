@@ -341,6 +341,7 @@ export default {
         roomKeyType: this.form.roomKeyType
       }
       let backFields = {
+        lang: this.$i18n.locale,
         emoticons: JSON.stringify(this.form.emoticons)
       }
       let ignoredNames = new Set(['roomId', 'authCode'])
