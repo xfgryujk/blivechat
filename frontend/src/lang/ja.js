@@ -51,6 +51,7 @@ export default {
     addEmoticon: 'スタンプを追加',
     emoticonFileTooLarge: 'ファイルサイズが大きすぎます。最大サイズは1MBです',
 
+    urlTooLong: 'ルームのURLが長すぎて、直播姬によって切り詰められます（ただし、OBSでは切り詰められません）',
     roomUrl: 'ルームのURL',
     enterRoom: 'ルームに入る',
     enterTestRoom: 'テストルームに入る',

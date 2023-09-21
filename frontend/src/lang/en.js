@@ -51,6 +51,7 @@ export default {
     addEmoticon: 'Add emote',
     emoticonFileTooLarge: 'File size is too large. Max size is 1MB',
 
+    urlTooLong: 'The room URL is too long, and will be truncated by Livehime (but not by OBS)',
     roomUrl: 'Room URL',
     enterRoom: 'Enter room',
     enterTestRoom: 'Enter test room',

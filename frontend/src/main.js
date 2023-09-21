@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import {
-  Aside, Autocomplete, Badge, Button, ButtonGroup, Card, Col, ColorPicker, Container, Divider, Form, FormItem, Image,
+  Alert, Aside, Autocomplete, Badge, Button, ButtonGroup, Card, Col, ColorPicker, Container, Divider, Form, FormItem, Image,
   Input, Link, Main, Menu, MenuItem, Message, Option, OptionGroup, Radio, RadioGroup, Row, Select, Scrollbar,
   Slider, Submenu, Switch, Table, TableColumn, TabPane, Tabs, Tooltip
 } from 'element-ui'
@@ -20,6 +20,7 @@ axios.defaults.timeout = 10 * 1000
 
 Vue.use(VueRouter)
 // 初始化element
+Vue.use(Alert)
 Vue.use(Aside)
 Vue.use(Autocomplete)
 Vue.use(Badge)

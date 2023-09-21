@@ -51,6 +51,7 @@ export default {
     addEmoticon: '添加表情',
     emoticonFileTooLarge: '文件尺寸太大，最大1MB',
 
+    urlTooLong: '房间URL太长了，会被直播姬截断（OBS不会）',
     roomUrl: '房间URL',
     enterRoom: '进入房间',
     enterTestRoom: '进入测试房间',

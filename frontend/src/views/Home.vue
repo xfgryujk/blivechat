@@ -4,37 +4,36 @@
       <el-form :model="form" ref="form" label-width="150px">
         <el-tabs type="border-card">
           <el-tab-pane :label="$t('home.general')">
-            <el-form-item v-if="form.roomKeyType === 1"
-              :label="$t('home.room')" prop="roomId" :rules="[
-                { required: true, message: $t('home.roomIdEmpty') },
-                { type: 'integer', min: 1, message: $t('home.roomIdInteger') }
-              ]"
-            >
-              <el-row>
-                <el-col :span="6">
-                  <el-select v-model="form.roomKeyType" style="width: 100%">
-                    <el-option :label="$t('home.authCode')" :value="2"></el-option>
-                    <el-option :label="$t('home.roomId')" :value="1"></el-option>
-                  </el-select>
-                </el-col>
-                <el-col :span="18">
-                  <el-input v-model.number="form.roomId" type="number" min="1"></el-input>
-                </el-col>
-              </el-row>
-              <el-row style="color: red">{{ $t('home.useAuthCodeWarning') }}</el-row>
-            </el-form-item>
+            <template v-if="form.roomKeyType === 1">
+              <p>
+                <el-alert :title="$t('home.useAuthCodeWarning')" type="warning" show-icon :closable="false"></el-alert>
+              </p>
+              <el-form-item
+                :label="$t('home.room')" prop="roomId" :rules="[
+                  { required: true, message: $t('home.roomIdEmpty') },
+                  { type: 'integer', min: 1, message: $t('home.roomIdInteger') }
+                ]"
+              >
+                <el-row>
+                  <el-col :span="6">
+                    <el-select v-model="form.roomKeyType" style="width: 100%">
+                      <el-option :label="$t('home.authCode')" :value="2"></el-option>
+                      <el-option :label="$t('home.roomId')" :value="1"></el-option>
+                    </el-select>
+                  </el-col>
+                  <el-col :span="18">
+                    <el-input v-model.number="form.roomId" type="number" min="1"></el-input>
+                  </el-col>
+                </el-row>
+              </el-form-item>
+            </template>
 
             <el-form-item v-else-if="form.roomKeyType === 2"
               :label="$t('home.room')" prop="authCode" :rules="[
                 { required: true, message: $t('home.authCodeEmpty') },
-                { pattern: AUTH_CODE_REG, message: $t('home.authCodeFormatError') }
+                { pattern: /^[0-9A-Z]{12,14}$/, message: $t('home.authCodeFormatError') }
               ]"
             >
-              <template slot="label">{{ $t('home.room') }}
-                <router-link :to="{ name: 'help' }">
-                  <i class="el-icon-question"></i>
-                </router-link>
-              </template>
               <el-row>
                 <el-col :span="6">
                   <el-select v-model="form.roomKeyType" style="width: 100%">
@@ -193,6 +192,9 @@
     <p>
       <el-card>
         <el-form :model="form" label-width="150px">
+          <p v-if="obsRoomUrl.length > 1024">
+            <el-alert :title="$t('home.urlTooLong')" type="warning" show-icon :closable="false"></el-alert>
+          </p>
           <el-form-item :label="$t('home.roomUrl')">
             <el-input ref="roomUrlInput" readonly :value="obsRoomUrl" style="width: calc(100% - 8em); margin-right: 1em;"></el-input>
             <el-button type="primary" icon="el-icon-copy-document" @click="copyUrl"></el-button>
@@ -221,8 +223,6 @@ export default {
   name: 'Home',
   data() {
     return {
-      AUTH_CODE_REG: /^[0-9A-Z]{12,14}$/,
-
       serverConfig: {
         enableTranslate: true,
         enableUploadFile: true,
@@ -233,7 +233,10 @@ export default {
         roomKeyType: parseInt(window.localStorage.roomKeyType || '2'),
         roomId: parseInt(window.localStorage.roomId || '1'),
         authCode: window.localStorage.authCode || '',
-      }
+      },
+      // 因为$refs.form.validate是异步的所以不能直接用计算属性
+      // getUnvalidatedRoomUrl -> unvalidatedRoomUrl -> updateRoomUrl -> roomUrl
+      roomUrl: '',
     }
   },
   computed: {
@@ -244,8 +247,8 @@ export default {
         return this.form.authCode
       }
     },
-    roomUrl() {
-      return this.getRoomUrl(false)
+    unvalidatedRoomUrl() {
+      return this.getUnvalidatedRoomUrl(false)
     },
     obsRoomUrl() {
       if (this.roomUrl === '') {
@@ -260,6 +263,7 @@ export default {
     }
   },
   watch: {
+    unvalidatedRoomUrl: 'updateRoomUrl',
     roomUrl: _.debounce(function() {
       window.localStorage.roomKeyType = this.form.roomKeyType
       window.localStorage.roomId = this.form.roomId
@@ -269,6 +273,7 @@ export default {
   },
   mounted() {
     this.updateServerConfig()
+    this.updateRoomUrl()
   },
   methods: {
     async updateServerConfig() {
@@ -278,6 +283,18 @@ export default {
         this.$message.error(`Failed to fetch server information: ${e}`)
         throw e
       }
+    },
+    async updateRoomUrl() {
+      // 防止切换roomKeyType时校验的还是老规则
+      await this.$nextTick()
+      try {
+        await this.$refs.form.validate()
+      } catch {
+        this.roomUrl = ''
+        return
+      }
+      // 没有异步的校验规则，应该不需要考虑竞争条件
+      this.roomUrl = this.unvalidatedRoomUrl
     },
 
     addEmoticon() {
@@ -316,20 +333,38 @@ export default {
       window.open(this.roomUrl, `room ${this.roomKeyValue}`, 'menubar=0,location=0,scrollbars=0,toolbar=0,width=600,height=600')
     },
     enterTestRoom() {
-      window.open(this.getRoomUrl(true), 'test room', 'menubar=0,location=0,scrollbars=0,toolbar=0,width=600,height=600')
+      window.open(this.getUnvalidatedRoomUrl(true), 'test room', 'menubar=0,location=0,scrollbars=0,toolbar=0,width=600,height=600')
     },
-    getRoomUrl(isTestRoom) {
-      if (!isTestRoom && !this.validateForm()) {
-        return ''
+    getUnvalidatedRoomUrl(isTestRoom) {
+      // 重要的字段放在前面，因为如果被截断就连接不了房间了
+      let frontFields = {
+        roomKeyType: this.form.roomKeyType
       }
+      let backFields = {
+        emoticons: JSON.stringify(this.form.emoticons)
+      }
+      let ignoredNames = new Set(['roomId', 'authCode'])
+      let query = { ...frontFields }
+      for (let name in this.form) {
+        if (!(name in frontFields || name in backFields || ignoredNames.has(name))) {
+          query[name] = this.form[name]
+        }
+      }
+      Object.assign(query, backFields)
 
-      let query = {
-        ...this.form,
-        emoticons: JSON.stringify(this.form.emoticons),
-        lang: this.$i18n.locale
-      }
-      delete query.roomId
-      delete query.authCode
+      // 去掉和默认值相同的字段，缩短URL长度
+      query = Object.fromEntries(Object.entries(query).filter(
+        ([name, value]) => {
+          let defaultValue = chatConfig.DEFAULT_CONFIG[name]
+          if (defaultValue === undefined) {
+            return true
+          }
+          if (typeof defaultValue === 'object') {
+            defaultValue = JSON.stringify(defaultValue)
+          }
+          return value !== defaultValue
+        }
+      ))
 
       let resolved
       if (isTestRoom) {
@@ -339,19 +374,11 @@ export default {
       }
       return `${window.location.protocol}//${window.location.host}${resolved.href}`
     },
-    // 因为要用在计算属性里，所以不能用this.$refs.form.validate
-    validateForm() {
-      if (this.form.roomKeyType === 1) {
-        return this.roomKeyValue > 0
-      } else if (this.form.roomKeyType === 2) {
-        return this.AUTH_CODE_REG.test(this.roomKeyValue)
-      }
-      return true
-    },
     copyUrl() {
       this.$refs.roomUrlInput.select()
       document.execCommand('Copy')
     },
+
     exportConfig() {
       let cfg = mergeConfig(this.form, chatConfig.DEFAULT_CONFIG)
       download(JSON.stringify(cfg, null, 2), 'blivechat.json', 'application/json')
