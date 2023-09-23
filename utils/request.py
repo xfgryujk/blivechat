@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import shelve
 from typing import *
 
@@ -12,8 +13,8 @@ BILIBILI_COMMON_HEADERS = {
                   ' Chrome/114.0.0.0 Safari/537.36'
 }
 
-http_session: Optional[aiohttp.ClientSession] = None
-
+http_session: Optional[aiohttp.ClientSession] = None 
+logger = logging.getLogger(__name__)
 
 def init():
     global http_session
@@ -29,8 +30,9 @@ async def shut_down():
 def reload_cookie(): 
     with shelve.open('data/login') as db:
         cookie = db.get('cookie')
-        print(cookie)
         if cookie is not None: 
+            logger.info('成功载入了登录态')
             http_session.cookie_jar.update_cookies(cookie)
         else:
+            logger.info('当前无登录态')
             http_session.cookie_jar.clear()
