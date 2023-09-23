@@ -5,7 +5,7 @@ import aiohttp
 
 import utils.request
 
-VERSION = 'v1.8.1'
+VERSION = 'v1.8.2'
 
 
 def check_update():
