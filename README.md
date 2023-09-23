@@ -45,6 +45,12 @@
 * 样式生成器没有列出所有本地字体，但是可以手动输入本地字体
 * 如果需要使用翻译功能，建议看[配置官方翻译接口傻瓜式教程](https://www.bilibili.com/read/cv14663633)
 
+6. 打包
+
+```shell
+pyinstaller main.py -n blivechat --add-data "data;data" --add-data "log;log" --add-data "frontend/dist;frontend/dist" --hidden-import aiohttp --noconfirm
+```
+
 ### 二、公共服务器
 
 请优先在本地使用，使用公共服务器会有更大的延迟，而且服务器故障时可能发生直播事故

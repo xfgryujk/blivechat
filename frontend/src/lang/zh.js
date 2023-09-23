@@ -11,7 +11,14 @@ export default {
     roomIdInteger: '房间ID必须为正整数',
     authCodeEmpty: '身份码不能为空',
     authCodeFormatError: '身份码格式错误',
-    useAuthCodeWarning: '请优先使用身份码',
+    useAuthCodeWarning: '请优先使用身份码，或请在下方使用小号扫码登陆',
+
+    logout: '登出',
+    startLogin: '开始登录',
+    isLoginTrue: '已登录',
+    isLoginFalse: '未登录',
+    useSecondaryScanCode: '为确保账号安全，请使用小号进行扫码登录',
+    useLoaderUrl: '使用加载器',
 
     general: '常规',
     room: '房间',
@@ -23,7 +30,8 @@ export default {
     showGiftName: '显示礼物名',
     mergeSimilarDanmaku: '合并相似弹幕',
     mergeGift: '合并礼物',
-    minGiftPrice: '最低显示打赏价格（元）',
+    minGiftPrice: '最低显示打赏价格',
+    minGiftPriceCurrency: '元',
     maxNumber: '最大弹幕数',
 
     block: '屏蔽',

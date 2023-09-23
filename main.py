@@ -15,6 +15,8 @@ import tornado.web
 import api.chat
 import api.main
 import api.open_live
+import api.login
+
 import config
 import models.database
 import services.avatar
@@ -28,6 +30,7 @@ logger = logging.getLogger(__name__)
 ROUTES = [
     *api.main.ROUTES,
     *api.chat.ROUTES,
+    *api.login.ROUTES,
     *api.open_live.ROUTES,
     *api.main.LAST_ROUTES,
 ]

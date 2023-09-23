@@ -12,6 +12,13 @@ export default {
     authCodeEmpty: "Identity code can't be empty",
     authCodeFormatError: 'Identity code format error',
     useAuthCodeWarning: 'Please prioritize the identity code',
+    
+    logout: 'Logout',
+    startLogin: 'Start Login',
+    isLoginTrue: 'Logged in',
+    isLoginFalse: 'Not logged in',
+    useSecondaryScanCode: 'To ensure account security, please use the secondary account for scan code login',
+    useLoaderUrl: 'Use loader url',
 
     general: 'General',
     room: 'Room',
@@ -23,7 +30,8 @@ export default {
     showGiftName: 'Show gift name',
     mergeSimilarDanmaku: 'Merge similar messages',
     mergeGift: 'Merge gifts',
-    minGiftPrice: 'Min price of Super Chats to show (CNY)',
+    minGiftPrice: 'Min price of Super Chats to show',
+    minGiftPriceCurrency: 'CNY',
     maxNumber: 'Max number of messages',
 
     block: 'Block',

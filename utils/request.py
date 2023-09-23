@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import shelve
 from typing import *
 
 import aiohttp
@@ -17,8 +18,19 @@ http_session: Optional[aiohttp.ClientSession] = None
 def init():
     global http_session
     http_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
+    reload_cookie()
 
 
 async def shut_down():
     if http_session is not None:
         await http_session.close()
+
+
+def reload_cookie(): 
+    with shelve.open('data/login') as db:
+        cookie = db.get('cookie')
+        print(cookie)
+        if cookie is not None: 
+            http_session.cookie_jar.update_cookies(cookie)
+        else:
+            http_session.cookie_jar.clear()

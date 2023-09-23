@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import asyncio
+import base64
+import binascii
 import enum
 import json
 import logging
@@ -13,6 +15,7 @@ import tornado.websocket
 
 import api.base
 import blivedm.blivedm.clients.web as dm_web_cli
+from blivedm.blivedm.models import pb
 import config
 import services.avatar
 import services.chat
@@ -373,6 +376,19 @@ class AvatarHandler(api.base.ApiHandler):
     async def get(self):
         uid = int(self.get_query_argument('uid'))
         username = self.get_query_argument('username', '')
+        dm_v2 = self.get_query_argument('dm_v2', None)
+        
+        if dm_v2 is not None and len(dm_v2) > 0:
+            try:
+                proto = pb.SimpleDm.loads(base64.b64decode(dm_v2))
+                avatar_url = proto.user.face 
+                if avatar_url is not None:
+                    services.avatar.update_avatar_cache(uid, avatar_url)
+                    self.write({'avatarUrl': avatar_url})
+                    return
+            except (binascii.Error, KeyError, TypeError, ValueError):
+                pass
+        
         avatar_url = await services.avatar.get_avatar_url_or_none(uid)
         if avatar_url is None:
             avatar_url = services.avatar.get_default_avatar_url(uid, username)

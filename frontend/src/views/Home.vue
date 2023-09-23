@@ -1,13 +1,10 @@
-<template>
+div<template>
   <div>
     <p>
       <el-form :model="form" ref="form" label-width="150px">
         <el-tabs type="border-card">
           <el-tab-pane :label="$t('home.general')">
             <template v-if="form.roomKeyType === 1">
-              <p>
-                <el-alert :title="$t('home.useAuthCodeWarning')" type="warning" show-icon :closable="false"></el-alert>
-              </p>
               <el-form-item
                 :label="$t('home.room')" prop="roomId" :rules="[
                   { required: true, message: $t('home.roomIdEmpty') },
@@ -26,6 +23,9 @@
                   </el-col>
                 </el-row>
               </el-form-item>
+              <p>
+                <el-alert :title="$t('home.useAuthCodeWarning')" type="warning" show-icon :closable="false"></el-alert>
+              </p>
             </template>
 
             <el-form-item v-else-if="form.roomKeyType === 2"
@@ -87,7 +87,9 @@
             <el-row :gutter="20">
               <el-col :xs="24" :sm="8">
                 <el-form-item :label="$t('home.minGiftPrice')">
-                  <el-input v-model.number="form.minGiftPrice" type="number" min="0"></el-input>
+                  <el-input v-model.number="form.minGiftPrice" type="number" min="0">
+                    <template slot="append">{{$t('home.minGiftPriceCurrency')}}</template>
+                  </el-input>
                 </el-form-item>
               </el-col>
               <el-col :xs="24" :sm="8">
@@ -189,6 +191,19 @@
       </el-form>
     </p>
 
+    <p v-if="form.roomKeyType === 1">
+      <el-card class="login-card">
+        <el-alert :title="$t('home.useSecondaryScanCode')" type="warning" style="background-color: #fef0f0; color: #F56C6C;" show-icon :closable="false"></el-alert>
+        <div class="login-card-content">
+          <el-tag :type="this.login.isLogin ? 'success' : 'danger'">{{ this.login.isLogin ? $t('home.isLoginTrue') : $t('home.isLoginFalse') }}</el-tag>
+          <div v-if="this.login.isLogin"> <el-tag>登录日期： {{ this.login.loginDate  }}</el-tag></div>
+          <el-button type="primary" @click="startLogin">{{$t('home.startLogin')}}</el-button>
+          <el-button v-if="this.login.isLogin" type="danger" @click="logout" style="margin-left: 0;">{{$t('home.logout')}}</el-button>
+          <img :src="this.login.image" style="max-width: 150px; max-height: 150px;" v-if="this.login.image && this.login.image.length > 0"/>
+        </div>
+      </el-card>
+    </p>
+
     <p>
       <el-card>
         <el-form :model="form" label-width="150px">
@@ -199,7 +214,10 @@
             <el-input ref="roomUrlInput" readonly :value="obsRoomUrl" style="width: calc(100% - 8em); margin-right: 1em;"></el-input>
             <el-button type="primary" icon="el-icon-copy-document" @click="copyUrl"></el-button>
           </el-form-item>
-          <el-form-item>
+          <el-form-item :label="$t('home.useLoaderUrl')">
+            <el-switch v-model="useLoaderUrl"></el-switch>
+          </el-form-item>
+          <el-form-item style="margin-bottom: 0;">
             <el-button type="primary" :disabled="!roomUrl" @click="enterRoom">{{$t('home.enterRoom')}}</el-button>
             <el-button @click="enterTestRoom">{{$t('home.enterTestRoom')}}</el-button>
             <el-button @click="exportConfig">{{$t('home.exportConfig')}}</el-button>
@@ -208,12 +226,31 @@
         </el-form>
       </el-card>
     </p>
+
   </div>
 </template>
+
+<style>
+
+.login-card > .el-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.login-card-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+}
+
+</style>
 
 <script>
 import _ from 'lodash'
 import download from 'downloadjs'
+import axios from 'axios'
 
 import { mergeConfig } from '@/utils'
 import * as mainApi from '@/api/main'
@@ -226,8 +263,9 @@ export default {
       serverConfig: {
         enableTranslate: true,
         enableUploadFile: true,
-        loaderUrl: ''
+        loaderUrl: '',
       },
+      useLoaderUrl: true,
       form: {
         ...chatConfig.getLocalConfig(),
         roomKeyType: parseInt(window.localStorage.roomKeyType || '2'),
@@ -237,6 +275,11 @@ export default {
       // 因为$refs.form.validate是异步的所以不能直接用计算属性
       // getUnvalidatedRoomUrl -> unvalidatedRoomUrl -> updateRoomUrl -> roomUrl
       roomUrl: '',
+      login: {
+        image: '',
+        isLogin: false,
+        loginDate: ''
+      }
     }
   },
   computed: {
@@ -254,7 +297,7 @@ export default {
       if (this.roomUrl === '') {
         return ''
       }
-      if (this.serverConfig.loaderUrl === '') {
+      if (this.serverConfig.loaderUrl === '' || !this.useLoaderUrl) {
         return this.roomUrl
       }
       let url = new URL(this.serverConfig.loaderUrl)
@@ -272,6 +315,7 @@ export default {
     }, 500)
   },
   mounted() {
+    this.updateLoginStatus()
     this.updateServerConfig()
     this.updateRoomUrl()
   },
@@ -412,6 +456,29 @@ export default {
         roomKeyType: this.form.roomKeyType,
         roomId: this.form.roomId,
         authCode: this.form.authCode
+      }
+    },
+    async updateLoginStatus() {
+      const res = (await axios.get('/api/login/status')).data
+      this.login.isLogin = res.is_login
+      this.login.loginDate = res.login_date
+    },
+    async logout() {
+      await axios.get('/api/login/kill')
+      this.updateLoginStatus()
+    },
+    async startLogin() {
+      const res = (await axios.get('/api/login/start')).data
+      this.login.key = res.key
+      this.login.image = `data:image/png;base64,${res.qr}`
+      this.login.check = setInterval(this.checkLogin, 100)
+    },
+    async checkLogin() {
+      const res = (await axios.get('/api/login/check', { params: { 'qrcode_key': this.login.key } })).data
+      if (res.ok === true) {
+        this.login.image = ''
+        clearInterval(this.login.check)
+        this.updateLoginStatus()
       }
     }
   }

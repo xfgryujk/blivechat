@@ -13,6 +13,13 @@ export default {
     authCodeFormatError: 'アイデンティティコードの形式エラー',
     useAuthCodeWarning: 'アイデンティティコードを優先的に使用してください',
 
+    logout: 'ログアウト',
+    startLogin: 'ログインを開始',
+    isLoginTrue: 'ログイン済み',
+    isLoginFalse: '未ログイン',
+    useSecondaryScanCode: 'アカウントのセキュリティを保つため、サブアカウントを使ってQRコードでログインしてください。',
+    useLoaderUrl: 'ローダーURLを使用する',
+
     general: '常規',
     room: 'ルーム',
     roomId: 'ルームID',
@@ -23,7 +30,8 @@ export default {
     showGiftName: 'ギフト名を表示する',
     mergeSimilarDanmaku: '同じコメントを合併する',
     mergeGift: 'ギフトを合併する',
-    minGiftPrice: '最低表示スーパーチャット価格（CNY）',
+    minGiftPrice: '最低表示スーパーチャット価格',
+    minGiftPriceCurrency: 'CNY',
     maxNumber: '最大コメント数',
 
     block: 'ブロック',
