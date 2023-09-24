@@ -449,6 +449,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             translation=translation,
             content_type=content_type,
             content_type_params=content_type_params,
+            author_id=message.uid
         ))
 
         if need_translate:
@@ -473,7 +474,8 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'authorName': message.uname,
             'totalCoin': message.total_coin,
             'giftName': message.gift_name,
-            'num': message.num
+            'num': message.num,
+            'uid': message.uid
         })
 
     def _on_buy_guard(self, client: WebLiveClient, message: dm_web_models.GuardBuyMessage):
@@ -493,7 +495,8 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'avatarUrl': avatar_url,
             'timestamp': message.start_time,
             'authorName': message.username,
-            'privilegeType': message.guard_level
+            'privilegeType': message.guard_level,
+            'uid': message.uid
         })
 
     def _on_super_chat(self, client: WebLiveClient, message: dm_web_models.SuperChatMessage):
@@ -523,7 +526,8 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'authorName': message.uname,
             'price': message.price,
             'content': message.message,
-            'translation': translation
+            'translation': translation,
+            'uid': message.uid
         })
 
         if need_translate:
@@ -620,6 +624,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             translation=translation,
             content_type=content_type,
             content_type_params=content_type_params,
+            author_id=message.uid
         ))
 
         if need_translate:
@@ -644,7 +649,8 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'authorName': message.uname,
             'totalCoin': message.price * message.gift_num,
             'giftName': message.gift_name,
-            'num': message.gift_num
+            'num': message.gift_num,
+            'uid': message.uid
         })
 
     def _on_open_live_buy_guard(self, client: OpenLiveClient, message: dm_open_models.GuardBuyMessage):
@@ -660,7 +666,8 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'avatarUrl': avatar_url,
             'timestamp': message.timestamp,
             'authorName': message.user_info.uname,
-            'privilegeType': message.guard_level
+            'privilegeType': message.guard_level,
+            'uid': message.user_info.uid
         })
 
     def _on_open_live_super_chat(self, client: OpenLiveClient, message: dm_open_models.SuperChatMessage):
@@ -690,7 +697,8 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'authorName': message.uname,
             'price': message.rmb,
             'content': message.message,
-            'translation': translation
+            'translation': translation,
+            'uid': message.uid
         })
 
         if need_translate:
