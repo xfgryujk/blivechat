@@ -68,6 +68,7 @@ def make_text_message_data(
     translation: str = '',
     content_type: int = ContentType.TEXT,
     content_type_params: list = None,
+    uid: int = 0
 ):
     # 为了节省带宽用list而不是dict
     return [
@@ -103,6 +104,8 @@ def make_text_message_data(
         content_type_params if content_type_params is not None else [],
         # 15: textEmoticons
         [],  # 已废弃，保留
+        # 16: authorId
+        author_id
     ]
 
 
