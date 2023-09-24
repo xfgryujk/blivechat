@@ -68,7 +68,7 @@ def make_text_message_data(
     translation: str = '',
     content_type: int = ContentType.TEXT,
     content_type_params: list = None,
-    author_id: int = 0
+    uid: int = 0
 ):
     # 为了节省带宽用list而不是dict
     return [

@@ -449,7 +449,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             translation=translation,
             content_type=content_type,
             content_type_params=content_type_params,
-            author_id=message.uid
+            uid=message.uid
         ))
 
         if need_translate:
@@ -624,7 +624,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             translation=translation,
             content_type=content_type,
             content_type_params=content_type_params,
-            author_id=message.uid
+            uid=message.uid
         ))
 
         if need_translate:
