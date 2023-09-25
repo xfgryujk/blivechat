@@ -23,7 +23,8 @@ export default {
     showGiftName: 'ギフト名を表示する',
     mergeSimilarDanmaku: '同じコメントを合併する',
     mergeGift: 'ギフトを合併する',
-    minGiftPrice: '最低表示スーパーチャット価格（CNY）',
+    minGiftPrice: '最低表示スーパーチャット価格',
+    minGiftPriceCurrency: 'CNY',
     maxNumber: '最大コメント数',
 
     block: 'ブロック',

@@ -23,7 +23,8 @@ export default {
     showGiftName: 'Show gift name',
     mergeSimilarDanmaku: 'Merge similar messages',
     mergeGift: 'Merge gifts',
-    minGiftPrice: 'Min price of Super Chats to show (CNY)',
+    minGiftPrice: 'Min price of Super Chats to show',
+    minGiftPriceCurrency: 'CNY',
     maxNumber: 'Max number of messages',
 
     block: 'Block',

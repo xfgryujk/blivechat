@@ -1,13 +1,10 @@
-<template>
+div<template>
   <div>
     <p>
       <el-form :model="form" ref="form" label-width="150px">
         <el-tabs type="border-card">
           <el-tab-pane :label="$t('home.general')">
             <template v-if="form.roomKeyType === 1">
-              <p>
-                <el-alert :title="$t('home.useAuthCodeWarning')" type="warning" show-icon :closable="false"></el-alert>
-              </p>
               <el-form-item
                 :label="$t('home.room')" prop="roomId" :rules="[
                   { required: true, message: $t('home.roomIdEmpty') },
@@ -26,6 +23,9 @@
                   </el-col>
                 </el-row>
               </el-form-item>
+              <p>
+                <el-alert :title="$t('home.useAuthCodeWarning')" type="warning" show-icon :closable="false"></el-alert>
+              </p>
             </template>
 
             <el-form-item v-else-if="form.roomKeyType === 2"
@@ -87,7 +87,9 @@
             <el-row :gutter="20">
               <el-col :xs="24" :sm="8">
                 <el-form-item :label="$t('home.minGiftPrice')">
-                  <el-input v-model.number="form.minGiftPrice" type="number" min="0"></el-input>
+                  <el-input v-model.number="form.minGiftPrice" type="number" min="0">
+                    <template slot="append">{{$t('home.minGiftPriceCurrency')}}</template>
+                  </el-input>
                 </el-form-item>
               </el-col>
               <el-col :xs="24" :sm="8">

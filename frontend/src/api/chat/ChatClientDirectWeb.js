@@ -92,7 +92,7 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
     let authorName = info[2][1]
     let content = info[1]
     let data = {
-      avatarUrl: await chat.getAvatarUrl(uid, authorName),
+      avatarUrl: await chat.getAvatarUrl(uid, authorName, command.dm_v2),
       timestamp: info[0][4] / 1000,
       authorName: authorName,
       authorType: authorType,

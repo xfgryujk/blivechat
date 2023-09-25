@@ -23,7 +23,8 @@ export default {
     showGiftName: '显示礼物名',
     mergeSimilarDanmaku: '合并相似弹幕',
     mergeGift: '合并礼物',
-    minGiftPrice: '最低显示打赏价格（元）',
+    minGiftPrice: '最低显示打赏价格',
+    minGiftPriceCurrency: '元',
     maxNumber: '最大弹幕数',
 
     block: '屏蔽',

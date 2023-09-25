@@ -3,7 +3,7 @@ import VueRouter from 'vue-router'
 import {
   Alert, Aside, Autocomplete, Badge, Button, ButtonGroup, Card, Col, ColorPicker, Container, Divider, Form, FormItem, Image,
   Input, Link, Main, Menu, MenuItem, Message, Option, OptionGroup, Radio, RadioGroup, Row, Select, Scrollbar,
-  Slider, Submenu, Switch, Table, TableColumn, TabPane, Tabs, Tooltip
+  Slider, Submenu, Switch, Table, TableColumn, TabPane, Tabs, Tag, Tooltip
 } from 'element-ui'
 import axios from 'axios'
 
@@ -53,6 +53,7 @@ Vue.use(Table)
 Vue.use(TableColumn)
 Vue.use(TabPane)
 Vue.use(Tabs)
+Vue.use(Tag)
 Vue.use(Tooltip)
 Vue.prototype.$message = Message
 
