@@ -105,7 +105,7 @@ def make_text_message_data(
         # 15: textEmoticons
         [],  # 已废弃，保留
         # 16: authorId
-        author_id
+        uid
     ]
 
 
