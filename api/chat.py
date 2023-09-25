@@ -104,7 +104,7 @@ def make_text_message_data(
         content_type_params if content_type_params is not None else [],
         # 15: textEmoticons
         [],  # 已废弃，保留
-        # 16: authorId
+        # 16: uid
         uid
     ]
 
