@@ -106,21 +106,27 @@
                 </el-form-item>
               </el-col>
               <el-col :xs="24" :sm="8">
-                <el-form-item :label="$t('home.informalUser')">
-                  <el-switch v-model="form.blockNewbie"></el-switch>
-                </el-form-item>
+                <el-tooltip :content="$t('home.unavailableWhenUsingAuthCode')">
+                  <el-form-item :label="$t('home.informalUser')">
+                    <el-switch v-model="form.blockNewbie"></el-switch>
+                  </el-form-item>
+                </el-tooltip>
               </el-col>
               <el-col :xs="24" :sm="8">
-                <el-form-item :label="$t('home.unverifiedUser')">
-                  <el-switch v-model="form.blockNotMobileVerified"></el-switch>
-                </el-form-item>
+                <el-tooltip :content="$t('home.unavailableWhenUsingAuthCode')">
+                  <el-form-item :label="$t('home.unverifiedUser')">
+                    <el-switch v-model="form.blockNotMobileVerified"></el-switch>
+                  </el-form-item>
+                </el-tooltip>
               </el-col>
             </el-row>
             <el-row :gutter="20">
               <el-col :xs="24" :sm="12">
-                <el-form-item :label="$t('home.blockLevel')">
-                  <el-slider v-model="form.blockLevel" show-input :min="0" :max="60"></el-slider>
-                </el-form-item>
+                <el-tooltip :content="$t('home.unavailableWhenUsingAuthCode')">
+                  <el-form-item :label="$t('home.blockLevel')">
+                    <el-slider v-model="form.blockLevel" show-input :min="0" :max="60"></el-slider>
+                  </el-form-item>
+                </el-tooltip>
               </el-col>
               <el-col :xs="24" :sm="12">
                 <el-form-item :label="$t('home.blockMedalLevel')">
@@ -139,14 +145,22 @@
           <el-tab-pane :label="$t('home.advanced')">
             <el-row :gutter="20">
               <el-col :xs="24" :sm="8">
-                <el-form-item :label="$t('home.relayMessagesByServer')">
-                  <el-switch v-model="form.relayMessagesByServer"></el-switch>
-                </el-form-item>
+                <el-tooltip :content="$t('home.relayMessagesByServerTip')">
+                  <el-form-item :label="$t('home.relayMessagesByServer')">
+                    <el-switch v-model="form.relayMessagesByServer"></el-switch>
+                  </el-form-item>
+                </el-tooltip>
               </el-col>
               <el-col :xs="24" :sm="8">
-                <el-form-item :label="$t('home.autoTranslate')">
-                  <el-switch v-model="form.autoTranslate" :disabled="!serverConfig.enableTranslate || !form.relayMessagesByServer"></el-switch>
-                </el-form-item>
+                <el-tooltip :content="$t('home.requiresRelayMessagesByServer')">
+                  <el-form-item :label="$t('home.autoTranslate')">
+                    <el-tooltip :content="$t('home.disabledByServer')" placement="top" :disabled="serverConfig.enableTranslate">
+                      <el-switch v-model="form.autoTranslate"
+                        :disabled="!serverConfig.enableTranslate || !form.relayMessagesByServer"
+                      ></el-switch>
+                    </el-tooltip>
+                  </el-form-item>
+                </el-tooltip>
               </el-col>
             </el-row>
             <el-form-item :label="$t('home.giftUsernamePronunciation')">
@@ -195,10 +209,12 @@
           <p v-if="obsRoomUrl.length > 1024">
             <el-alert :title="$t('home.urlTooLong')" type="warning" show-icon :closable="false"></el-alert>
           </p>
-          <el-form-item :label="$t('home.roomUrl')">
-            <el-input ref="roomUrlInput" readonly :value="obsRoomUrl" style="width: calc(100% - 8em); margin-right: 1em;"></el-input>
-            <el-button type="primary" icon="el-icon-copy-document" @click="copyUrl"></el-button>
-          </el-form-item>
+          <el-tooltip :content="$t('home.roomUrlUpdated')" v-model="showRoomUrlUpdatedTip" manual placement="top">
+            <el-form-item :label="$t('home.roomUrl')">
+              <el-input ref="roomUrlInput" readonly :value="obsRoomUrl" style="width: calc(100% - 8em); margin-right: 1em;"></el-input>
+              <el-button type="primary" icon="el-icon-copy-document" @click="copyUrl"></el-button>
+            </el-form-item>
+          </el-tooltip>
           <el-form-item>
             <el-button type="primary" :disabled="!roomUrl" @click="enterRoom">{{$t('home.enterRoom')}}</el-button>
             <el-button @click="enterTestRoom">{{$t('home.enterTestRoom')}}</el-button>
@@ -237,6 +253,7 @@ export default {
       // 因为$refs.form.validate是异步的所以不能直接用计算属性
       // getUnvalidatedRoomUrl -> unvalidatedRoomUrl -> updateRoomUrl -> roomUrl
       roomUrl: '',
+      showRoomUrlUpdatedTip: false,
     }
   },
   computed: {
@@ -264,7 +281,15 @@ export default {
   },
   watch: {
     unvalidatedRoomUrl: 'updateRoomUrl',
-    roomUrl: _.debounce(function() {
+    roomUrl: _.debounce(function(val, oldVal) {
+      // 提示用户URL已更新
+      // 如果语言不是默认的中文，则刷新页面时也会有一次提示，没办法
+      if (val !== '' && oldVal !== '') {
+        this.showRoomUrlUpdatedTip = true
+        this.delayHideRoomUrlUpdatedTip()
+      }
+
+      // 保存配置
       window.localStorage.roomKeyType = this.form.roomKeyType
       window.localStorage.roomId = this.form.roomId
       window.localStorage.authCode = this.form.authCode
@@ -296,6 +321,9 @@ export default {
       // 没有异步的校验规则，应该不需要考虑竞争条件
       this.roomUrl = this.unvalidatedRoomUrl
     },
+    delayHideRoomUrlUpdatedTip: _.debounce(function() {
+      this.showRoomUrlUpdatedTip = false
+    }, 3000),
 
     addEmoticon() {
       this.form.emoticons.push({

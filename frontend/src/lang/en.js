@@ -11,9 +11,12 @@ export default {
     roomIdInteger: 'Room ID must be positive integer',
     authCodeEmpty: "Identity code can't be empty",
     authCodeFormatError: 'Identity code format error',
-    useAuthCodeWarning: 'Please prioritize the identity code',
+
+    unavailableWhenUsingAuthCode: 'Deprecated. Unavailable when using identity code',
+    disabledByServer: 'Disabled by the server',
 
     general: 'General',
+    useAuthCodeWarning: 'Please prioritize the identity code',
     room: 'Room',
     roomId: 'Room ID',
     authCode: 'Identity code',
@@ -37,8 +40,10 @@ export default {
     blockMedalLevel: 'Block medal level lower than',
 
     advanced: 'Advanced',
-    relayMessagesByServer: 'Relay messages by server',
-    autoTranslate: 'Auto translate messages to Japanese (requires relay messages by server)',
+    relayMessagesByServer: 'Relay messages by the server',
+    relayMessagesByServerTip: 'Message path when enabled: Bilibili server -> blivechat server -> your browser. Some advanced features require this to be enabled. It is recommended to enable it only when using blivechat locally, and not when using through a remote server',
+    autoTranslate: 'Auto translate messages to Japanese',
+    requiresRelayMessagesByServer: 'Requires relay messages by the server',
     giftUsernamePronunciation: 'Pronunciation of gift username',
     dontShow: 'None',
     pinyin: 'Pinyin',
@@ -52,6 +57,7 @@ export default {
     emoticonFileTooLarge: 'File size is too large. Max size is 1MB',
 
     urlTooLong: 'The room URL is too long, and will be truncated by Livehime (but not by OBS)',
+    roomUrlUpdated: 'The room URL is updated. Remember to copy it again',
     roomUrl: 'Room URL',
     enterRoom: 'Enter room',
     enterTestRoom: 'Enter test room',
