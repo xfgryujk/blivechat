@@ -43,11 +43,11 @@
 
 * 本地使用时不要关闭blivechat.exe那个黑框，否则不能继续获取弹幕
 * 样式生成器没有列出所有本地字体，但是可以手动输入本地字体
-* 如果需要使用翻译功能，建议看[配置官方翻译接口傻瓜式教程](https://www.bilibili.com/read/cv14663633)
+* 如果需要使用翻译功能，建议看[配置官方翻译接口教程](https://github.com/xfgryujk/blivechat/wiki/%E9%85%8D%E7%BD%AE%E5%AE%98%E6%96%B9%E7%BF%BB%E8%AF%91%E6%8E%A5%E5%8F%A3)
 
 ### 二、公共服务器
 
-请优先在本地使用，使用公共服务器会有更大的延迟，而且服务器故障时可能发生直播事故
+请优先在本地使用，因为公共服务器会禁用部分特性
 
 * [公共服务器](http://chat.bilisc.com/)
 
@@ -98,88 +98,12 @@
 
 2. 用浏览器打开[http://localhost:12450](http://localhost:12450)，以下略
 
-## 自建服务器相关补充
-
-### 服务器配置
+## 服务器配置
 
 服务器配置在`data/config.ini`，可以配置数据库和允许自动翻译等，编辑后要重启生效
 
 **自建服务器时强烈建议不使用加载器**，否则可能因为混合HTTP和HTTPS等原因加载不出来
 
-### 参考nginx配置
+## 更多文档
 
-`sudo vim /etc/nginx/sites-enabled/blivechat.conf`
-
-```nginx
-upstream blivechat {
-	keepalive 8;
-	# blivechat地址
-	server 127.0.0.1:12450;
-}
-
-# 强制HTTPS
-server {
-	listen 80;
-	listen [::]:80;
-	server_name YOUR.DOMAIN.NAME;
-
-	return 301 https://$server_name$request_uri;
-}
-
-server {
-	listen 443 ssl;
-	listen [::]:443 ssl;
-	server_name YOUR.DOMAIN.NAME;
-
-	# SSL
-	ssl_certificate /PATH/TO/CERT.crt;
-	ssl_certificate_key /PATH/TO/CERT_KEY.key;
-
-	set $blivechat_path /PATH/TO/BLIVECHAT;
-
-	client_body_buffer_size 256k;
-	client_max_body_size 1.1m;
-
-	# 代理header
-	proxy_http_version 1.1;
-	proxy_set_header Host $host;
-	proxy_set_header Connection "";
-	proxy_set_header X-Real-IP $remote_addr;
-	proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-	# 静态文件
-	location / {
-		root $blivechat_path/frontend/dist;
-		try_files $uri $uri/ @index;
-	}
-	# 不存在的文件请求转发到index.html，交给前端路由
-	location @index {
-		rewrite ^ /index.html last;
-	}
-	location = /index.html {
-		root $blivechat_path/frontend/dist;
-		# index.html不缓存，防止更新后前端还是旧版
-		add_header Cache-Control no-cache;
-	}
-	location /emoticons {
-		alias $blivechat_path/data/emoticons;
-	}
-	# 动态API
-	location /api {
-		proxy_pass http://blivechat;
-	}
-	# websocket
-	location = /api/chat {
-		proxy_pass http://blivechat;
-
-		# 代理websocket必须设置
-		proxy_set_header Upgrade $http_upgrade;
-		proxy_set_header Connection "Upgrade";
-
-		# 由于这个块有proxy_set_header，这些不会自动继承
-		proxy_set_header Host $host;
-		proxy_set_header X-Real-IP $remote_addr;
-		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-	}
-}
-```
+[blivechat wiki](https://github.com/xfgryujk/blivechat/wiki)
