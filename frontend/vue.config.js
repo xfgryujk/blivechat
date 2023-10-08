@@ -23,5 +23,14 @@ module.exports = {
         env['APP_VERSION'] = JSON.stringify(APP_VERSION)
         return args
       })
+
+    config.externals({
+      'element-ui': 'ELEMENT',
+      lodash: '_',
+      pako: 'pako',
+      vue: 'Vue',
+      'vue-router': 'VueRouter',
+      'vue-i18n': 'VueI18n',
+    })
   }
 }

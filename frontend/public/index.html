@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -8,6 +8,24 @@
     <meta name="referrer" content="no-referrer">
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
     <title>blivechat</title>
+
+    <% if (process.env.NODE_ENV === 'production') { %>
+      <script src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+      <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.7.14/vue.runtime.min.js"></script>
+      <script src="https://cdn.bootcdn.net/ajax/libs/vue-router/3.6.5/vue-router.min.js"></script>
+      <script src="https://cdn.bootcdn.net/ajax/libs/vue-i18n/8.28.2/vue-i18n.min.js"></script>
+      <link href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.13/theme-chalk/index.min.css" rel="stylesheet">
+      <script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.13/index.min.js"></script>
+      <script src="https://cdn.bootcdn.net/ajax/libs/pako/2.1.0/pako_inflate.min.js"></script>
+    <% } else { %>
+      <script src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.21/lodash.js"></script>
+      <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.7.14/vue.runtime.js"></script>
+      <script src="https://cdn.bootcdn.net/ajax/libs/vue-router/3.6.5/vue-router.js"></script>
+      <script src="https://cdn.bootcdn.net/ajax/libs/vue-i18n/8.28.2/vue-i18n.js"></script>
+      <link href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.13/theme-chalk/index.css" rel="stylesheet">
+      <script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.13/index.js"></script>
+      <script src="https://cdn.bootcdn.net/ajax/libs/pako/2.1.0/pako_inflate.js"></script>
+    <% } %>
   </head>
   <body>
     <noscript>
