@@ -63,18 +63,18 @@ const EMOTICONS = [
 ]
 
 const AUTHOR_TYPES = [
-  { weight: 10, value: constants.AUTHRO_TYPE_NORMAL },
-  { weight: 5, value: constants.AUTHRO_TYPE_MEMBER },
-  { weight: 2, value: constants.AUTHRO_TYPE_ADMIN },
-  { weight: 1, value: constants.AUTHRO_TYPE_OWNER }
+  { weight: 10, value: constants.AUTHOR_TYPE_NORMAL },
+  { weight: 5, value: constants.AUTHOR_TYPE_MEMBER },
+  { weight: 2, value: constants.AUTHOR_TYPE_ADMIN },
+  { weight: 1, value: constants.AUTHOR_TYPE_OWNER }
 ]
 
 function randGuardInfo() {
   let authorType = randomChoose(AUTHOR_TYPES)
   let privilegeType
-  if (authorType === constants.AUTHRO_TYPE_MEMBER) {
+  if (authorType === constants.AUTHOR_TYPE_MEMBER) {
     privilegeType = randInt(1, 3)
-  } else if (authorType === constants.AUTHRO_TYPE_ADMIN) {
+  } else if (authorType === constants.AUTHOR_TYPE_ADMIN) {
     privilegeType = randInt(0, 3)
   } else {
     privilegeType = 0

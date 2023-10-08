@@ -12,7 +12,7 @@
         :isAdmin="false" :privilegeType="privilegeType"
       ></author-badge>
       <template v-else>
-        <author-badge v-if="authorType === AUTHRO_TYPE_ADMIN" class="style-scope yt-live-chat-author-chip"
+        <author-badge v-if="authorType === AUTHOR_TYPE_ADMIN" class="style-scope yt-live-chat-author-chip"
           isAdmin :privilegeType="0"
         ></author-badge>
         <author-badge v-if="privilegeType > 0" class="style-scope yt-live-chat-author-chip"
@@ -40,7 +40,7 @@ export default {
   },
   data() {
     return {
-      AUTHRO_TYPE_ADMIN: constants.AUTHRO_TYPE_ADMIN
+      AUTHOR_TYPE_ADMIN: constants.AUTHOR_TYPE_ADMIN
     }
   },
   computed: {

@@ -1,9 +1,9 @@
 import * as i18n from '@/i18n'
 
-export const AUTHRO_TYPE_NORMAL = 0
-export const AUTHRO_TYPE_MEMBER = 1
-export const AUTHRO_TYPE_ADMIN = 2
-export const AUTHRO_TYPE_OWNER = 3
+export const AUTHOR_TYPE_NORMAL = 0
+export const AUTHOR_TYPE_MEMBER = 1
+export const AUTHOR_TYPE_ADMIN = 2
+export const AUTHOR_TYPE_OWNER = 3
 
 export const AUTHOR_TYPE_TO_TEXT = [
   '',
