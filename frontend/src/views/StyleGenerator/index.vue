@@ -28,16 +28,16 @@
       <div :style="{ position: 'relative', top: `${exampleTop}px` }">
         <el-form inline style="line-height: 40px">
           <el-form-item :label="$t('stylegen.playAnimation')" style="margin: 0">
-            <el-switch v-model="playAnimation" @change="onPlayAnimationChange"></el-switch>
+            <el-switch v-model="playAnimation" @change="setExampleRoomClientStart"></el-switch>
           </el-form-item>
           <el-form-item :label="$t('stylegen.backgrounds')" style="margin: 0 0 0 30px">
             <el-switch v-model="exampleBgLight" :active-text="$t('stylegen.light')" :inactive-text="$t('stylegen.dark')"></el-switch>
           </el-form-item>
         </el-form>
         <div id="example-container" :class="{ light: exampleBgLight }">
-          <div id="fakebody">
-            <room ref="room"></room>
-          </div>
+          <iframe id="example-room-iframe" ref="exampleRoomIframe"
+            :src="exampleRoomUrl" frameborder="0" @load="onExampleRoomLoad"
+          ></iframe>
         </div>
       </div>
     </el-col>
@@ -52,17 +52,11 @@ import LineLike from './LineLike'
 
 export default {
   name: 'StyleGenerator',
-  components: {
-    Legacy,
-    LineLike,
-    Room: () => import('@/views/Room'),
-  },
+  components: { Legacy, LineLike },
   data() {
-    let styleElement = document.createElement('style')
-    document.head.appendChild(styleElement)
     // 数据流：
     //                                                   输入框 --\
-    // 子组件 -> subComponentResults -> subComponentResult -> inputResult -> 防抖延迟0.5s后 -> debounceResult -> exampleCss
+    // 子组件 -> subComponentResults -> subComponentResult -> inputResult -> 防抖延迟0.5s后 -> debounceResult
     return {
       // 子组件的结果
       subComponentResults: {
@@ -75,20 +69,18 @@ export default {
       // 防抖后延迟变化的结果
       debounceResult: '',
 
-      styleElement,
       exampleTop: 0,
       playAnimation: true,
       exampleBgLight: false
     }
   },
   computed: {
+    exampleRoomUrl() {
+      return this.$router.resolve({ name: 'test_room', query: { lang: this.$i18n.locale } }).href
+    },
     // 子组件的结果
     subComponentResult() {
       return this.subComponentResults[this.activeTab]
-    },
-    // 应用到预览上的CSS
-    exampleCss() {
-      return this.debounceResult.replace(/^body\b/gm, '#fakebody')
     }
   },
   watch: {
@@ -98,9 +90,7 @@ export default {
     inputResult: _.debounce(function(val) {
       this.debounceResult = val
     }, 500),
-    exampleCss(val) {
-      this.styleElement.innerText = val
-    }
+    debounceResult: 'setExampleRoomCustomCss'
   },
   mounted() {
     this.debounceResult = this.inputResult = this.subComponentResult
@@ -109,8 +99,6 @@ export default {
   },
   beforeDestroy() {
     this.$parent.$el.removeEventListener('scroll', this.onParentScroll)
-
-    document.head.removeChild(this.styleElement)
   },
   methods: {
     onParentScroll(event) {
@@ -120,13 +108,22 @@ export default {
         this.exampleTop = event.target.scrollTop
       }
     },
-    onPlayAnimationChange(value) {
-      if (value) {
-        this.$refs.room.start()
-      } else {
-        this.$refs.room.stop()
-      }
+
+    onExampleRoomLoad() {
+      this.setExampleRoomCustomCss(this.debounceResult)
+      this.setExampleRoomClientStart(this.playAnimation)
     },
+    setExampleRoomCustomCss(css) {
+      this.sendMessageToExampleRoom('roomSetCustomStyle', { css })
+    },
+    setExampleRoomClientStart(isStart) {
+      this.sendMessageToExampleRoom(isStart ? 'roomStartClient' : 'roomStopClient')
+    },
+    sendMessageToExampleRoom(type, data = null) {
+      let msg = { type, data }
+      this.$refs.exampleRoomIframe.contentWindow.postMessage(msg, window.location.origin)
+    },
+
     copyResult() {
       this.$refs.result.select()
       document.execCommand('Copy')
@@ -181,8 +178,9 @@ export default {
     -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.75, transparent), color-stop(.75, #eee));
 }
 
-#fakebody {
+#example-room-iframe {
   outline: 1px #999 dashed;
+  width: 100%;
   height: 100%;
 }
 </style>
