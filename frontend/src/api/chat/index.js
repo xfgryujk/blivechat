@@ -1,11 +1,16 @@
 import axios from 'axios'
 
-export const FATAL_ERROR_TYPE_AUTH_CODE_ERROR = 1
+export function getDefaultMsgHandler() {
+  let dummyFunc = () => {}
+  return {
+    onAddText: dummyFunc,
+    onAddGift: dummyFunc,
+    onAddMember: dummyFunc,
+    onAddSuperChat: dummyFunc,
+    onDelSuperChat: dummyFunc,
+    onUpdateTranslation: dummyFunc,
 
-export class ChatClientFatalError extends Error {
-  constructor(type, message) {
-    super(message)
-    this.type = type
+    onFatalError: dummyFunc,
   }
 }
 

@@ -1,6 +1,6 @@
-import { getUuid4Hex } from '@/utils'
 import * as constants from '@/components/ChatRenderer/constants'
 import * as chat from '.'
+import * as chatModels from './models'
 
 const NAMES = [
   '光羊',
@@ -102,21 +102,16 @@ const MESSAGE_GENERATORS = [
     value() {
       return {
         type: constants.MESSAGE_TYPE_TEXT,
-        message: {
+        message: new chatModels.AddTextMsg({
           ...randGuardInfo(),
-          avatarUrl: chat.DEFAULT_AVATAR_URL,
-          timestamp: new Date().getTime() / 1000,
           authorName: randomChoose(NAMES),
           content: randomChoose(CONTENTS),
           isGiftDanmaku: randInt(1, 10) <= 1,
-          authorLevel: randInt(0, 60),
+          authorLevel: randInt(1, 60),
           isNewbie: randInt(1, 10) <= 1,
           isMobileVerified: randInt(1, 10) <= 9,
           medalLevel: randInt(0, 40),
-          id: getUuid4Hex(),
-          translation: '',
-          emoticon: null,
-        }
+        })
       }
     }
   },
@@ -126,21 +121,15 @@ const MESSAGE_GENERATORS = [
     value() {
       return {
         type: constants.MESSAGE_TYPE_TEXT,
-        message: {
+        message: new chatModels.AddTextMsg({
           ...randGuardInfo(),
-          avatarUrl: chat.DEFAULT_AVATAR_URL,
-          timestamp: new Date().getTime() / 1000,
           authorName: randomChoose(NAMES),
-          content: '',
-          isGiftDanmaku: false,
-          authorLevel: randInt(0, 60),
+          authorLevel: randInt(1, 60),
           isNewbie: randInt(1, 10) <= 1,
           isMobileVerified: randInt(1, 10) <= 9,
           medalLevel: randInt(0, 40),
-          id: getUuid4Hex(),
-          translation: '',
           emoticon: randomChoose(EMOTICONS),
-        }
+        })
       }
     }
   },
@@ -150,14 +139,10 @@ const MESSAGE_GENERATORS = [
     value() {
       return {
         type: constants.MESSAGE_TYPE_GIFT,
-        message: {
+        message: new chatModels.AddGiftMsg({
           ...randomChoose(GIFT_INFO_LIST),
-          id: getUuid4Hex(),
-          avatarUrl: chat.DEFAULT_AVATAR_URL,
-          timestamp: new Date().getTime() / 1000,
           authorName: randomChoose(NAMES),
-          num: 1
-        }
+        })
       }
     }
   },
@@ -167,15 +152,11 @@ const MESSAGE_GENERATORS = [
     value() {
       return {
         type: constants.MESSAGE_TYPE_SUPER_CHAT,
-        message: {
-          id: getUuid4Hex(),
-          avatarUrl: chat.DEFAULT_AVATAR_URL,
-          timestamp: new Date().getTime() / 1000,
+        message: new chatModels.AddSuperChatMsg({
           authorName: randomChoose(NAMES),
           price: randomChoose(SC_PRICES),
           content: randomChoose(CONTENTS),
-          translation: ''
-        }
+        })
       }
     }
   },
@@ -185,13 +166,10 @@ const MESSAGE_GENERATORS = [
     value() {
       return {
         type: constants.MESSAGE_TYPE_MEMBER,
-        message: {
-          id: getUuid4Hex(),
-          avatarUrl: chat.DEFAULT_AVATAR_URL,
-          timestamp: new Date().getTime() / 1000,
+        message: new chatModels.AddMemberMsg({
           authorName: randomChoose(NAMES),
           privilegeType: randInt(1, 3)
-        }
+        })
       }
     }
   }
@@ -231,14 +209,7 @@ function randInt(min, max) {
 
 export default class ChatClientTest {
   constructor() {
-    this.onAddText = null
-    this.onAddGift = null
-    this.onAddMember = null
-    this.onAddSuperChat = null
-    this.onDelSuperChat = null
-    this.onUpdateTranslation = null
-
-    this.onFatalError = null
+    this.msgHandler = chat.getDefaultMsgHandler()
 
     this.timerId = null
   }
@@ -274,16 +245,16 @@ export default class ChatClientTest {
     let { type, message } = randomChoose(MESSAGE_GENERATORS)()
     switch (type) {
     case constants.MESSAGE_TYPE_TEXT:
-      this.onAddText(message)
+      this.msgHandler.onAddText(message)
       break
     case constants.MESSAGE_TYPE_GIFT:
-      this.onAddGift(message)
+      this.msgHandler.onAddGift(message)
       break
     case constants.MESSAGE_TYPE_MEMBER:
-      this.onAddMember(message)
+      this.msgHandler.onAddMember(message)
       break
     case constants.MESSAGE_TYPE_SUPER_CHAT:
-      this.onAddSuperChat(message)
+      this.msgHandler.onAddSuperChat(message)
       break
     }
   }

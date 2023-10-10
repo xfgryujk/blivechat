@@ -2,6 +2,7 @@ import { BrotliDecode } from './brotli_decode'
 import { inflate } from 'pako'
 
 import * as chat from '..'
+import * as chatModels from '../models'
 
 const HEADER_SIZE = 16
 
@@ -45,14 +46,7 @@ export default class ChatClientOfficialBase {
   constructor() {
     this.CMD_CALLBACK_MAP = {}
 
-    this.onAddText = null
-    this.onAddGift = null
-    this.onAddMember = null
-    this.onAddSuperChat = null
-    this.onDelSuperChat = null
-    this.onUpdateTranslation = null
-
-    this.onFatalError = null
+    this.msgHandler = chat.getDefaultMsgHandler()
 
     this.needInitRoom = true
     this.websocket = null
@@ -126,8 +120,8 @@ export default class ChatClientOfficialBase {
     } catch (e) {
       res = false
       console.error('initRoom exception:', e)
-      if (e instanceof chat.ChatClientFatalError && this.onFatalError) {
-        this.onFatalError(e)
+      if (e instanceof chatModels.ChatClientFatalError) {
+        this.msgHandler.onFatalError(e)
       }
     }
 

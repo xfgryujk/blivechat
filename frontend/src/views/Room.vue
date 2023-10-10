@@ -9,6 +9,7 @@ import * as trie from '@/utils/trie'
 import * as pronunciation from '@/utils/pronunciation'
 import * as chatConfig from '@/api/chatConfig'
 import * as chat from '@/api/chat'
+import * as chatModels from '@/api/chat/models'
 import ChatRenderer from '@/components/ChatRenderer'
 import * as constants from '@/components/ChatRenderer/constants'
 
@@ -198,13 +199,8 @@ export default {
           this.chatClient = new ChatClientDirectOpenLive(this.roomKeyValue)
         }
       }
-      this.chatClient.onAddText = this.onAddText
-      this.chatClient.onAddGift = this.onAddGift
-      this.chatClient.onAddMember = this.onAddMember
-      this.chatClient.onAddSuperChat = this.onAddSuperChat
-      this.chatClient.onDelSuperChat = this.onDelSuperChat
-      this.chatClient.onUpdateTranslation = this.onUpdateTranslation
-      this.chatClient.onFatalError = this.onFatalError
+
+      this.chatClient.msgHandler = this
       this.chatClient.start()
     },
     async initTextEmoticons() {
@@ -236,6 +232,7 @@ export default {
       }
     },
 
+    /** @param {chatModels.AddTextMsg} data */
     onAddText(data) {
       if (!this.config.showDanmaku || !this.filterTextMessage(data) || this.mergeSimilarText(data.content)) {
         return
@@ -255,6 +252,7 @@ export default {
       }
       this.$refs.renderer.addMessage(message)
     },
+    /** @param {chatModels.AddGiftMsg} data */
     onAddGift(data) {
       if (!this.config.showGift) {
         return
@@ -279,6 +277,7 @@ export default {
       }
       this.$refs.renderer.addMessage(message)
     },
+    /** @param {chatModels.AddMemberMsg} data */
     onAddMember(data) {
       if (!this.config.showGift || !this.filterNewMemberMessage(data)) {
         return
@@ -295,6 +294,7 @@ export default {
       }
       this.$refs.renderer.addMessage(message)
     },
+    /** @param {chatModels.AddSuperChatMsg} data */
     onAddSuperChat(data) {
       if (!this.config.showGift || !this.filterSuperChatMessage(data)) {
         return
@@ -315,15 +315,18 @@ export default {
       }
       this.$refs.renderer.addMessage(message)
     },
+    /** @param {chatModels.DelSuperChatMsg} data */
     onDelSuperChat(data) {
       this.$refs.renderer.delMessages(data.ids)
     },
+    /** @param {chatModels.UpdateTranslationMsg} data */
     onUpdateTranslation(data) {
       if (!this.config.autoTranslate) {
         return
       }
       this.$refs.renderer.updateMessage(data.id, { translation: data.translation })
     },
+    /** @param {chatModels.ChatClientFatalError} error */
     onFatalError(error) {
       this.$message.error({
         message: error.toString(),
@@ -331,7 +334,7 @@ export default {
       })
       this.chatClient.stop()
 
-      if (error.type === chat.FATAL_ERROR_TYPE_AUTH_CODE_ERROR) {
+      if (error.type === chatModels.FATAL_ERROR_TYPE_AUTH_CODE_ERROR) {
         // Read The Fucking Manual
         this.$router.push({ name: 'help' })
       }
@@ -391,7 +394,7 @@ export default {
     getRichContent(data) {
       let richContent = []
 
-      // B站官方表情
+      // 官方的非文本表情
       if (data.emoticon !== null) {
         richContent.push({
           type: constants.CONTENT_TYPE_IMAGE,

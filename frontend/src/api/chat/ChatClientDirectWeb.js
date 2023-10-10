@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-import { getUuid4Hex } from '@/utils'
 import * as chat from '.'
+import * as chatModels from './models'
 import * as base from './ChatClientOfficialBase'
 import ChatClientOfficialBase from './ChatClientOfficialBase'
 
@@ -62,9 +62,6 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
   }
 
   async danmuMsgCallback(command) {
-    if (!this.onAddText) {
-      return
-    }
     let info = command.info
 
     let roomId, medalLevel
@@ -91,7 +88,7 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
 
     let authorName = info[2][1]
     let content = info[1]
-    let data = {
+    let data = new chatModels.AddTextMsg({
       avatarUrl: await chat.getAvatarUrl(uid, authorName),
       timestamp: info[0][4] / 1000,
       authorName: authorName,
@@ -103,78 +100,59 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
       isNewbie: info[2][5] < 10000,
       isMobileVerified: Boolean(info[2][6]),
       medalLevel: roomId === this.roomId ? medalLevel : 0,
-      id: getUuid4Hex(),
-      translation: '',
       emoticon: info[0][13].url || null,
-    }
-    this.onAddText(data)
+    })
+    this.msgHandler.onAddText(data)
   }
 
   sendGiftCallback(command) {
-    if (!this.onAddGift) {
-      return
-    }
     let data = command.data
     if (data.coin_type !== 'gold') { // 丢人
       return
     }
 
-    data = {
-      id: getUuid4Hex(),
+    data = new chatModels.AddGiftMsg({
       avatarUrl: chat.processAvatarUrl(data.face),
       timestamp: data.timestamp,
       authorName: data.uname,
       totalCoin: data.total_coin,
       giftName: data.giftName,
       num: data.num
-    }
-    this.onAddGift(data)
+    })
+    this.msgHandler.onAddGift(data)
   }
 
   async guardBuyCallback(command) {
-    if (!this.onAddMember) {
-      return
-    }
-
     let data = command.data
-    data = {
-      id: getUuid4Hex(),
+    data = new chatModels.AddMemberMsg({
       avatarUrl: await chat.getAvatarUrl(data.uid, data.username),
       timestamp: data.start_time,
       authorName: data.username,
       privilegeType: data.guard_level
-    }
-    this.onAddMember(data)
+    })
+    this.msgHandler.onAddMember(data)
   }
 
   superChatMessageCallback(command) {
-    if (!this.onAddSuperChat) {
-      return
-    }
-
     let data = command.data
-    data = {
+    data = new chatModels.AddSuperChatMsg({
       id: data.id.toString(),
       avatarUrl: chat.processAvatarUrl(data.user_info.face),
       timestamp: data.start_time,
       authorName: data.user_info.uname,
       price: data.price,
       content: data.message,
-      translation: ''
-    }
-    this.onAddSuperChat(data)
+    })
+    this.msgHandler.onAddSuperChat(data)
   }
 
   superChatMessageDeleteCallback(command) {
-    if (!this.onDelSuperChat) {
-      return
-    }
-
     let ids = []
     for (let id of command.data.ids) {
       ids.push(id.toString())
     }
-    this.onDelSuperChat({ ids })
+    let data = new chatModels.DelSuperChatMsg({ ids })
+    this.msgHandler.onDelSuperChat(data)
   }
 }
 

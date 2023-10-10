@@ -1,4 +1,5 @@
 import * as chat from '.'
+import * as chatModels from './models'
 
 const COMMAND_HEARTBEAT = 0
 const COMMAND_JOIN_ROOM = 1
@@ -20,14 +21,7 @@ export default class ChatClientRelay {
     this.roomKey = roomKey
     this.autoTranslate = autoTranslate
 
-    this.onAddText = null
-    this.onAddGift = null
-    this.onAddMember = null
-    this.onAddSuperChat = null
-    this.onDelSuperChat = null
-    this.onUpdateTranslation = null
-
-    this.onFatalError = null
+    this.msgHandler = chat.getDefaultMsgHandler()
 
     this.websocket = null
     this.retryCount = 0
@@ -122,10 +116,6 @@ export default class ChatClientRelay {
       break
     }
     case COMMAND_ADD_TEXT: {
-      if (!this.onAddText) {
-        break
-      }
-
       let emoticon = null
       let contentType = data[13]
       let contentTypeParams = data[14]
@@ -134,7 +124,7 @@ export default class ChatClientRelay {
       }
 
       let content = data[4]
-      data = {
+      data = new chatModels.AddTextMsg({
         avatarUrl: data[0],
         timestamp: data[1],
         authorName: data[2],
@@ -149,51 +139,41 @@ export default class ChatClientRelay {
         id: data[11],
         translation: data[12],
         emoticon: emoticon
-      }
-      this.onAddText(data)
+      })
+      this.msgHandler.onAddText(data)
       break
     }
     case COMMAND_ADD_GIFT: {
-      if (this.onAddGift) {
-        this.onAddGift(data)
-      }
+      data = new chatModels.AddGiftMsg(data)
+      this.msgHandler.onAddGift(data)
       break
     }
     case COMMAND_ADD_MEMBER: {
-      if (this.onAddMember) {
-        this.onAddMember(data)
-      }
+      data = new chatModels.AddMemberMsg(data)
+      this.msgHandler.onAddMember(data)
       break
     }
     case COMMAND_ADD_SUPER_CHAT: {
-      if (this.onAddSuperChat) {
-        this.onAddSuperChat(data)
-      }
+      data = new chatModels.AddSuperChatMsg(data)
+      this.msgHandler.onAddSuperChat(data)
       break
     }
     case COMMAND_DEL_SUPER_CHAT: {
-      if (this.onDelSuperChat) {
-        this.onDelSuperChat(data)
-      }
+      data = new chatModels.DelSuperChatMsg(data)
+      this.msgHandler.onDelSuperChat(data)
       break
     }
     case COMMAND_UPDATE_TRANSLATION: {
-      if (!this.onUpdateTranslation) {
-        break
-      }
-      data = {
+      data = new chatModels.UpdateTranslationMsg({
         id: data[0],
         translation: data[1]
-      }
-      this.onUpdateTranslation(data)
+      })
+      this.msgHandler.onUpdateTranslation(data)
       break
     }
     case COMMAND_FATAL_ERROR: {
-      if (!this.onFatalError) {
-        break
-      }
-      let error = new chat.ChatClientFatalError(data.type, data.msg)
-      this.onFatalError(error)
+      let error = new chatModels.ChatClientFatalError(data.type, data.msg)
+      this.msgHandler.onFatalError(error)
       break
     }
     }
