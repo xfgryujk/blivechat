@@ -56,15 +56,10 @@ export default {
       }
       return res
     },
-    blockUsersTrie() {
+    blockUsersSet() {
       let blockUsers = this.config.blockUsers.split('\n')
-      let res = new trie.Trie()
-      for (let user of blockUsers) {
-        if (user !== '') {
-          res.set(user, true)
-        }
-      }
-      return res
+      blockUsers = blockUsers.filter(user => user !== '')
+      return new Set(blockUsers)
     },
     emoticonsTrie() {
       let res = new trie.Trie()
@@ -371,7 +366,7 @@ export default {
       return true
     },
     filterByAuthorName(authorName) {
-      return !this.blockUsersTrie.has(authorName)
+      return !this.blockUsersSet.has(authorName)
     },
     mergeSimilarText(content) {
       if (!this.config.mergeSimilarDanmaku) {
