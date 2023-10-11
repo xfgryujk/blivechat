@@ -22,6 +22,7 @@ export const DEFAULT_CONFIG = {
   relayMessagesByServer: false,
   autoTranslate: false,
   giftUsernamePronunciation: '',
+  importPresetCss: false,
 
   emoticons: [] // [{ keyword: '', url: '' }, ...]
 }

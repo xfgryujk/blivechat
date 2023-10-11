@@ -170,6 +170,15 @@
                 <el-radio label="kana">{{$t('home.kana')}}</el-radio>
               </el-radio-group>
             </el-form-item>
+            <el-row>
+              <el-col :xs="24" :sm="8">
+                <el-tooltip :content="$t('home.importPresetCssTip')">
+                  <el-form-item :label="$t('home.importPresetCss')">
+                    <el-switch v-model="form.importPresetCss"></el-switch>
+                  </el-form-item>
+                </el-tooltip>
+              </el-col>
+            </el-row>
           </el-tab-pane>
 
           <el-tab-pane :label="$t('home.emoticon')">

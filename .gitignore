@@ -110,4 +110,8 @@ data/*
 !data/emoticons/
 data/emoticons/*
 !data/emoticons/.gitkeep
+!data/custom_public/
+data/custom_public/*
+!data/custom_public/README.txt
+!data/custom_public/preset.css
 log/*

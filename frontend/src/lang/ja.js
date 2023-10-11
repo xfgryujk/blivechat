@@ -48,6 +48,8 @@ export default {
     dontShow: '非表示',
     pinyin: 'ピンイン',
     kana: '仮名',
+    importPresetCss: 'サーバープリセットのCSSをインポートする',
+    importPresetCssTip: 'サーバーのCSSファイル「data/custom_public/preset.css」を自動的にインポートする',
 
     emoticon: 'カスタムスタンプ',
     emoticonKeyword: '置き換えるキーワード',

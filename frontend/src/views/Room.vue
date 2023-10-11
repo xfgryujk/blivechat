@@ -43,6 +43,7 @@ export default {
       pronunciationConverter: null,
 
       customStyleElement, // 仅用于样式生成器中预览样式
+      presetCssLinkElement: null,
     }
   },
   computed: {
@@ -92,6 +93,9 @@ export default {
     }
 
     document.head.removeChild(this.customStyleElement)
+    if (this.presetCssLinkElement) {
+      document.head.removeChild(this.presetCssLinkElement)
+    }
   },
   methods: {
     onVisibilityChange() {
@@ -109,6 +113,12 @@ export default {
       if (this.config.giftUsernamePronunciation !== '') {
         this.pronunciationConverter = new pronunciation.PronunciationConverter()
         this.pronunciationConverter.loadDict(this.config.giftUsernamePronunciation)
+      }
+      if (this.config.importPresetCss) {
+        this.presetCssLinkElement = document.createElement('link')
+        this.presetCssLinkElement.rel = 'stylesheet'
+        this.presetCssLinkElement.href = '/custom_public/preset.css'
+        document.head.appendChild(this.presetCssLinkElement)
       }
 
       try {
@@ -159,6 +169,8 @@ export default {
 
       cfg.relayMessagesByServer = toBool(cfg.relayMessagesByServer)
       cfg.autoTranslate = toBool(cfg.autoTranslate)
+      cfg.importPresetCss = toBool(cfg.importPresetCss)
+
       cfg.emoticons = this.toObjIfJson(cfg.emoticons)
 
       chatConfig.sanitizeConfig(cfg)

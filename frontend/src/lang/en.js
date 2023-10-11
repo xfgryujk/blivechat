@@ -48,6 +48,8 @@ export default {
     dontShow: 'None',
     pinyin: 'Pinyin',
     kana: 'Kana',
+    importPresetCss: 'Import the server preset CSS',
+    importPresetCssTip: 'Automatically import the server CSS file: data/custom_public/preset.css',
 
     emoticon: 'Custom Emotes',
     emoticonKeyword: 'Emote Code',

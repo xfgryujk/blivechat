@@ -48,6 +48,8 @@ export default {
     dontShow: '不显示',
     pinyin: '拼音',
     kana: '日文假名',
+    importPresetCss: '导入服务器预设CSS',
+    importPresetCssTip: '自动导入服务器的CSS文件：data/custom_public/preset.css',
 
     emoticon: '自定义表情',
     emoticonKeyword: '替换关键词',

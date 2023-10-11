@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 EMOTICON_UPLOAD_PATH = os.path.join(config.DATA_PATH, 'emoticons')
 EMOTICON_BASE_URL = '/emoticons'
+CUSTOM_PUBLIC_PATH = os.path.join(config.DATA_PATH, 'custom_public')
 
 
 class MainHandler(tornado.web.StaticFileHandler):
@@ -85,6 +86,11 @@ class UploadEmoticonHandler(api.base.ApiHandler):
         return f'{EMOTICON_BASE_URL}/{filename}'
 
 
+class NoCacheStaticFileHandler(tornado.web.StaticFileHandler):
+    def set_extra_headers(self, path):
+        self.set_header('Cache-Control', 'no-cache')
+
+
 ROUTES = [
     (r'/api/server_info', ServerInfoHandler),
     (r'/api/emoticon', UploadEmoticonHandler),
@@ -92,5 +98,7 @@ ROUTES = [
 # 通配的放在最后
 LAST_ROUTES = [
     (rf'{EMOTICON_BASE_URL}/(.*)', tornado.web.StaticFileHandler, {'path': EMOTICON_UPLOAD_PATH}),
+    # 这个目录不保证文件内容不会变，还是不用缓存了
+    (r'/custom_public/(.*)', NoCacheStaticFileHandler, {'path': CUSTOM_PUBLIC_PATH}),
     (r'/(.*)', MainHandler, {'path': config.WEB_ROOT}),
 ]
