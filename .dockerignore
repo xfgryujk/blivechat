@@ -24,5 +24,4 @@ data/emoticons/*
 !data/custom_public/
 data/custom_public/*
 !data/custom_public/README.txt
-!data/custom_public/preset.css
 log/*
