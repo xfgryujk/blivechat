@@ -32,6 +32,7 @@ const CONTENTS = [
   '我柜子动了，我不玩了',
   '老板大气，老板身体健康',
   '我醉提酒游寒山，爽滑慢舔',
+  '[dog]文本[比心]表情[喝彩]',
   '無駄無駄無駄無駄無駄無駄無駄無駄',
   '欧啦欧啦欧啦欧啦欧啦欧啦欧啦欧啦',
   '所有没好全部康复呀，我的癌也全部康复呀',
@@ -46,6 +47,7 @@ const CONTENTS = [
   '知らず知らず隠してた 本当の声を響かせてよほら',
   'kksk',
   '8888888888',
+  'text[吃瓜]emoticon',
   'Never gonna give you up',
   'Never gonna let you down',
   '888888888888888888888888888888',
@@ -57,10 +59,12 @@ const CONTENTS = [
 ]
 
 const EMOTICONS = [
-  '/static/img/emoticons/233.png',
-  '/static/img/emoticons/miaoa.png',
-  '/static/img/emoticons/lipu.png'
-]
+  '233',
+  'miaoa',
+  'lipu',
+  'huangdou_xihuan',
+  'sakaban_jiayu_yutou',
+].map(name => `/static/img/emoticons/${name}.png`)
 
 const AUTHOR_TYPES = [
   { weight: 10, value: constants.AUTHOR_TYPE_NORMAL },
