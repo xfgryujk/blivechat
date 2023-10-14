@@ -1,5 +1,5 @@
 <template>
-  <yt-live-chat-text-message-renderer :author-type="authorTypeText">
+  <yt-live-chat-text-message-renderer :author-type="authorTypeText" :blc-guard-level="privilegeType">
     <img-shadow id="author-photo" height="24" width="24" class="style-scope yt-live-chat-text-message-renderer"
       :imgUrl="avatarUrl"
     ></img-shadow>

@@ -8,6 +8,7 @@
       '--yt-live-chat-paid-message-timestamp-color': color.time,
       '--yt-live-chat-paid-message-color': color.content
     }"
+    :blc-price-level="priceConfig.priceLevel"
   >
     <div id="card" class="style-scope yt-live-chat-paid-message-renderer">
       <div id="header" class="style-scope yt-live-chat-paid-message-renderer">
@@ -47,8 +48,11 @@ export default {
     content: String
   },
   computed: {
+    priceConfig() {
+      return constants.getPriceConfig(this.price)
+    },
     color() {
-      return constants.getPriceConfig(this.price).colors
+      return this.priceConfig.colors
     },
     priceText() {
       return `CN¥${utils.formatCurrency(this.price)}`
