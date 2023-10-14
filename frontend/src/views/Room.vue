@@ -240,7 +240,7 @@ export default {
     },
 
     /** @param {chatModels.AddTextMsg} data */
-    onAddText(data) {
+    async onAddText(data) {
       if (!this.config.showDanmaku || !this.filterTextMessage(data) || this.mergeSimilarText(data.content)) {
         return
       }
@@ -252,7 +252,7 @@ export default {
         authorName: data.authorName,
         authorType: data.authorType,
         content: data.content,
-        richContent: this.getRichContent(data),
+        richContent: await this.getRichContent(data),
         privilegeType: data.privilegeType,
         repeated: 1,
         translation: data.translation
@@ -398,7 +398,7 @@ export default {
       }
       return this.pronunciationConverter.getPronunciation(text)
     },
-    getRichContent(data) {
+    async getRichContent(data) {
       let richContent = []
 
       // 官方的非文本表情
@@ -406,8 +406,11 @@ export default {
         richContent.push({
           type: constants.CONTENT_TYPE_IMAGE,
           text: data.content,
-          url: data.emoticon
+          url: data.emoticon,
+          width: 0,
+          height: 0
         })
+        this.fillImageContentSizes(richContent)
         return richContent
       }
 
@@ -444,7 +447,9 @@ export default {
         richContent.push({
           type: constants.CONTENT_TYPE_IMAGE,
           text: matchEmoticon.keyword,
-          url: matchEmoticon.url
+          url: matchEmoticon.url,
+          width: 0,
+          height: 0
         })
         pos += matchEmoticon.keyword.length
         startPos = pos
@@ -456,7 +461,48 @@ export default {
           text: data.content.slice(startPos, pos)
         })
       }
+
+      this.fillImageContentSizes(richContent)
       return richContent
+    },
+    async fillImageContentSizes(richContent) {
+      let urlSizeMap = new Map()
+      for (let content of richContent) {
+        if (content.type === constants.CONTENT_TYPE_IMAGE) {
+          urlSizeMap.set(content.url, { width: 0, height: 0 })
+        }
+      }
+      if (urlSizeMap.size === 0) {
+        return
+      }
+
+      let promises = []
+      for (let url of urlSizeMap.keys()) {
+        let urlInClosure = url
+        promises.push(new Promise(
+          resolve => {
+            let img = document.createElement('img')
+            img.onload = () => {
+              let size = urlSizeMap.get(urlInClosure)
+              size.width = img.naturalWidth
+              size.height = img.naturalHeight
+              resolve()
+            }
+            // 获取失败了默认为0
+            img.onerror = resolve
+            img.src = urlInClosure
+          }
+        ))
+      }
+      await Promise.all(promises)
+
+      for (let content of richContent) {
+        if (content.type === constants.CONTENT_TYPE_IMAGE) {
+          let size = urlSizeMap.get(content.url)
+          content.width = size.width
+          content.height = size.height
+        }
+      }
     }
   }
 }

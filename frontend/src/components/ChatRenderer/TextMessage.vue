@@ -11,9 +11,12 @@
       <span id="message" class="style-scope yt-live-chat-text-message-renderer">
         <template v-for="(content, index) in richContent">
           <span :key="index" v-if="content.type === CONTENT_TYPE_TEXT">{{ content.text }}</span>
+          <!-- 如果CSS设置的尺寸比属性设置的尺寸还大，在图片加载完后布局会变化，可能导致滚动卡住，没什么好的解决方法 -->
           <img :key="index" v-else-if="content.type === CONTENT_TYPE_IMAGE"
             class="emoji yt-formatted-string style-scope yt-live-chat-text-message-renderer"
             :src="content.url" :alt="content.text" :shared-tooltip-text="content.text" :id="`emoji-${content.text}`"
+            :width="content.width" :height="content.height"
+            :class="{ 'blc-large-emoji': content.height >= 100 }"
           >
         </template>
         <el-badge :value="repeated" :max="99" v-if="repeated > 1" class="style-scope yt-live-chat-text-message-renderer"
