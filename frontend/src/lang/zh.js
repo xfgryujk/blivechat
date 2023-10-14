@@ -96,6 +96,7 @@ export default {
     showBadges: '显示勋章',
     showColon: '用户名后显示冒号',
     emoticonSize: '表情大小',
+    largeEmoticonSize: '大表情大小',
 
     messages: '消息',
     color: '颜色',

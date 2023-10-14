@@ -96,6 +96,7 @@ export default {
     showBadges: 'Show badges',
     showColon: 'Show colon after name',
     emoticonSize: 'Emoticon size',
+    largeEmoticonSize: 'Large emoticon size',
 
     messages: 'Messages',
     color: 'Color',

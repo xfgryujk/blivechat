@@ -135,6 +135,11 @@
               <el-input v-model.number="form.emoticonSize" type="number" min="0"></el-input>
             </el-form-item>
           </el-col>
+          <el-col :xs="24" :sm="12">
+            <el-form-item :label="$t('stylegen.largeEmoticonSize')">
+              <el-input v-model.number="form.largeEmoticonSize" type="number" min="0"></el-input>
+            </el-form-item>
+          </el-col>
         </el-row>
       </el-card>
 
@@ -384,6 +389,7 @@ export const DEFAULT_CONFIG = {
   messageColor: '#ffffff',
   messageOnNewLine: false,
   emoticonSize: 18,
+  largeEmoticonSize: 36,
 
   showTime: false,
   timeFont: 'Imprima',
@@ -554,6 +560,10 @@ ${!this.form.messageOnNewLine ? '' : `yt-live-chat-text-message-renderer #messag
 yt-live-chat-text-message-renderer #message .emoji {
   width: auto !important;
   height: ${this.form.emoticonSize}px !important;
+}
+
+yt-live-chat-text-message-renderer #message .emoji.blc-large-emoji {
+  height: ${this.form.largeEmoticonSize}px !important;
 }`
     },
     timeStyle() {
