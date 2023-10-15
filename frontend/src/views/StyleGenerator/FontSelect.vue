@@ -1,12 +1,14 @@
 <template>
-  <el-select :value="value" @input="val => $emit('input', val)" filterable allow-create default-first-option>
-    <el-option-group>
-      <el-option v-for="font in LOCAL_FONTS" :key="font" :value="font"></el-option>
-    </el-option-group>
-    <el-option-group>
-      <el-option v-for="font in NETWORK_FONTS" :key="font" :value="font"></el-option>
-    </el-option-group>
-  </el-select>
+  <el-tooltip :content="$t('stylegen.fontSelectTip')">
+    <el-select :value="value" @input="val => $emit('input', val)" filterable allow-create default-first-option>
+      <el-option-group>
+        <el-option v-for="font in LOCAL_FONTS" :key="font" :value="font"></el-option>
+      </el-option-group>
+      <el-option-group>
+        <el-option v-for="font in NETWORK_FONTS" :key="font" :value="font"></el-option>
+      </el-option-group>
+    </el-select>
+  </el-tooltip>
 </template>
 
 <script>

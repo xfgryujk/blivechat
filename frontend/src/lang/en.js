@@ -87,6 +87,7 @@ export default {
     userNames: 'User Names',
     showUserNames: 'Show user names',
     font: 'Font',
+    fontSelectTip: 'You can also input local font name',
     fontSize: 'Font size',
     lineHeight: 'Line height (0 for default)',
     normalColor: 'Normal color',

@@ -87,6 +87,7 @@ export default {
     userNames: '用户名',
     showUserNames: '显示用户名',
     font: '字体',
+    fontSelectTip: '你也可以输入本地字体名',
     fontSize: '字体尺寸',
     lineHeight: '行高（0为默认）',
     normalColor: '普通颜色',

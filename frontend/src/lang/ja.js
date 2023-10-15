@@ -87,6 +87,7 @@ export default {
     userNames: 'ユーザー名',
     showUserNames: 'ユーザー名を表示する',
     font: 'フォント',
+    fontSelectTip: 'ローカルフォント名も入力することができます',
     fontSize: 'フォントサイズ',
     lineHeight: '行の高さ（0はデフォルト）',
     normalColor: 'ノーマルの色',
