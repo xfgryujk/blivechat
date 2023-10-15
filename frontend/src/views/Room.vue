@@ -241,7 +241,12 @@ export default {
 
     /** @param {chatModels.AddTextMsg} data */
     async onAddText(data) {
-      if (!this.config.showDanmaku || !this.filterTextMessage(data) || this.mergeSimilarText(data.content)) {
+      if (!this.config.showDanmaku || !this.filterTextMessage(data)) {
+        return
+      }
+      let richContent = await this.getRichContent(data)
+      // 合并要放在异步调用后面，因为异步调用后可能有新的消息，会漏合并
+      if (this.mergeSimilarText(data.content)) {
         return
       }
       let message = {
@@ -252,7 +257,7 @@ export default {
         authorName: data.authorName,
         authorType: data.authorType,
         content: data.content,
-        richContent: await this.getRichContent(data),
+        richContent: richContent,
         privilegeType: data.privilegeType,
         repeated: 1,
         translation: data.translation
