@@ -490,6 +490,8 @@ export default {
             }
             // 获取失败了默认为0
             img.onerror = resolve
+            // 超时保底
+            setTimeout(resolve, 5000)
             img.src = urlInClosure
           }
         ))
