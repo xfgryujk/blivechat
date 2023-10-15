@@ -410,7 +410,7 @@ export default {
           width: 0,
           height: 0
         })
-        this.fillImageContentSizes(richContent)
+        await this.fillImageContentSizes(richContent)
         return richContent
       }
 
@@ -462,7 +462,7 @@ export default {
         })
       }
 
-      this.fillImageContentSizes(richContent)
+      await this.fillImageContentSizes(richContent)
       return richContent
     },
     async fillImageContentSizes(richContent) {
