@@ -56,7 +56,7 @@ def init():
     _translate_cache = cachetools.LRUCache(cfg.translation_cache_size)
     # 总队列长度会超过translate_max_queue_size，不用这么严格
     _task_queues = [asyncio.Queue(cfg.translate_max_queue_size) for _ in range(len(Priority))]
-    asyncio.get_running_loop().create_task(_do_init())
+    asyncio.create_task(_do_init())
 
 
 async def _do_init():

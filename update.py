@@ -9,7 +9,7 @@ VERSION = 'v1.8.2'
 
 
 def check_update():
-    asyncio.get_running_loop().create_task(_do_check_update())
+    asyncio.create_task(_do_check_update())
 
 
 async def _do_check_update():

@@ -15,10 +15,12 @@ import tornado.web
 import api.chat
 import api.main
 import api.open_live
+import api.plugin
 import config
 import models.database
 import services.avatar
 import services.chat
+import services.plugin
 import services.translate
 import update
 import utils.request
@@ -29,6 +31,7 @@ ROUTES = [
     *api.main.ROUTES,
     *api.chat.ROUTES,
     *api.open_live.ROUTES,
+    *api.plugin.ROUTES,
     *api.main.LAST_ROUTES,
 ]
 
@@ -63,10 +66,14 @@ def init():
     services.translate.init()
     services.chat.init()
 
-    update.check_update()
-
     init_server(args.host, args.port, args.debug)
-    return server is not None
+    if server is None:
+        return False
+
+    services.plugin.init()
+
+    update.check_update()
+    return True
 
 
 def init_signal_handlers():
@@ -152,6 +159,8 @@ async def run():
 
 
 async def shut_down():
+    services.plugin.shut_down()
+
     logger.info('Closing server')
     server.stop()
     await server.close_all_connections()
