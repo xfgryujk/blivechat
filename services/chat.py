@@ -14,6 +14,8 @@ import blivedm.blivedm.utils as dm_utils
 import config
 import services.avatar
 import services.translate
+import services.plugin
+import blcsdk.models as sdk_models
 import utils.request
 
 logger = logging.getLogger(__name__)
@@ -63,6 +65,17 @@ async def shut_down():
         await _live_client_manager.shut_down()
 
 
+def make_plugin_msg_extra(live_client: LiveClientType):
+    room_key = live_client.room_key
+    return {
+        'roomId': live_client.room_id,  # init_room之前是None
+        'roomKey': {
+            'type': room_key.type,
+            'value': room_key.value,
+        },
+    }
+
+
 class LiveClientManager:
     """管理到B站的连接"""
     def __init__(self):
@@ -76,6 +89,9 @@ class LiveClientManager:
 
         await asyncio.gather(*self._close_client_futures, return_exceptions=True)
 
+    def get_live_client(self, room_key: RoomKey):
+        return self._live_clients.get(room_key, None)
+
     def add_live_client(self, room_key: RoomKey):
         if room_key in self._live_clients:
             return
@@ -88,6 +104,8 @@ class LiveClientManager:
         live_client.start()
 
         logger.info('room=%s live client created, %d live clients', room_key, len(self._live_clients))
+
+        services.plugin.broadcast_cmd_data(sdk_models.Command.ADD_ROOM, {}, make_plugin_msg_extra(live_client))
 
     @staticmethod
     def _create_live_client(room_key: RoomKey):
@@ -112,6 +130,8 @@ class LiveClientManager:
         logger.info('room=%s live client removed, %d live clients', room_key, len(self._live_clients))
 
         client_room_manager.del_room(room_key)
+
+        services.plugin.broadcast_cmd_data(sdk_models.Command.DEL_ROOM, {}, make_plugin_msg_extra(live_client))
 
 
 RECONNECT_POLICY = dm_utils.make_linear_retry_policy(1, 2, 10)
@@ -140,6 +160,13 @@ class WebLiveClient(blivedm.BLiveClient):
             logger.info('room=%s live client init succeeded, room_id=%d', self.room_key, self.room_id)
         else:
             logger.info('room=%s live client init with a downgrade, room_id=%d', self.room_key, self.room_id)
+
+        services.plugin.broadcast_cmd_data(
+            sdk_models.Command.ROOM_INIT,
+            {'isSuccess': True},  # 降级也算成功
+            make_plugin_msg_extra(self),
+        )
+
         # 允许降级
         return True
 
@@ -170,6 +197,13 @@ class OpenLiveClient(blivedm.OpenLiveClient):
             logger.info('room=%s live client init succeeded, room_id=%d', self.room_key, self.room_id)
         else:
             logger.info('room=%s live client init failed', self.room_key)
+
+        services.plugin.broadcast_cmd_data(
+            sdk_models.Command.ROOM_INIT,
+            {'isSuccess': res},
+            make_plugin_msg_extra(self),
+        )
+
         return res
 
     async def _start_game(self):
@@ -433,7 +467,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             translation = ''
 
         msg_id = uuid.uuid4().hex
-        room.send_cmd_data(api.chat.Command.ADD_TEXT, api.chat.make_text_message_data(
+        data = api.chat.make_text_message_data(
             avatar_url=avatar_url,
             timestamp=int(message.timestamp / 1000),
             author_name=message.uname,
@@ -450,7 +484,9 @@ class LiveMsgHandler(blivedm.BaseHandler):
             content_type=content_type,
             content_type_params=content_type_params,
             uid=message.uid
-        ))
+        )
+        room.send_cmd_data(api.chat.Command.ADD_TEXT, data)
+        services.plugin.broadcast_cmd_data(sdk_models.Command.ADD_TEXT, data, make_plugin_msg_extra(client))
 
         if need_translate:
             await self._translate_and_response(message.msg, room.room_key, msg_id)
@@ -467,7 +503,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         if room is None:
             return
 
-        room.send_cmd_data(api.chat.Command.ADD_GIFT, {
+        data = {
             'id': uuid.uuid4().hex,
             'avatarUrl': avatar_url,
             'timestamp': message.timestamp,
@@ -476,7 +512,9 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'giftName': message.gift_name,
             'num': message.num,
             'uid': message.uid
-        })
+        }
+        room.send_cmd_data(api.chat.Command.ADD_GIFT, data)
+        services.plugin.broadcast_cmd_data(sdk_models.Command.ADD_GIFT, data, make_plugin_msg_extra(client))
 
     def _on_buy_guard(self, client: WebLiveClient, message: dm_web_models.GuardBuyMessage):
         asyncio.create_task(self.__on_buy_guard(client, message))
@@ -490,14 +528,16 @@ class LiveMsgHandler(blivedm.BaseHandler):
         if room is None:
             return
 
-        room.send_cmd_data(api.chat.Command.ADD_MEMBER, {
+        data = {
             'id': uuid.uuid4().hex,
             'avatarUrl': avatar_url,
             'timestamp': message.start_time,
             'authorName': message.username,
             'privilegeType': message.guard_level,
             'uid': message.uid
-        })
+        }
+        room.send_cmd_data(api.chat.Command.ADD_MEMBER, data)
+        services.plugin.broadcast_cmd_data(sdk_models.Command.ADD_MEMBER, data, make_plugin_msg_extra(client))
 
     def _on_super_chat(self, client: WebLiveClient, message: dm_web_models.SuperChatMessage):
         avatar_url = services.avatar.process_avatar_url(message.face)
@@ -519,7 +559,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             translation = ''
 
         msg_id = str(message.id)
-        room.send_cmd_data(api.chat.Command.ADD_SUPER_CHAT, {
+        data = {
             'id': msg_id,
             'avatarUrl': avatar_url,
             'timestamp': message.start_time,
@@ -528,7 +568,9 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'content': message.message,
             'translation': translation,
             'uid': message.uid
-        })
+        }
+        room.send_cmd_data(api.chat.Command.ADD_SUPER_CHAT, data)
+        services.plugin.broadcast_cmd_data(sdk_models.Command.ADD_SUPER_CHAT, data, make_plugin_msg_extra(client))
 
         if need_translate:
             asyncio.create_task(self._translate_and_response(
@@ -540,9 +582,11 @@ class LiveMsgHandler(blivedm.BaseHandler):
         if room is None:
             return
 
-        room.send_cmd_data(api.chat.Command.DEL_SUPER_CHAT, {
+        data = {
             'ids': list(map(str, message.ids))
-        })
+        }
+        room.send_cmd_data(api.chat.Command.DEL_SUPER_CHAT, data)
+        services.plugin.broadcast_cmd_data(sdk_models.Command.DEL_SUPER_CHAT, data, make_plugin_msg_extra(client))
 
     @staticmethod
     def _need_translate(text, room: ClientRoom, client: LiveClientType):
@@ -564,14 +608,18 @@ class LiveMsgHandler(blivedm.BaseHandler):
         if room is None:
             return
 
+        data = api.chat.make_translation_message_data(msg_id, translation)
         room.send_cmd_data_if(
             lambda client: client.auto_translate,
             api.chat.Command.UPDATE_TRANSLATION,
-            api.chat.make_translation_message_data(
-                msg_id,
-                translation
-            )
+            data
         )
+
+        live_client = _live_client_manager.get_live_client(room_key)
+        if live_client is not None:
+            services.plugin.broadcast_cmd_data(
+                sdk_models.Command.UPDATE_TRANSLATION, data, make_plugin_msg_extra(live_client)
+            )
 
     #
     # 开放平台消息
@@ -612,7 +660,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         else:
             translation = ''
 
-        room.send_cmd_data(api.chat.Command.ADD_TEXT, api.chat.make_text_message_data(
+        data = api.chat.make_text_message_data(
             avatar_url=avatar_url,
             timestamp=message.timestamp,
             author_name=message.uname,
@@ -625,7 +673,9 @@ class LiveMsgHandler(blivedm.BaseHandler):
             content_type=content_type,
             content_type_params=content_type_params,
             uid=message.uid
-        ))
+        )
+        room.send_cmd_data(api.chat.Command.ADD_TEXT, data)
+        services.plugin.broadcast_cmd_data(sdk_models.Command.ADD_TEXT, data, make_plugin_msg_extra(client))
 
         if need_translate:
             asyncio.create_task(self._translate_and_response(message.msg, room.room_key, message.msg_id))
@@ -642,7 +692,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         if room is None:
             return
 
-        room.send_cmd_data(api.chat.Command.ADD_GIFT, {
+        data = {
             'id': message.msg_id,
             'avatarUrl': avatar_url,
             'timestamp': message.timestamp,
@@ -651,7 +701,9 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'giftName': message.gift_name,
             'num': message.gift_num,
             'uid': message.uid
-        })
+        }
+        room.send_cmd_data(api.chat.Command.ADD_GIFT, data)
+        services.plugin.broadcast_cmd_data(sdk_models.Command.ADD_GIFT, data, make_plugin_msg_extra(client))
 
     def _on_open_live_buy_guard(self, client: OpenLiveClient, message: dm_open_models.GuardBuyMessage):
         avatar_url = message.user_info.uface
@@ -661,14 +713,16 @@ class LiveMsgHandler(blivedm.BaseHandler):
         if room is None:
             return
 
-        room.send_cmd_data(api.chat.Command.ADD_MEMBER, {
+        data = {
             'id': message.msg_id,
             'avatarUrl': avatar_url,
             'timestamp': message.timestamp,
             'authorName': message.user_info.uname,
             'privilegeType': message.guard_level,
             'uid': message.user_info.uid
-        })
+        }
+        room.send_cmd_data(api.chat.Command.ADD_MEMBER, data)
+        services.plugin.broadcast_cmd_data(sdk_models.Command.ADD_MEMBER, data, make_plugin_msg_extra(client))
 
     def _on_open_live_super_chat(self, client: OpenLiveClient, message: dm_open_models.SuperChatMessage):
         avatar_url = services.avatar.process_avatar_url(message.uface)
@@ -690,7 +744,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             translation = ''
 
         msg_id = str(message.message_id)
-        room.send_cmd_data(api.chat.Command.ADD_SUPER_CHAT, {
+        data = {
             'id': msg_id,
             'avatarUrl': avatar_url,
             'timestamp': message.start_time,
@@ -699,7 +753,9 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'content': message.message,
             'translation': translation,
             'uid': message.uid
-        })
+        }
+        room.send_cmd_data(api.chat.Command.ADD_SUPER_CHAT, data)
+        services.plugin.broadcast_cmd_data(sdk_models.Command.ADD_SUPER_CHAT, data, make_plugin_msg_extra(client))
 
         if need_translate:
             asyncio.create_task(self._translate_and_response(
@@ -711,6 +767,8 @@ class LiveMsgHandler(blivedm.BaseHandler):
         if room is None:
             return
 
-        room.send_cmd_data(api.chat.Command.DEL_SUPER_CHAT, {
+        data = {
             'ids': list(map(str, message.message_ids))
-        })
+        }
+        room.send_cmd_data(api.chat.Command.DEL_SUPER_CHAT, data)
+        services.plugin.broadcast_cmd_data(sdk_models.Command.DEL_SUPER_CHAT, data, make_plugin_msg_extra(client))

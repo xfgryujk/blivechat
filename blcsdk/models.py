@@ -41,6 +41,9 @@ class RoomKey(NamedTuple):
 class Command(enum.IntEnum):
     HEARTBEAT = 0
     BLC_INIT = 1
+    ADD_ROOM = 2
+    ROOM_INIT = 3
+    DEL_ROOM = 4
 
     ADD_TEXT = 20
     ADD_GIFT = 21
@@ -48,6 +51,78 @@ class Command(enum.IntEnum):
     ADD_SUPER_CHAT = 23
     DEL_SUPER_CHAT = 24
     UPDATE_TRANSLATION = 25
+
+
+@dataclasses.dataclass
+class ExtraData:
+    """一些消息共用的附加信息"""
+
+    room_id: Optional[int] = None
+    """房间ID"""
+    room_key: Optional[RoomKey] = None
+    """blivechat用来标识一个房间的key"""
+    is_from_plugin: bool = False
+    """消息是插件生成的"""
+
+    @classmethod
+    def from_dict(cls, data: dict):
+        room_key_dict = data.get('roomKey', None)
+        if room_key_dict is not None:
+            room_key = RoomKey(
+                type=RoomKeyType(room_key_dict['type']),
+                value=room_key_dict['value'],
+            )
+        else:
+            room_key = None
+
+        return cls(
+            room_id=data.get('roomId', None),
+            room_key=room_key,
+            is_from_plugin=data.get('isFromPlugin', False),
+        )
+
+
+@dataclasses.dataclass
+class AddRoomMsg:
+    """
+    添加房间消息。房间信息在extra里
+
+    此时room_id是None，因为还没有初始化
+    """
+
+    @classmethod
+    def from_command(cls, _data: dict):
+        return cls()
+
+
+@dataclasses.dataclass
+class RoomInitMsg:
+    """
+    房间初始化消息。房间信息在extra里
+
+    一个房间创建后可能被多次初始化，处理时注意去重
+    """
+
+    is_success: bool = False
+
+    @classmethod
+    def from_command(cls, data: dict):
+        return cls(
+            is_success=data['isSuccess'],
+        )
+
+
+@dataclasses.dataclass
+class DelRoomMsg:
+    """
+    删除房间消息。房间信息在extra里
+
+    注意此时room_id可能是None
+    """
+
+    @classmethod
+    def from_command(cls, _data: dict):
+        return cls()
 
 
 class AuthorType(enum.IntEnum):

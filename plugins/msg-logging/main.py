@@ -78,6 +78,7 @@ async def run():
 
 
 async def shut_down():
+    listener.shut_down()
     await blcsdk.shut_down()
 
 
