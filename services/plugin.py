@@ -10,7 +10,10 @@ import subprocess
 from typing import *
 
 import api.plugin
+import blcsdk
+import blcsdk.models as sdk_models
 import config
+import update
 
 logger = logging.getLogger(__name__)
 
@@ -233,11 +236,19 @@ class Plugin:
         if self._client is client:
             return
         if self._client is not None:
+            logger.info('plugin=%s closing old client', self._id)
             self._client.close()
         self._client = client
 
     def on_client_connect(self, client: 'api.plugin.PluginWsHandler'):
         self._set_client(client)
+
+        # 发送初始化消息
+        self.send_cmd_data(sdk_models.Command.BLC_INIT, {
+            'blcVersion': update.VERSION,
+            'sdkVersion': blcsdk.__version__,
+            'pluginId': self._id,
+        })
 
     def on_client_close(self, client: 'api.plugin.PluginWsHandler'):
         if self._client is client:

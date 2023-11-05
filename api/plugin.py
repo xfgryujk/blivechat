@@ -82,6 +82,25 @@ class PluginWsHandler(_PluginHandlerBase, tornado.websocket.WebSocketHandler):
     def on_close(self):
         logger.info('plugin=%s disconnected', self.plugin.id)
         self.plugin.on_client_close(self)
+        if self._heartbeat_timer_handle is not None:
+            self._heartbeat_timer_handle.cancel()
+            self._heartbeat_timer_handle = None
+        if self._receive_timeout_timer_handle is not None:
+            self._receive_timeout_timer_handle.cancel()
+            self._receive_timeout_timer_handle = None
+
+    def on_message(self, message):
+        try:
+            body = json.loads(message)
+            cmd = int(body['cmd'])
+
+            if cmd == models.Command.HEARTBEAT:
+                self._refresh_receive_timeout_timer()
+            else:
+                logger.warning('plugin=%s unknown cmd=%d, body=%s', self.plugin.id, cmd, body)
+
+        except Exception:  # noqa
+            logger.exception('plugin=%s on_message error, message=%s', self.plugin.id, message)
 
     def send_cmd_data(self, cmd, data, extra: Optional[dict] = None):
         self.send_body_no_raise(make_message_body(cmd, data, extra))
