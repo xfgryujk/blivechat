@@ -46,6 +46,9 @@ class BaseHandler(HandlerInterface):
         models.Command.ADD_ROOM: _make_msg_callback('_on_add_room', models.AddRoomMsg),
         models.Command.ROOM_INIT: _make_msg_callback('_on_room_init', models.RoomInitMsg),
         models.Command.DEL_ROOM: _make_msg_callback('_on_del_room', models.DelRoomMsg),
+        models.Command.OPEN_PLUGIN_ADMIN_UI: _make_msg_callback(
+            '_on_open_plugin_admin_ui', models.OpenPluginAdminUiMsg
+        ),
         models.Command.ADD_TEXT: _make_msg_callback('_on_add_text', models.AddTextMsg),
         models.Command.ADD_GIFT: _make_msg_callback('_on_add_gift', models.AddGiftMsg),
         models.Command.ADD_MEMBER: _make_msg_callback('_on_add_member', models.AddMemberMsg),
@@ -69,6 +72,11 @@ class BaseHandler(HandlerInterface):
 
     def _on_del_room(self, client: cli.BlcPluginClient, message: models.DelRoomMsg, extra: models.ExtraData):
         """删除房间"""
+
+    def _on_open_plugin_admin_ui(
+        self, client: cli.BlcPluginClient, message: models.OpenPluginAdminUiMsg, extra: models.ExtraData
+    ):
+        """用户请求打开当前插件的管理界面"""
 
     def _on_add_text(self, client: cli.BlcPluginClient, message: models.AddTextMsg, extra: models.ExtraData):
         """收到弹幕"""

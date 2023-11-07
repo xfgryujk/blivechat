@@ -199,21 +199,10 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
 
         room_key_dict = data.get('roomKey', None)
         if room_key_dict is not None:
-            room_key_type = services.chat.RoomKeyType(room_key_dict['type'])
-            room_key_value = room_key_dict['value']
-            if room_key_type == services.chat.RoomKeyType.ROOM_ID:
-                if not isinstance(room_key_value, int):
-                    raise TypeError(f'Room key value type error, value={room_key_value}')
-            elif room_key_type == services.chat.RoomKeyType.AUTH_CODE:
-                if not isinstance(room_key_value, str):
-                    raise TypeError(f'Room key value type error, value={room_key_value}')
-            else:
-                raise ValueError(f'Unknown RoomKeyType={room_key_type}')
+            self.room_key = services.chat.RoomKey.from_dict(room_key_dict)
         else:
             # 兼容旧版客户端 TODO 过几个版本可以移除
-            room_key_type = services.chat.RoomKeyType.ROOM_ID
-            room_key_value = int(data['roomId'])
-        self.room_key = services.chat.RoomKey(room_key_type, room_key_value)
+            self.room_key = services.chat.RoomKey(services.chat.RoomKeyType.ROOM_ID, int(data['roomId']))
         logger.info('client=%s joining room %s', self.request.remote_ip, self.room_key)
 
         try:

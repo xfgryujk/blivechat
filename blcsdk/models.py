@@ -7,6 +7,11 @@ __all__ = (
     'RoomKeyType',
     'RoomKey',
     'Command',
+    'ExtraData',
+    'AddRoomMsg',
+    'RoomInitMsg',
+    'DelRoomMsg',
+    'OpenPluginAdminUiMsg',
     'AuthorType',
     'GuardLevel',
     'ContentType',
@@ -37,6 +42,21 @@ class RoomKey(NamedTuple):
         return res
     __repr__ = __str__
 
+    @classmethod
+    def from_dict(cls, data: dict):
+        type_ = RoomKeyType(data['type'])
+        value = data['value']
+        if type_ == RoomKeyType.ROOM_ID:
+            if not isinstance(value, int):
+                raise TypeError(f'Type of value is {type(value)}, value={value}')
+        elif type_ == RoomKeyType.AUTH_CODE:
+            if not isinstance(value, str):
+                raise TypeError(f'Type of value is {type(value)}, value={value}')
+        return cls(type=type_, value=value)
+
+    def to_dict(self):
+        return {'type': self.type, 'value': self.value}
+
 
 class Command(enum.IntEnum):
     HEARTBEAT = 0
@@ -44,13 +64,19 @@ class Command(enum.IntEnum):
     ADD_ROOM = 2
     ROOM_INIT = 3
     DEL_ROOM = 4
+    OPEN_PLUGIN_ADMIN_UI = 5
 
-    ADD_TEXT = 20
-    ADD_GIFT = 21
-    ADD_MEMBER = 22
-    ADD_SUPER_CHAT = 23
-    DEL_SUPER_CHAT = 24
-    UPDATE_TRANSLATION = 25
+    # 从插件发送到blivechat的请求
+    LOG_REQ = 30
+    ADD_TEXT_REQ = 31
+
+    # 房间内消息
+    ADD_TEXT = 50
+    ADD_GIFT = 51
+    ADD_MEMBER = 52
+    ADD_SUPER_CHAT = 53
+    DEL_SUPER_CHAT = 54
+    UPDATE_TRANSLATION = 55
 
 
 @dataclasses.dataclass
@@ -62,16 +88,17 @@ class ExtraData:
     room_key: Optional[RoomKey] = None
     """blivechat用来标识一个房间的key"""
     is_from_plugin: bool = False
-    """消息是插件生成的"""
+    """
+    消息是插件生成的
+
+    如果你的插件既要监听消息，又要生成消息，注意判断这个以避免死循环
+    """
 
     @classmethod
     def from_dict(cls, data: dict):
         room_key_dict = data.get('roomKey', None)
         if room_key_dict is not None:
-            room_key = RoomKey(
-                type=RoomKeyType(room_key_dict['type']),
-                value=room_key_dict['value'],
-            )
+            room_key = RoomKey.from_dict(room_key_dict)
         else:
             room_key = None
 
@@ -83,16 +110,19 @@ class ExtraData:
 
 
 @dataclasses.dataclass
-class AddRoomMsg:
+class _EmptyMsg:
+    @classmethod
+    def from_command(cls, _data: dict):
+        return cls()
+
+
+@dataclasses.dataclass
+class AddRoomMsg(_EmptyMsg):
     """
     添加房间消息。房间信息在extra里
 
     此时room_id是None，因为还没有初始化
     """
-
-    @classmethod
-    def from_command(cls, _data: dict):
-        return cls()
 
 
 @dataclasses.dataclass
@@ -113,16 +143,17 @@ class RoomInitMsg:
 
 
 @dataclasses.dataclass
-class DelRoomMsg:
+class DelRoomMsg(_EmptyMsg):
     """
     删除房间消息。房间信息在extra里
 
     注意此时room_id可能是None
     """
 
-    @classmethod
-    def from_command(cls, _data: dict):
-        return cls()
+
+@dataclasses.dataclass
+class OpenPluginAdminUiMsg(_EmptyMsg):
+    """用户请求打开当前插件的管理界面消息"""
 
 
 class AuthorType(enum.IntEnum):

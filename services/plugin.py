@@ -75,6 +75,7 @@ def iter_plugins() -> Iterable['Plugin']:
 def get_plugin_by_token(token):
     if token == '':
         return None
+    # 应该最多就十几个插件吧，偷懒用遍历了
     for plugin in _plugins.values():
         if plugin.token == token:
             return plugin
