@@ -390,12 +390,8 @@ class LiveMsgHandler(blivedm.BaseHandler):
         asyncio.create_task(self.__on_danmaku(client, message))
 
     async def __on_danmaku(self, client: WebLiveClient, message: dm_web_models.DanmakuMessage):
-        avatar_url = message.face
-        if avatar_url != '':
-            services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
-        else:
-            # 先异步调用再获取房间，因为返回时房间可能已经不存在了
-            avatar_url = await services.avatar.get_avatar_url(message.uid, message.uname)
+        # 先异步调用再获取房间，因为返回时房间可能已经不存在了
+        avatar_url = await services.avatar.get_avatar_url(message.uid, message.uname)
 
         room = client_room_manager.get_room(client.room_key)
         if room is None:
