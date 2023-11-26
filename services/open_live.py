@@ -73,7 +73,8 @@ async def _flush_game_heartbeat_tasks():
     try:
         res = await api.open_live.request_open_live(
             api.open_live.GAME_BATCH_HEARTBEAT_OPEN_LIVE_URL,
-            {'game_ids': game_ids}
+            {'game_ids': game_ids},
+            ignore_rate_limit=True
         )
         failed_game_ids = res['data']['failed_game_ids']
         if failed_game_ids is None:  # 哪个SB后端给数组传null的

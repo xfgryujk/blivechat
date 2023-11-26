@@ -16,6 +16,7 @@ import tornado.web
 import api.base
 import config
 import services.open_live
+import utils.rate_limit
 import utils.request
 
 logger = logging.getLogger(__name__)
@@ -32,6 +33,8 @@ END_GAME_COMMON_SERVER_URL = COMMON_SERVER_BASE_URL + '/api/internal/open_live/e
 GAME_HEARTBEAT_COMMON_SERVER_URL = COMMON_SERVER_BASE_URL + '/api/internal/open_live/game_heartbeat'
 
 _error_auth_code_cache = cachetools.LRUCache(256)
+# 用于限制请求开放平台的频率
+_open_live_rate_limiter = utils.rate_limit.TokenBucket(5, 9)
 
 
 class TransportError(Exception):
@@ -66,7 +69,7 @@ async def request_open_live_or_common_server(open_live_url, common_server_url, b
         raise
 
 
-async def request_open_live(url, body: dict) -> dict:
+async def request_open_live(url, body: dict, *, ignore_rate_limit=False) -> dict:
     cfg = config.get_config()
     assert cfg.is_open_live_configured
 
@@ -76,6 +79,10 @@ async def request_open_live(url, body: dict) -> dict:
         _validate_auth_code(auth_code)
     else:
         auth_code = ''
+
+    # 频率限制，防止触发B站风控被下架
+    if not _open_live_rate_limiter.try_decrease_token() and not ignore_rate_limit:
+        raise BusinessError({'code': 4009, 'message': '接口访问限制', 'request_id': '0', 'data': None})
 
     body_bytes = json.dumps(body).encode('utf-8')
     headers = {
