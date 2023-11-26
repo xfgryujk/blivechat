@@ -228,11 +228,7 @@ class OpenLiveClient(blivedm.OpenLiveClient):
         # 保存一下，防止await之后game_id改变
         game_id = self._game_id
         try:
-            await api_open_live.request_open_live_or_common_server(
-                api_open_live.GAME_HEARTBEAT_OPEN_LIVE_URL,
-                api_open_live.GAME_HEARTBEAT_COMMON_SERVER_URL,
-                {'game_id': game_id}
-            )
+            await api_open_live.send_game_heartbeat_by_service_or_common_server(game_id)
         except api_open_live.TransportError:
             logger.error('room=%d _send_game_heartbeat() failed', self.room_id)
             return False

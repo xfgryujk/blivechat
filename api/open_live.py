@@ -15,13 +15,16 @@ import tornado.web
 
 import api.base
 import config
+import services.open_live
 import utils.request
 
 logger = logging.getLogger(__name__)
 
-START_GAME_OPEN_LIVE_URL = 'https://live-open.biliapi.com/v2/app/start'
-END_GAME_OPEN_LIVE_URL = 'https://live-open.biliapi.com/v2/app/end'
-GAME_HEARTBEAT_OPEN_LIVE_URL = 'https://live-open.biliapi.com/v2/app/heartbeat'
+OPEN_LIVE_BASE_URL = 'https://live-open.biliapi.com'
+START_GAME_OPEN_LIVE_URL = OPEN_LIVE_BASE_URL + '/v2/app/start'
+END_GAME_OPEN_LIVE_URL = OPEN_LIVE_BASE_URL + '/v2/app/end'
+GAME_HEARTBEAT_OPEN_LIVE_URL = OPEN_LIVE_BASE_URL + '/v2/app/heartbeat'
+GAME_BATCH_HEARTBEAT_OPEN_LIVE_URL = OPEN_LIVE_BASE_URL + '/v2/app/batchHeartbeat'
 
 COMMON_SERVER_BASE_URL = 'https://chat.bilisc.com'
 START_GAME_COMMON_SERVER_URL = COMMON_SERVER_BASE_URL + '/api/internal/open_live/start_game'
@@ -50,7 +53,7 @@ async def request_open_live_or_common_server(open_live_url, common_server_url, b
     """如果配置了开放平台，则直接请求，否则转发请求到公共服务器的内部接口"""
     cfg = config.get_config()
     if cfg.is_open_live_configured:
-        return await _request_open_live(open_live_url, body)
+        return await request_open_live(open_live_url, body)
 
     try:
         req_ctx_mgr = utils.request.http_session.post(common_server_url, json=body)
@@ -63,7 +66,7 @@ async def request_open_live_or_common_server(open_live_url, common_server_url, b
         raise
 
 
-async def _request_open_live(url, body: dict) -> dict:
+async def request_open_live(url, body: dict) -> dict:
     cfg = config.get_config()
     assert cfg.is_open_live_configured
 
@@ -180,7 +183,7 @@ class _PrivateHandlerBase(_OpenLiveHandlerBase):
             raise tornado.web.HTTPError(501)
 
         try:
-            self.res = await _request_open_live(self._OPEN_LIVE_URL, self.json_args)
+            self.res = await request_open_live(self._OPEN_LIVE_URL, self.json_args)
         except TransportError:
             raise tornado.web.HTTPError(500)
         except BusinessError as e:
@@ -202,11 +205,17 @@ class _StartGameMixin(_OpenLiveHandlerBase):
         except (TypeError, KeyError):
             room_id = None
         code = self.res['code']
-        logger.info('room_id=%s start game res: %s %s', room_id, code, self.res['message'])
+        logger.info(
+            'client=%s room_id=%s start game res: %s %s, game_id=%s', self.request.remote_ip, room_id,
+            code, self.res['message'], self.res['data']['game_info']['game_id']
+        )
         if code == 7007:
             # 身份码错误
             # 让我看看是哪个混蛋把房间ID、UID当做身份码
-            logger.info('Auth code error! auth_code=%s', self.json_args.get('code', None))
+            logger.info(
+                'client=%s auth code error! auth_code=%s', self.request.remote_ip,
+                self.json_args.get('code', None)
+            )
 
 
 class StartGamePublicHandler(_StartGameMixin, _PublicHandlerBase):
@@ -226,13 +235,60 @@ class EndGamePrivateHandler(_PrivateHandlerBase):
     _OPEN_LIVE_URL = END_GAME_OPEN_LIVE_URL
 
 
-class GameHeartbeatPublicHandler(_PublicHandlerBase):
-    _OPEN_LIVE_URL = GAME_HEARTBEAT_OPEN_LIVE_URL
-    _COMMON_SERVER_URL = GAME_HEARTBEAT_COMMON_SERVER_URL
+class GameHeartbeatPublicHandler(_OpenLiveHandlerBase):
+    async def post(self):
+        game_id = self.json_args.get('game_id', None)
+        if not isinstance(game_id, str) or game_id == '':
+            raise tornado.web.MissingArgumentError('game_id')
+
+        try:
+            self.res = await send_game_heartbeat_by_service_or_common_server(game_id)
+        except TransportError as e:
+            logger.error(
+                'client=%s game heartbeat failed, game_id=%s, error: %s', self.request.remote_ip, game_id, e
+            )
+            raise tornado.web.HTTPError(500)
+        except BusinessError as e:
+            logger.info(
+                'client=%s game heartbeat failed, game_id=%s, error: %s', self.request.remote_ip, game_id, e
+            )
+            self.res = e.data
+        self.write(self.res)
 
 
-class GameHeartbeatPrivateHandler(_PrivateHandlerBase):
-    _OPEN_LIVE_URL = GAME_HEARTBEAT_OPEN_LIVE_URL
+async def send_game_heartbeat_by_service_or_common_server(game_id):
+    cfg = config.get_config()
+    if cfg.is_open_live_configured:
+        return await services.open_live.send_game_heartbeat(game_id)
+    # 这里GAME_HEARTBEAT_OPEN_LIVE_URL没用，因为一定是请求公共服务器
+    return await request_open_live_or_common_server(
+        GAME_HEARTBEAT_OPEN_LIVE_URL, GAME_HEARTBEAT_COMMON_SERVER_URL, {'game_id': game_id}
+    )
+
+
+class GameHeartbeatPrivateHandler(_OpenLiveHandlerBase):
+    async def post(self):
+        cfg = config.get_config()
+        if not cfg.is_open_live_configured:
+            raise tornado.web.HTTPError(501)
+
+        game_id = self.json_args.get('game_id', None)
+        if not isinstance(game_id, str) or game_id == '':
+            raise tornado.web.MissingArgumentError('game_id')
+
+        try:
+            self.res = await services.open_live.send_game_heartbeat(game_id)
+        except TransportError as e:
+            logger.error(
+                'client=%s game heartbeat failed, game_id=%s, error: %s', self.request.remote_ip, game_id, e
+            )
+            raise tornado.web.HTTPError(500)
+        except BusinessError as e:
+            logger.info(
+                'client=%s game heartbeat failed, game_id=%s, error: %s', self.request.remote_ip, game_id, e
+            )
+            self.res = e.data
+        self.write(self.res)
 
 
 ROUTES = [
