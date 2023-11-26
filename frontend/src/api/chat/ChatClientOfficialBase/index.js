@@ -51,6 +51,7 @@ export default class ChatClientOfficialBase {
     this.needInitRoom = true
     this.websocket = null
     this.retryCount = 0
+    this.totalRetryCount = 0
     this.isDestroying = false
     this.heartbeatTimerId = null
     this.receiveTimeoutTimerId = null
@@ -185,15 +186,17 @@ export default class ChatClientOfficialBase {
       return
     }
     this.retryCount++
-    console.warn('掉线重连中', this.retryCount)
+    this.totalRetryCount++
+    console.warn(`掉线重连中 retryCount=${this.retryCount}, totalRetryCount=${this.totalRetryCount}`)
     window.setTimeout(this.wsConnect.bind(this), this.getReconnectInterval())
   }
 
   getReconnectInterval() {
-    return Math.min(
-      1000 + ((this.retryCount - 1) * 2000),
-      10 * 1000
-    )
+    // 不用retryCount了，防止意外的连接成功，导致retryCount重置
+    let interval = Math.min(1000 + ((this.totalRetryCount - 1) * 2000), 20 * 1000)
+    // 加上随机延迟，防止同时请求导致雪崩
+    interval += Math.random() * 3000
+    return interval
   }
 
   onWsMessage(event) {

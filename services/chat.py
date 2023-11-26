@@ -2,6 +2,7 @@
 import asyncio
 import enum
 import logging
+import random
 import uuid
 from typing import *
 
@@ -10,7 +11,6 @@ import api.open_live as api_open_live
 import blivedm.blivedm as blivedm
 import blivedm.blivedm.models.open_live as dm_open_models
 import blivedm.blivedm.models.web as dm_web_models
-import blivedm.blivedm.utils as dm_utils
 import config
 import services.avatar
 import services.translate
@@ -114,7 +114,12 @@ class LiveClientManager:
         client_room_manager.del_room(room_key)
 
 
-RECONNECT_POLICY = dm_utils.make_linear_retry_policy(1, 2, 10)
+def _get_reconnect_interval(_retry_count: int, total_retry_count: int):
+    # 不用retry_count了，防止意外的连接成功，导致retry_count重置
+    interval = min(1 + (total_retry_count - 1) * 2, 20)
+    # 加上随机延迟，防止同时请求导致雪崩
+    interval += random.uniform(0, 3)
+    return interval
 
 
 class WebLiveClient(blivedm.BLiveClient):
@@ -128,7 +133,7 @@ class WebLiveClient(blivedm.BLiveClient):
             session=utils.request.http_session,
             heartbeat_interval=self.HEARTBEAT_INTERVAL,
         )
-        self.set_reconnect_policy(RECONNECT_POLICY)
+        self.set_reconnect_policy(_get_reconnect_interval)
 
     @property
     def room_key(self):
@@ -158,7 +163,7 @@ class OpenLiveClient(blivedm.OpenLiveClient):
             session=utils.request.http_session,
             heartbeat_interval=self.HEARTBEAT_INTERVAL,
         )
-        self.set_reconnect_policy(RECONNECT_POLICY)
+        self.set_reconnect_policy(_get_reconnect_interval)
 
     @property
     def room_key(self):
