@@ -42,7 +42,7 @@ async def send_game_heartbeat(game_id) -> dict:
 
         _game_id_heart_task_map[game_id] = task
         # 限制一次发送的数量，数量太多了就立即发送
-        if len(_game_id_heart_task_map) >= 95:
+        if len(_game_id_heart_task_map) >= 200:
             await _flush_game_heartbeat_tasks()
 
     return await task.future
@@ -56,7 +56,7 @@ async def _game_heartbeat_consumer():
             cost_time = (datetime.datetime.now() - start_time).total_seconds()
 
             # 如果等待时间太短，请求频率会太高；如果等待时间太长，前端请求、项目心跳会超时
-            await asyncio.sleep(5 - cost_time)
+            await asyncio.sleep(4 - cost_time)
         except Exception:  # noqa
             logger.exception('_heartbeat_consumer error:')
 

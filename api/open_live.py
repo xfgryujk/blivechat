@@ -34,7 +34,7 @@ GAME_HEARTBEAT_COMMON_SERVER_URL = COMMON_SERVER_BASE_URL + '/api/internal/open_
 
 _error_auth_code_cache = cachetools.LRUCache(256)
 # 用于限制请求开放平台的频率
-_open_live_rate_limiter = utils.rate_limit.TokenBucket(5, 9)
+_open_live_rate_limiter = utils.rate_limit.TokenBucket(8, 8)
 
 
 class TransportError(Exception):
@@ -147,6 +147,8 @@ def _validate_auth_code(auth_code):
 
 
 class _OpenLiveHandlerBase(api.base.ApiHandler):
+    _LOG_REQUEST = True
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.res: Optional[dict] = None
@@ -160,7 +162,8 @@ class _OpenLiveHandlerBase(api.base.ApiHandler):
             cfg = config.get_config()
             self.json_args['app_id'] = cfg.open_live_app_id
 
-        logger.info('client=%s requesting open live, cls=%s', self.request.remote_ip, type(self).__name__)
+        if self._LOG_REQUEST:
+            logger.info('client=%s requesting open live, cls=%s', self.request.remote_ip, type(self).__name__)
 
 
 class _PublicHandlerBase(_OpenLiveHandlerBase):
@@ -211,10 +214,14 @@ class _StartGameMixin(_OpenLiveHandlerBase):
             room_id = self.res['data']['anchor_info']['room_id']
         except (TypeError, KeyError):
             room_id = None
+        try:
+            game_id = self.res['data']['game_info']['game_id']
+        except (TypeError, KeyError):
+            game_id = None
         code = self.res['code']
         logger.info(
             'client=%s room_id=%s start game res: %s %s, game_id=%s', self.request.remote_ip, room_id,
-            code, self.res['message'], self.res['data']['game_info']['game_id']
+            code, self.res['message'], game_id
         )
         if code == 7007:
             # 身份码错误
@@ -243,6 +250,8 @@ class EndGamePrivateHandler(_PrivateHandlerBase):
 
 
 class GameHeartbeatPublicHandler(_OpenLiveHandlerBase):
+    _LOG_REQUEST = False
+
     async def post(self):
         game_id = self.json_args.get('game_id', None)
         if not isinstance(game_id, str) or game_id == '':
@@ -274,6 +283,8 @@ async def send_game_heartbeat_by_service_or_common_server(game_id):
 
 
 class GameHeartbeatPrivateHandler(_OpenLiveHandlerBase):
+    _LOG_REQUEST = False
+
     async def post(self):
         cfg = config.get_config()
         if not cfg.is_open_live_configured:
