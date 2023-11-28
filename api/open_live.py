@@ -5,8 +5,8 @@ import hashlib
 import hmac
 import json
 import logging
-import random
 import re
+import uuid
 from typing import *
 
 import aiohttp
@@ -89,7 +89,7 @@ async def request_open_live(url, body: dict, *, ignore_rate_limit=False) -> dict
         'x-bili-accesskeyid': cfg.open_live_access_key_id,
         'x-bili-content-md5': hashlib.md5(body_bytes).hexdigest(),
         'x-bili-signature-method': 'HMAC-SHA256',
-        'x-bili-signature-nonce': str(random.randint(0, 999999999)),
+        'x-bili-signature-nonce': uuid.uuid4().hex,
         'x-bili-signature-version': '1.0',
         'x-bili-timestamp': str(int(datetime.datetime.now().timestamp())),
     }
