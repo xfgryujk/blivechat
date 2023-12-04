@@ -265,9 +265,11 @@ class GameHeartbeatPublicHandler(_OpenLiveHandlerBase):
             )
             raise tornado.web.HTTPError(500)
         except BusinessError as e:
-            logger.info(
-                'client=%s game heartbeat failed, game_id=%s, error: %s', self.request.remote_ip, game_id, e
-            )
+            # 因为B站的BUG，这里在9点和10点的高峰期会经常报重复请求的错误，但是不影响功能，先屏蔽掉
+            if e.code != 4004:
+                logger.info(
+                    'client=%s game heartbeat failed, game_id=%s, error: %s', self.request.remote_ip, game_id, e
+                )
             self.res = e.data
         self.write(self.res)
 
@@ -302,9 +304,11 @@ class GameHeartbeatPrivateHandler(_OpenLiveHandlerBase):
             )
             raise tornado.web.HTTPError(500)
         except BusinessError as e:
-            logger.info(
-                'client=%s game heartbeat failed, game_id=%s, error: %s', self.request.remote_ip, game_id, e
-            )
+            # 因为B站的BUG，这里在9点和10点的高峰期会经常报重复请求的错误，但是不影响功能，先屏蔽掉
+            if e.code != 4004:
+                logger.info(
+                    'client=%s game heartbeat failed, game_id=%s, error: %s', self.request.remote_ip, game_id, e
+                )
             self.res = e.data
         self.write(self.res)
 
