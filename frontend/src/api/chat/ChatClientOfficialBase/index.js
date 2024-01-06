@@ -122,6 +122,7 @@ export default class ChatClientOfficialBase {
       res = false
       console.error('initRoom exception:', e)
       if (e instanceof chatModels.ChatClientFatalError) {
+        this.stop()
         this.msgHandler.onFatalError(e)
       }
     }
@@ -188,6 +189,17 @@ export default class ChatClientOfficialBase {
     this.retryCount++
     this.totalRetryCount++
     console.warn(`掉线重连中 retryCount=${this.retryCount}, totalRetryCount=${this.totalRetryCount}`)
+
+    // 防止无限重连的保险措施。30次重连大概会断线500秒，应该够了
+    if (this.totalRetryCount > 30) {
+      this.stop()
+      let error = new chatModels.ChatClientFatalError(
+        chatModels.FATAL_ERROR_TYPE_TOO_MANY_RETRIES, 'The connection has lost too many times'
+      )
+      this.msgHandler.onFatalError(error)
+      return
+    }
+
     window.setTimeout(this.wsConnect.bind(this), this.getReconnectInterval())
   }
 

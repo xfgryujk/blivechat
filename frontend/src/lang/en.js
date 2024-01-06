@@ -154,6 +154,9 @@ export default {
     p4: '4. Add browser source in OBS',
     p5: '5. Enter the previously copied room URL at URL, and enter the previously copied CSS at custom CSS'
   },
+  room: {
+    fatalErrorOccurred: 'A fatal error has occurred. Please manually refresh the page to reconnect'
+  },
   chat: {
     moderator: 'moderator',
     guardLevel1: 'governor',

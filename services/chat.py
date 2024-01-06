@@ -114,7 +114,15 @@ class LiveClientManager:
         client_room_manager.del_room(room_key)
 
 
+class TooManyRetries(Exception):
+    """重试次数太多"""
+
+
 def _get_reconnect_interval(_retry_count: int, total_retry_count: int):
+    # 防止无限重连的保险措施。30次重连大概会断线500秒，应该够了
+    if total_retry_count > 30:
+        raise TooManyRetries(f'total_retry_count={total_retry_count}')
+
     # 不用retry_count了，防止意外的连接成功，导致retry_count重置
     interval = min(1 + (total_retry_count - 1) * 2, 20)
     # 加上随机延迟，防止同时请求导致雪崩
@@ -224,6 +232,14 @@ class OpenLiveClient(blivedm.OpenLiveClient):
             logger.warning('room=%d _end_game() failed', self.room_id)
             return False
         return True
+
+    def _on_send_game_heartbeat(self):
+        # 加上随机延迟，减少同时请求的概率
+        sleep_time = self._game_heartbeat_interval + random.uniform(-2, 1)
+        self._game_heartbeat_timer_handle = asyncio.get_running_loop().call_later(
+            sleep_time, self._on_send_game_heartbeat
+        )
+        asyncio.create_task(self._send_game_heartbeat())
 
     async def _send_game_heartbeat(self):
         if self._game_id in (None, ''):
@@ -385,6 +401,14 @@ class ClientRoom:
 
 class LiveMsgHandler(blivedm.BaseHandler):
     def on_client_stopped(self, client: LiveClientType, exception: Optional[Exception]):
+        if isinstance(exception, TooManyRetries):
+            room = client_room_manager.get_room(client.room_key)
+            if room is not None:
+                room.send_cmd_data(api.chat.Command.FATAL_ERROR, {
+                    'type': api.chat.FatalErrorType.TOO_MANY_RETRIES,
+                    'msg': 'The connection has lost too many times'
+                })
+
         _live_client_manager.del_live_client(client.room_key)
 
     def _on_danmaku(self, client: WebLiveClient, message: dm_web_models.DanmakuMessage):

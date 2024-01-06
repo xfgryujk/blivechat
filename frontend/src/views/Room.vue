@@ -349,7 +349,12 @@ export default {
         message: error.toString(),
         duration: 10 * 1000
       })
-      this.chatClient.stop()
+      this.onAddText(new chatModels.AddTextMsg({
+        authorName: 'blivechat',
+        authorType: constants.AUTHOR_TYPE_ADMIN,
+        content: this.$t('room.fatalErrorOccurred'),
+        authorLevel: 60,
+      }))
 
       if (error.type === chatModels.FATAL_ERROR_TYPE_AUTH_CODE_ERROR) {
         // Read The Fucking Manual

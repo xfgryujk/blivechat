@@ -27,7 +27,7 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
     super.stop()
 
     if (this.gameHeartbeatTimerId) {
-      window.clearInterval(this.gameHeartbeatTimerId)
+      window.clearTimeout(this.gameHeartbeatTimerId)
       this.gameHeartbeatTimerId = null
     }
     this.endGame()
@@ -39,7 +39,7 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
     }
 
     if (this.gameId && this.gameHeartbeatTimerId === null) {
-      this.gameHeartbeatTimerId = window.setInterval(this.sendGameHeartbeat.bind(this), GAME_HEARTBEAT_INTERVAL)
+      this.gameHeartbeatTimerId = window.setTimeout(this.onSendGameHeartbeat.bind(this), GAME_HEARTBEAT_INTERVAL)
     }
     return true
   }
@@ -100,6 +100,13 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
       return false
     }
     return true
+  }
+
+  onSendGameHeartbeat() {
+    // 加上随机延迟，减少同时请求的概率
+    let sleepTime = GAME_HEARTBEAT_INTERVAL - (2 * 1000) + (Math.random() * 3 * 1000)
+    this.gameHeartbeatTimerId = window.setTimeout(this.onSendGameHeartbeat.bind(this), sleepTime)
+    this.sendGameHeartbeat()
   }
 
   async sendGameHeartbeat() {

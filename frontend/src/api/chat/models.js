@@ -111,6 +111,7 @@ export class UpdateTranslationMsg {
 }
 
 export const FATAL_ERROR_TYPE_AUTH_CODE_ERROR = 1
+export const FATAL_ERROR_TYPE_TOO_MANY_RETRIES = 2
 
 export class ChatClientFatalError extends Error {
   constructor(type, message) {
