@@ -525,7 +525,9 @@ class LiveMsgHandler(blivedm.BaseHandler):
             translation=translation,
             content_type=content_type,
             content_type_params=content_type_params,
-            uid=message.uid
+            # 给插件用的字段
+            uid=message.uid,
+            medal_name='' if message.medal_room_id != client.room_id else message.medal_name,
         )
         room.send_cmd_data(api.chat.Command.ADD_TEXT, data)
         services.plugin.broadcast_cmd_data(
@@ -539,23 +541,27 @@ class LiveMsgHandler(blivedm.BaseHandler):
         avatar_url = services.avatar.process_avatar_url(message.face)
         services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
 
-        # 丢人
-        if message.coin_type != 'gold':
-            return
-
         room = client_room_manager.get_room(client.room_key)
         if room is None:
             return
 
+        is_paid_gift = message.coin_type == 'gold'
         data = {
             'id': uuid.uuid4().hex,
             'avatarUrl': avatar_url,
             'timestamp': message.timestamp,
             'authorName': message.uname,
-            'totalCoin': message.total_coin,
+            'totalCoin': 0 if not is_paid_gift else message.total_coin,
+            'totalFreeCoin': 0 if is_paid_gift else message.total_coin,
             'giftName': message.gift_name,
             'num': message.num,
-            'uid': message.uid
+            # 给插件用的字段
+            'giftId': message.gift_id,
+            'giftIconUrl': '',
+            'uid': message.uid,
+            'privilegeType': message.guard_level,
+            'medalLevel': 0,
+            'medalName': '',
         }
         room.send_cmd_data(api.chat.Command.ADD_GIFT, data)
         services.plugin.broadcast_cmd_data(
@@ -580,7 +586,12 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'timestamp': message.start_time,
             'authorName': message.username,
             'privilegeType': message.guard_level,
-            'uid': message.uid
+            # 给插件用的字段
+            'num': message.num,
+            'unit': '月',  # 单位在USER_TOAST_MSG消息里，不想改消息。现在没有别的单位，web接口也很少有人用了，先写死吧
+            'uid': message.uid,
+            'medalLevel': 0,
+            'medalName': '',
         }
         room.send_cmd_data(api.chat.Command.ADD_MEMBER, data)
         services.plugin.broadcast_cmd_data(
@@ -615,7 +626,11 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'price': message.price,
             'content': message.message,
             'translation': translation,
-            'uid': message.uid
+            # 给插件用的字段
+            'uid': message.uid,
+            'privilegeType': message.guard_level,
+            'medalLevel': 0,
+            'medalName': '',
         }
         room.send_cmd_data(api.chat.Command.ADD_SUPER_CHAT, data)
         services.plugin.broadcast_cmd_data(
@@ -722,7 +737,9 @@ class LiveMsgHandler(blivedm.BaseHandler):
             translation=translation,
             content_type=content_type,
             content_type_params=content_type_params,
-            uid=message.uid
+            # 给插件用的字段
+            uid=message.uid,
+            medal_name='' if not message.fans_medal_wearing_status else message.fans_medal_name,
         )
         room.send_cmd_data(api.chat.Command.ADD_TEXT, data)
         services.plugin.broadcast_cmd_data(
@@ -736,23 +753,27 @@ class LiveMsgHandler(blivedm.BaseHandler):
         avatar_url = services.avatar.process_avatar_url(message.uface)
         services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
 
-        # 丢人
-        if not message.paid:
-            return
-
         room = client_room_manager.get_room(client.room_key)
         if room is None:
             return
 
+        total_coin = message.price * message.gift_num
         data = {
             'id': message.msg_id,
             'avatarUrl': avatar_url,
             'timestamp': message.timestamp,
             'authorName': message.uname,
-            'totalCoin': message.price * message.gift_num,
+            'totalCoin': 0 if not message.paid else total_coin,
+            'totalFreeCoin': 0 if message.paid else total_coin,
             'giftName': message.gift_name,
             'num': message.gift_num,
-            'uid': message.uid
+            # 给插件用的字段
+            'giftId': message.gift_id,
+            'giftIconUrl': message.gift_icon,
+            'uid': message.uid,
+            'privilegeType': message.guard_level,
+            'medalLevel': 0 if not message.fans_medal_wearing_status else message.fans_medal_level,
+            'medalName': '' if not message.fans_medal_wearing_status else message.fans_medal_name,
         }
         room.send_cmd_data(api.chat.Command.ADD_GIFT, data)
         services.plugin.broadcast_cmd_data(
@@ -773,7 +794,12 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'timestamp': message.timestamp,
             'authorName': message.user_info.uname,
             'privilegeType': message.guard_level,
-            'uid': message.user_info.uid
+            # 给插件用的字段
+            'num': message.guard_num,
+            'unit': message.guard_unit,
+            'uid': message.user_info.uid,
+            'medalLevel': 0 if not message.fans_medal_wearing_status else message.fans_medal_level,
+            'medalName': '' if not message.fans_medal_wearing_status else message.fans_medal_name,
         }
         room.send_cmd_data(api.chat.Command.ADD_MEMBER, data)
         services.plugin.broadcast_cmd_data(
@@ -808,7 +834,11 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'price': message.rmb,
             'content': message.message,
             'translation': translation,
-            'uid': message.uid
+            # 给插件用的字段
+            'uid': message.uid,
+            'privilegeType': message.guard_level,
+            'medalLevel': 0 if not message.fans_medal_wearing_status else message.fans_medal_level,
+            'medalName': '' if not message.fans_medal_wearing_status else message.fans_medal_name,
         }
         room.send_cmd_data(api.chat.Command.ADD_SUPER_CHAT, data)
         services.plugin.broadcast_cmd_data(

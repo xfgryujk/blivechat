@@ -68,7 +68,8 @@ def make_text_message_data(
     translation: str = '',
     content_type: int = ContentType.TEXT,
     content_type_params: list = None,
-    uid: int = 0
+    uid: int = 0,
+    medal_name: str = '',
 ):
     # 为了节省带宽用list而不是dict
     return [
@@ -105,7 +106,9 @@ def make_text_message_data(
         # 15: textEmoticons
         [],  # 已废弃，保留
         # 16: uid
-        uid
+        uid,
+        # 17: medalName
+        medal_name,
     ]
 
 

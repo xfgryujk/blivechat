@@ -144,6 +144,10 @@ export default class ChatClientRelay {
       break
     }
     case COMMAND_ADD_GIFT: {
+      // TODO 显示免费礼物
+      if (data.totalCoin === 0) { // 丢人
+        return
+      }
       data = new chatModels.AddGiftMsg(data)
       this.msgHandler.onAddGift(data)
       break

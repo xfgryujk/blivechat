@@ -75,10 +75,17 @@ class MsgHandler(blcsdk.BaseHandler):
         if extra.is_from_plugin:
             return
         room = _get_or_add_room(extra.room_id)
-        room.log(
-            f'[gift] {message.author_name} 赠送了 {message.gift_name} x {message.num}，'
-            f'总价 {message.total_coin / 1000} 元'
-        )
+        if message.total_coin != 0:
+            content = (
+                f'[paid_gift] {message.author_name} 赠送了 {message.gift_name} x {message.num}，'
+                f'总价 {message.total_coin / 1000} 元'
+            )
+        else:
+            content = (
+                f'[free_gift] {message.author_name} 赠送了 {message.gift_name} x {message.num}，'
+                f'总价 {message.total_free_coin} 银瓜子'
+            )
+        room.log(content)
 
     def _on_add_member(
         self, client: blcsdk.BlcPluginClient, message: sdk_models.AddMemberMsg, extra: sdk_models.ExtraData
@@ -94,8 +101,7 @@ class MsgHandler(blcsdk.BaseHandler):
             guard_name = '总督'
         else:
             guard_name = '未知舰队等级'
-        # TODO 可以加上时长
-        room.log(f'[guard] {message.author_name} 购买了 {guard_name}')
+        room.log(f'[guard] {message.author_name} 购买了 {message.num}{message.unit} {guard_name}')
 
     def _on_add_super_chat(
         self, client: blcsdk.BlcPluginClient, message: sdk_models.AddSuperChatMsg, extra: sdk_models.ExtraData
