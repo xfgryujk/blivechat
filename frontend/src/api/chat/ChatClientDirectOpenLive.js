@@ -24,24 +24,32 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
   }
 
   stop() {
-    super.stop()
-
-    if (this.gameHeartbeatTimerId) {
-      window.clearTimeout(this.gameHeartbeatTimerId)
-      this.gameHeartbeatTimerId = null
-    }
     this.endGame()
+    super.stop()
   }
 
   async initRoom() {
-    if (!await this.startGame()) {
-      return false
+    return this.startGame()
+  }
+
+  async wsConnect() {
+    await super.wsConnect()
+    if (this.isDestroying) {
+      return
     }
 
     if (this.gameId && this.gameHeartbeatTimerId === null) {
       this.gameHeartbeatTimerId = window.setTimeout(this.onSendGameHeartbeat.bind(this), GAME_HEARTBEAT_INTERVAL)
     }
-    return true
+  }
+
+  onWsClose() {
+    if (this.gameHeartbeatTimerId) {
+      window.clearTimeout(this.gameHeartbeatTimerId)
+      this.gameHeartbeatTimerId = null
+    }
+
+    super.onWsClose()
   }
 
   async startGame() {
@@ -139,10 +147,11 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
   }
 
   async onBeforeWsConnect() {
-    // 重连次数太多则重新init_room，保险
+    // 重连次数太多则重新initRoom，保险
     let reinitPeriod = Math.max(3, (this.hostServerUrlList || []).length)
     if (this.retryCount > 0 && this.retryCount % reinitPeriod === 0) {
       this.needInitRoom = true
+      await this.endGame()
     }
     return super.onBeforeWsConnect()
   }
@@ -153,6 +162,16 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
 
   sendAuth() {
     this.websocket.send(this.makePacket(this.authBody, base.OP_AUTH))
+  }
+
+  delayReconnect() {
+    if (document.visibilityState !== 'visible') {
+      // 不知道什么时候才能重连，先endGame吧
+      this.needInitRoom = true
+      this.endGame()
+    }
+
+    super.delayReconnect()
   }
 
   async dmCallback(command) {

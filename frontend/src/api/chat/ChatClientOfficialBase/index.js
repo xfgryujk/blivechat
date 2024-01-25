@@ -200,7 +200,24 @@ export default class ChatClientOfficialBase {
       return
     }
 
-    window.setTimeout(this.wsConnect.bind(this), this.getReconnectInterval())
+    this.delayReconnect()
+  }
+
+  delayReconnect() {
+    if (document.visibilityState === 'visible') {
+      window.setTimeout(this.wsConnect.bind(this), this.getReconnectInterval())
+      return
+    }
+
+    // 页面不可见就先不重连了，即使重连也会心跳超时
+    let listener = () => {
+      if (document.visibilityState !== 'visible') {
+        return
+      }
+      document.removeEventListener('visibilitychange', listener)
+      this.wsConnect()
+    }
+    document.addEventListener('visibilitychange', listener)
   }
 
   getReconnectInterval() {

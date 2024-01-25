@@ -107,6 +107,7 @@ export default class ChatClientRelay {
       return
     }
 
+    // 这边不用判断页面是否可见，因为发心跳包不是由定时器触发的，即使是不活动页面也不会心跳超时
     window.setTimeout(this.wsConnect.bind(this), this.getReconnectInterval())
   }
 
