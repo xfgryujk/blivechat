@@ -7,6 +7,7 @@ from typing import *
 
 import api.open_live
 import config
+import utils.async_io
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ def init():
     cfg = config.get_config()
     # 批量心跳只支持配置了开放平台的公共服务器，私有服务器用的人少，意义不大
     if cfg.is_open_live_configured:
-        asyncio.create_task(_game_heartbeat_consumer())
+        utils.async_io.create_task_with_ref(_game_heartbeat_consumer())
 
 
 async def send_game_heartbeat(game_id) -> dict:

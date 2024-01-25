@@ -14,6 +14,7 @@ import blivedm.blivedm.models.web as dm_web_models
 import config
 import services.avatar
 import services.translate
+import utils.async_io
 import utils.request
 
 logger = logging.getLogger(__name__)
@@ -239,7 +240,7 @@ class OpenLiveClient(blivedm.OpenLiveClient):
         self._game_heartbeat_timer_handle = asyncio.get_running_loop().call_later(
             sleep_time, self._on_send_game_heartbeat
         )
-        asyncio.create_task(self._send_game_heartbeat())
+        utils.async_io.create_task_with_ref(self._send_game_heartbeat())
 
     async def _send_game_heartbeat(self):
         if self._game_id in (None, ''):
@@ -412,7 +413,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         _live_client_manager.del_live_client(client.room_key)
 
     def _on_danmaku(self, client: WebLiveClient, message: dm_web_models.DanmakuMessage):
-        asyncio.create_task(self.__on_danmaku(client, message))
+        utils.async_io.create_task_with_ref(self.__on_danmaku(client, message))
 
     async def __on_danmaku(self, client: WebLiveClient, message: dm_web_models.DanmakuMessage):
         # 先异步调用再获取房间，因为返回时房间可能已经不存在了
@@ -500,7 +501,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         })
 
     def _on_buy_guard(self, client: WebLiveClient, message: dm_web_models.GuardBuyMessage):
-        asyncio.create_task(self.__on_buy_guard(client, message))
+        utils.async_io.create_task_with_ref(self.__on_buy_guard(client, message))
 
     @staticmethod
     async def __on_buy_guard(client: WebLiveClient, message: dm_web_models.GuardBuyMessage):
@@ -552,7 +553,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         })
 
         if need_translate:
-            asyncio.create_task(self._translate_and_response(
+            utils.async_io.create_task_with_ref(self._translate_and_response(
                 message.message, room.room_key, msg_id, services.translate.Priority.HIGH
             ))
 
@@ -649,7 +650,9 @@ class LiveMsgHandler(blivedm.BaseHandler):
         ))
 
         if need_translate:
-            asyncio.create_task(self._translate_and_response(message.msg, room.room_key, message.msg_id))
+            utils.async_io.create_task_with_ref(self._translate_and_response(
+                message.msg, room.room_key, message.msg_id
+            ))
 
     def _on_open_live_gift(self, client: OpenLiveClient, message: dm_open_models.GiftMessage):
         avatar_url = services.avatar.process_avatar_url(message.uface)
@@ -723,7 +726,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         })
 
         if need_translate:
-            asyncio.create_task(self._translate_and_response(
+            utils.async_io.create_task_with_ref(self._translate_and_response(
                 message.message, room.room_key, msg_id, services.translate.Priority.HIGH
             ))
 

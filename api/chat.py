@@ -17,6 +17,7 @@ import config
 import services.avatar
 import services.chat
 import services.translate
+import utils.async_io
 import utils.request
 
 logger = logging.getLogger(__name__)
@@ -224,7 +225,7 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
             pass
 
         services.chat.client_room_manager.add_client(self.room_key, self)
-        asyncio.create_task(self._on_joined_room())
+        utils.async_io.create_task_with_ref(self._on_joined_room())
 
         self._refresh_receive_timeout_timer()
 

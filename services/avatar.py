@@ -14,6 +14,7 @@ import sqlalchemy.exc
 import config
 import models.bilibili as bl_models
 import models.database
+import utils.async_io
 import utils.request
 
 logger = logging.getLogger(__name__)
@@ -41,7 +42,7 @@ def init():
     global _avatar_url_cache, _task_queue
     _avatar_url_cache = cachetools.TTLCache(cfg.avatar_cache_size, 10 * 60)
     _task_queue = asyncio.Queue(cfg.fetch_avatar_max_queue_size)
-    asyncio.get_running_loop().create_task(_do_init())
+    utils.async_io.create_task_with_ref(_do_init())
 
 
 async def _do_init():
@@ -89,7 +90,7 @@ async def get_avatar_url_or_none(user_id) -> Optional[str]:
         _update_avatar_cache_in_memory(user_id, avatar_url)
         # 如果距离数据库上次更新太久，则在后台从接口获取，并更新所有缓存
         if (datetime.datetime.now() - user.update_time).days >= 1:
-            asyncio.create_task(_refresh_avatar_cache_from_web(user_id))
+            utils.async_io.create_task_with_ref(_refresh_avatar_cache_from_web(user_id))
         return avatar_url
 
     # 从接口获取
@@ -249,7 +250,7 @@ class AvatarFetcher:
         self._cool_down_timer_handle = None
 
     async def init(self):
-        asyncio.create_task(self._fetch_consumer())
+        utils.async_io.create_task_with_ref(self._fetch_consumer())
         return True
 
     @property
