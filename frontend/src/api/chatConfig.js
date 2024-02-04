@@ -3,7 +3,7 @@ import _ from 'lodash'
 import { mergeConfig } from '@/utils'
 
 export const DEFAULT_CONFIG = {
-  minGiftPrice: 7, // $1
+  minGiftPrice: 0.1,
   showDanmaku: true,
   showGift: true,
   showGiftName: false,

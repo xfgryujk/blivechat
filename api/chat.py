@@ -312,6 +312,12 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
         gift_data['totalCoin'] = 1245000
         gift_data['giftName'] = '小电视飞船'
         self.send_cmd_data(Command.ADD_GIFT, gift_data)
+        gift_data['id'] = uuid.uuid4().hex
+        gift_data['totalCoin'] = 0
+        gift_data['totalFreeCoin'] = 1000
+        gift_data['giftName'] = '辣条'
+        gift_data['num'] = 10
+        self.send_cmd_data(Command.ADD_GIFT, gift_data)
 
 
 class RoomInfoHandler(api.base.ApiHandler):

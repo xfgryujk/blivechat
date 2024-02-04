@@ -107,15 +107,13 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
 
   sendGiftCallback(command) {
     let data = command.data
-    if (data.coin_type !== 'gold') { // 丢人
-      return
-    }
-
+    let isPaidGift = data.coin_type === 'gold'
     data = new chatModels.AddGiftMsg({
       avatarUrl: chat.processAvatarUrl(data.face),
       timestamp: data.timestamp,
       authorName: data.uname,
-      totalCoin: data.total_coin,
+      totalCoin: isPaidGift ? data.total_coin : 0,
+      totalFreeCoin: !isPaidGift ? data.total_coin : 0,
       giftName: data.giftName,
       num: data.num
     })

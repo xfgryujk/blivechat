@@ -18,7 +18,7 @@
         <div id="header-content" class="style-scope yt-live-chat-paid-message-renderer">
           <div id="header-content-primary-column" class="style-scope yt-live-chat-paid-message-renderer">
             <div id="author-name" class="style-scope yt-live-chat-paid-message-renderer">{{ authorName }}</div>
-            <div id="purchase-amount" class="style-scope yt-live-chat-paid-message-renderer">{{ priceText }}</div>
+            <div id="purchase-amount" class="style-scope yt-live-chat-paid-message-renderer">{{ showPriceText }}</div>
           </div>
           <span id="timestamp" class="style-scope yt-live-chat-paid-message-renderer">{{ timeText }}</span>
         </div>
@@ -44,6 +44,7 @@ export default {
     avatarUrl: String,
     authorName: String,
     price: Number, // 价格，人民币
+    priceText: String,
     time: Date,
     content: String
   },
@@ -54,8 +55,8 @@ export default {
     color() {
       return this.priceConfig.colors
     },
-    priceText() {
-      return `CN¥${utils.formatCurrency(this.price)}`
+    showPriceText() {
+      return this.priceText || `CN¥${utils.formatCurrency(this.price)}`
     },
     timeText() {
       return utils.getTimeTextHourMin(this.time)

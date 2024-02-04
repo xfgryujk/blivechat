@@ -4,7 +4,7 @@
 
 <script>
 import * as i18n from '@/i18n'
-import { mergeConfig, toBool, toInt } from '@/utils'
+import { mergeConfig, toBool, toInt, toFloat } from '@/utils'
 import * as trie from '@/utils/trie'
 import * as pronunciation from '@/utils/pronunciation'
 import * as chatConfig from '@/api/chatConfig'
@@ -153,7 +153,7 @@ export default {
       }
       cfg = mergeConfig(cfg, chatConfig.deepCloneDefaultConfig())
 
-      cfg.minGiftPrice = toInt(cfg.minGiftPrice, chatConfig.DEFAULT_CONFIG.minGiftPrice)
+      cfg.minGiftPrice = toFloat(cfg.minGiftPrice, chatConfig.DEFAULT_CONFIG.minGiftPrice)
       cfg.showDanmaku = toBool(cfg.showDanmaku)
       cfg.showGift = toBool(cfg.showGift)
       cfg.showGiftName = toBool(cfg.showGiftName)
@@ -270,7 +270,7 @@ export default {
         return
       }
       let price = data.totalCoin / 1000
-      if (this.mergeSimilarGift(data.authorName, price, data.giftName, data.num)) {
+      if (this.mergeSimilarGift(data.authorName, price, data.totalFreeCoin, data.giftName, data.num)) {
         return
       }
       if (price < this.config.minGiftPrice) { // 丢人
@@ -284,6 +284,7 @@ export default {
         authorName: data.authorName,
         authorNamePronunciation: this.getPronunciation(data.authorName),
         price: price,
+        // freePrice: data.totalFreeCoin, // 暂时没用到
         giftName: data.giftName,
         num: data.num
       }
@@ -391,11 +392,11 @@ export default {
       }
       return this.$refs.renderer.mergeSimilarText(content)
     },
-    mergeSimilarGift(authorName, price, giftName, num) {
+    mergeSimilarGift(authorName, price, freePrice, giftName, num) {
       if (!this.config.mergeGift) {
         return false
       }
-      return this.$refs.renderer.mergeSimilarGift(authorName, price, giftName, num)
+      return this.$refs.renderer.mergeSimilarGift(authorName, price, freePrice, giftName, num)
     },
     getPronunciation(text) {
       if (this.pronunciationConverter === null) {

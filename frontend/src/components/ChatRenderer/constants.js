@@ -138,6 +138,20 @@ export const PRICE_CONFIGS = [
     pinTime: 0,
     priceLevel: 1,
   },
+  // $0淡蓝
+  {
+    price: 0,
+    colors: {
+      contentBg: 'rgba(153, 236, 255, 1)',
+      headerBg: 'rgba(153, 236, 255, 1)',
+      header: 'rgba(255,255,255,1)',
+      authorName: 'rgba(255,255,255,0.701961)',
+      time: 'rgba(255,255,255,0.501961)',
+      content: 'rgba(255,255,255,1)'
+    },
+    pinTime: 0,
+    priceLevel: 0,
+  },
 ]
 
 export function getPriceConfig(price) {
@@ -172,6 +186,10 @@ export function getGiftShowContent(message, showGiftName) {
     return ''
   }
   return i18n.i18n.t('chat.sendGift', { giftName: message.giftName, num: message.num })
+}
+
+export function getGiftShowNameAndNum(message) {
+  return `${message.giftName}x${message.num}`
 }
 
 export function getShowAuthorName(message) {

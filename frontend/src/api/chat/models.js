@@ -43,6 +43,7 @@ export class AddGiftMsg {
     timestamp = new Date().getTime() / 1000,
     authorName = '',
     totalCoin = 0,
+    totalFreeCoin = 0,
     giftName = '',
     num = 1,
   } = {}) {
@@ -51,6 +52,7 @@ export class AddGiftMsg {
     this.timestamp = timestamp
     this.authorName = authorName
     this.totalCoin = totalCoin
+    this.totalFreeCoin = totalFreeCoin
     this.giftName = giftName
     this.num = num
   }

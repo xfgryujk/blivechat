@@ -182,16 +182,14 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
 
   sendGiftCallback(command) {
     let data = command.data
-    if (!data.paid) { // 丢人
-      return
-    }
-
+    let totalCoin = data.price * data.gift_num
     data = new chatModels.AddGiftMsg({
       id: data.msg_id,
       avatarUrl: chat.processAvatarUrl(data.uface),
       timestamp: data.timestamp,
       authorName: data.uname,
-      totalCoin: data.price * data.gift_num,
+      totalCoin: data.paid ? totalCoin : 0,
+      totalFreeCoin: !data.paid ? totalCoin : 0,
       giftName: data.gift_name,
       num: data.gift_num
     })

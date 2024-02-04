@@ -87,6 +87,7 @@ function randGuardInfo() {
 }
 
 const GIFT_INFO_LIST = [
+  { giftName: '辣条', totalFreeCoin: 1000, num: 10 },
   { giftName: 'B坷垃', totalCoin: 9900 },
   { giftName: '礼花', totalCoin: 28000 },
   { giftName: '花式夸夸', totalCoin: 39000 },
