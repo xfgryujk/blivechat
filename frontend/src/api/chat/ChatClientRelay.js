@@ -25,6 +25,7 @@ export default class ChatClientRelay {
 
     this.websocket = null
     this.retryCount = 0
+    this.totalRetryCount = 0
     this.isDestroying = false
     this.receiveTimeoutTimerId = null
   }
@@ -92,15 +93,30 @@ export default class ChatClientRelay {
     if (this.isDestroying) {
       return
     }
-    console.warn(`掉线重连中${++this.retryCount}`)
+    this.retryCount++
+    this.totalRetryCount++
+    console.warn(`掉线重连中 retryCount=${this.retryCount}, totalRetryCount=${this.totalRetryCount}`)
+
+    // 防止无限重连的保险措施。30次重连大概会断线500秒，应该够了
+    if (this.totalRetryCount > 30) {
+      this.stop()
+      let error = new chatModels.ChatClientFatalError(
+        chatModels.FATAL_ERROR_TYPE_TOO_MANY_RETRIES, 'The connection has lost too many times'
+      )
+      this.msgHandler.onFatalError(error)
+      return
+    }
+
+    // 这边不用判断页面是否可见，因为发心跳包不是由定时器触发的，即使是不活动页面也不会心跳超时
     window.setTimeout(this.wsConnect.bind(this), this.getReconnectInterval())
   }
 
   getReconnectInterval() {
-    return Math.min(
-      1000 + ((this.retryCount - 1) * 2000),
-      10 * 1000
-    )
+    // 不用retryCount了，防止意外的连接成功，导致retryCount重置
+    let interval = Math.min(1000 + ((this.totalRetryCount - 1) * 2000), 20 * 1000)
+    // 加上随机延迟，防止同时请求导致雪崩
+    interval += Math.random() * 3000
+    return interval
   }
 
   onWsMessage(event) {
@@ -172,6 +188,7 @@ export default class ChatClientRelay {
       break
     }
     case COMMAND_FATAL_ERROR: {
+      this.stop()
       let error = new chatModels.ChatClientFatalError(data.type, data.msg)
       this.msgHandler.onFatalError(error)
       break

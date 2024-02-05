@@ -2,20 +2,21 @@
 import asyncio
 import enum
 import logging
+import random
 import uuid
 from typing import *
 
 import api.chat
 import api.open_live as api_open_live
+import blcsdk.models as sdk_models
 import blivedm.blivedm as blivedm
 import blivedm.blivedm.models.open_live as dm_open_models
 import blivedm.blivedm.models.web as dm_web_models
-import blivedm.blivedm.utils as dm_utils
 import config
 import services.avatar
-import services.translate
 import services.plugin
-import blcsdk.models as sdk_models
+import services.translate
+import utils.async_io
 import utils.request
 
 logger = logging.getLogger(__name__)
@@ -169,7 +170,20 @@ class LiveClientManager:
         )
 
 
-RECONNECT_POLICY = dm_utils.make_linear_retry_policy(1, 2, 10)
+class TooManyRetries(Exception):
+    """重试次数太多"""
+
+
+def _get_reconnect_interval(_retry_count: int, total_retry_count: int):
+    # 防止无限重连的保险措施。30次重连大概会断线500秒，应该够了
+    if total_retry_count > 30:
+        raise TooManyRetries(f'total_retry_count={total_retry_count}')
+
+    # 不用retry_count了，防止意外的连接成功，导致retry_count重置
+    interval = min(1 + (total_retry_count - 1) * 2, 20)
+    # 加上随机延迟，防止同时请求导致雪崩
+    interval += random.uniform(0, 3)
+    return interval
 
 
 class WebLiveClient(blivedm.BLiveClient):
@@ -183,7 +197,7 @@ class WebLiveClient(blivedm.BLiveClient):
             session=utils.request.http_session,
             heartbeat_interval=self.HEARTBEAT_INTERVAL,
         )
-        self.set_reconnect_policy(RECONNECT_POLICY)
+        self.set_reconnect_policy(_get_reconnect_interval)
 
     @property
     def room_key(self):
@@ -220,7 +234,7 @@ class OpenLiveClient(blivedm.OpenLiveClient):
             session=utils.request.http_session,
             heartbeat_interval=self.HEARTBEAT_INTERVAL,
         )
-        self.set_reconnect_policy(RECONNECT_POLICY)
+        self.set_reconnect_policy(_get_reconnect_interval)
 
     @property
     def room_key(self):
@@ -289,6 +303,14 @@ class OpenLiveClient(blivedm.OpenLiveClient):
             return False
         return True
 
+    def _on_send_game_heartbeat(self):
+        # 加上随机延迟，减少同时请求的概率
+        sleep_time = self._game_heartbeat_interval + random.uniform(-2, 1)
+        self._game_heartbeat_timer_handle = asyncio.get_running_loop().call_later(
+            sleep_time, self._on_send_game_heartbeat
+        )
+        utils.async_io.create_task_with_ref(self._send_game_heartbeat())
+
     async def _send_game_heartbeat(self):
         if self._game_id in (None, ''):
             logger.warning('game=%d _send_game_heartbeat() failed, game_id not found', self._game_id)
@@ -297,11 +319,7 @@ class OpenLiveClient(blivedm.OpenLiveClient):
         # 保存一下，防止await之后game_id改变
         game_id = self._game_id
         try:
-            await api_open_live.request_open_live_or_common_server(
-                api_open_live.GAME_HEARTBEAT_OPEN_LIVE_URL,
-                api_open_live.GAME_HEARTBEAT_COMMON_SERVER_URL,
-                {'game_id': game_id}
-            )
+            await api_open_live.send_game_heartbeat_by_service_or_common_server(game_id)
         except api_open_live.TransportError:
             logger.error('room=%d _send_game_heartbeat() failed', self.room_id)
             return False
@@ -460,18 +478,22 @@ class ClientRoom:
 
 class LiveMsgHandler(blivedm.BaseHandler):
     def on_client_stopped(self, client: LiveClientType, exception: Optional[Exception]):
+        if isinstance(exception, TooManyRetries):
+            room = client_room_manager.get_room(client.room_key)
+            if room is not None:
+                room.send_cmd_data(api.chat.Command.FATAL_ERROR, {
+                    'type': api.chat.FatalErrorType.TOO_MANY_RETRIES,
+                    'msg': 'The connection has lost too many times'
+                })
+
         _live_client_manager.del_live_client(client.room_key)
 
     def _on_danmaku(self, client: WebLiveClient, message: dm_web_models.DanmakuMessage):
-        asyncio.create_task(self.__on_danmaku(client, message))
+        utils.async_io.create_task_with_ref(self.__on_danmaku(client, message))
 
     async def __on_danmaku(self, client: WebLiveClient, message: dm_web_models.DanmakuMessage):
-        avatar_url = message.face
-        if avatar_url != '':
-            services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
-        else:
-            # 先异步调用再获取房间，因为返回时房间可能已经不存在了
-            avatar_url = await services.avatar.get_avatar_url(message.uid, message.uname)
+        # 先异步调用再获取房间，因为返回时房间可能已经不存在了
+        avatar_url = await services.avatar.get_avatar_url(message.uid, message.uname)
 
         room = client_room_manager.get_room(client.room_key)
         if room is None:
@@ -569,7 +591,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         )
 
     def _on_buy_guard(self, client: WebLiveClient, message: dm_web_models.GuardBuyMessage):
-        asyncio.create_task(self.__on_buy_guard(client, message))
+        utils.async_io.create_task_with_ref(self.__on_buy_guard(client, message))
 
     @staticmethod
     async def __on_buy_guard(client: WebLiveClient, message: dm_web_models.GuardBuyMessage):
@@ -638,7 +660,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         )
 
         if need_translate:
-            asyncio.create_task(self._translate_and_response(
+            utils.async_io.create_task_with_ref(self._translate_and_response(
                 message.message, room.room_key, msg_id, services.translate.Priority.HIGH
             ))
 
@@ -747,7 +769,9 @@ class LiveMsgHandler(blivedm.BaseHandler):
         )
 
         if need_translate:
-            asyncio.create_task(self._translate_and_response(message.msg, room.room_key, message.msg_id))
+            utils.async_io.create_task_with_ref(self._translate_and_response(
+                message.msg, room.room_key, message.msg_id
+            ))
 
     def _on_open_live_gift(self, client: OpenLiveClient, message: dm_open_models.GiftMessage):
         avatar_url = services.avatar.process_avatar_url(message.uface)
@@ -846,7 +870,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         )
 
         if need_translate:
-            asyncio.create_task(self._translate_and_response(
+            utils.async_io.create_task_with_ref(self._translate_and_response(
                 message.message, room.room_key, msg_id, services.translate.Priority.HIGH
             ))
 

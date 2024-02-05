@@ -154,6 +154,9 @@ export default {
     p4: '4. 在OBS中添加浏览器源',
     p5: '5. URL处输入之前复制的房间URL，自定义CSS处输入之前复制的CSS'
   },
+  room: {
+    fatalErrorOccurred: '发生了一个致命错误，请手动刷新页面以重新连接'
+  },
   chat: {
     moderator: '管理员',
     guardLevel1: '总督',

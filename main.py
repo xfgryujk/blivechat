@@ -21,6 +21,7 @@ import config
 import models.database
 import services.avatar
 import services.chat
+import services.open_live
 import services.plugin
 import services.translate
 import update
@@ -65,6 +66,7 @@ def init():
 
     services.avatar.init()
     services.translate.init()
+    services.open_live.init()
     services.chat.init()
 
     init_server(args.host, args.port, args.debug)

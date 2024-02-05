@@ -154,6 +154,9 @@ export default {
     p4: '4. OBSでブラウザを新規作成する',
     p5: '5. プロパティでこぴーしたURLを入力し、カスタムCSSでスタイルジェネレータのCSSを入力する'
   },
+  room: {
+    fatalErrorOccurred: '致命的なエラーが発生しました。ページを手動で更新して再接続してください'
+  },
   chat: {
     moderator: 'モデレーター',
     guardLevel1: '総督',
