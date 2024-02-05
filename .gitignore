@@ -113,4 +113,7 @@ data/emoticons/*
 !data/custom_public/
 data/custom_public/*
 !data/custom_public/README.txt
+!data/plugins/
+data/plugins/*
+!data/plugins/.gitkeep
 log/*
