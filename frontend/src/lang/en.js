@@ -70,7 +70,7 @@ export default {
   },
   stylegen: {
     legacy: 'Classic',
-    lineLike: 'Line-like',
+    lineLike: 'LINE-like',
 
     light: 'light',
     dark: 'dark',

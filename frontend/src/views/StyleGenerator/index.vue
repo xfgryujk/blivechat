@@ -25,7 +25,7 @@
     </el-col>
 
     <el-col :sm="24" :md="8">
-      <div :style="{ position: 'relative', top: `${exampleTop}px` }">
+      <div id="example-panel">
         <el-form inline style="line-height: 40px">
           <el-form-item :label="$t('stylegen.playAnimation')" style="margin: 0">
             <el-switch v-model="playAnimation" @change="setExampleRoomClientStart"></el-switch>
@@ -69,7 +69,6 @@ export default {
       // 防抖后延迟变化的结果
       debounceResult: '',
 
-      exampleTop: 0,
       playAnimation: true,
       exampleBgLight: false
     }
@@ -94,21 +93,8 @@ export default {
   },
   mounted() {
     this.debounceResult = this.inputResult = this.subComponentResult
-
-    this.$parent.$el.addEventListener('scroll', this.onParentScroll)
-  },
-  beforeDestroy() {
-    this.$parent.$el.removeEventListener('scroll', this.onParentScroll)
   },
   methods: {
-    onParentScroll(event) {
-      if (document.body.clientWidth <= 992) {
-        this.exampleTop = 0
-      } else {
-        this.exampleTop = event.target.scrollTop
-      }
-    },
-
     onExampleRoomLoad() {
       this.setExampleRoomCustomCss(this.debounceResult)
       this.setExampleRoomClientStart(this.playAnimation)
@@ -137,6 +123,13 @@ export default {
 </script>
 
 <style scoped>
+@media only screen and (min-width: 992px) {
+  #example-panel {
+    position: fixed;
+    width: calc((100vw - 230px - 40px) / 3 - 20px);
+  }
+}
+
 #example-container {
   height: calc(100vh - 150px);
 

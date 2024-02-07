@@ -70,7 +70,7 @@ export default {
   },
   stylegen: {
     legacy: '古典',
-    lineLike: 'Line風',
+    lineLike: 'LINE風',
 
     light: '明るい',
     dark: '暗い',

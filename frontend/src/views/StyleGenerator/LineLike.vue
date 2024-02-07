@@ -447,7 +447,7 @@ yt-live-chat-text-message-renderer #author-name {
   ${this.form.userNameColor ? `color: ${this.form.userNameColor} !important;` : ''}
   font-family: "${common.cssEscapeStr(this.form.userNameFont)}"${common.FALLBACK_FONTS};
   font-size: ${this.form.userNameFontSize}px !important;
-  line-height: ${this.form.userNameLineHeight || this.form.userNameFontSize}px !important;
+  line-height: ${this.form.userNameLineHeight || (this.form.userNameFontSize + 2)}px !important;
 }
 
 /* Hide badges */
@@ -463,14 +463,16 @@ yt-live-chat-text-message-renderer #message * {
   ${this.form.messageColor ? `color: ${this.form.messageColor} !important;` : ''}
   font-family: "${common.cssEscapeStr(this.form.messageFont)}"${common.FALLBACK_FONTS};
   font-size: ${this.form.messageFontSize}px !important;
-  line-height: ${this.form.messageLineHeight || this.form.messageFontSize}px !important;
+  line-height: ${this.form.messageLineHeight || (this.form.messageFontSize + 2)}px !important;
 }
 
 yt-live-chat-text-message-renderer #message {
   display: block !important;
+  position: relative;
+  width: fit-content;
   overflow: visible !important;
-  padding: 20px;
-  border-radius: 30px;
+  padding: 15px;
+  border-radius: 24px;
 }
 
 yt-live-chat-text-message-renderer #message .emoji {
@@ -487,8 +489,8 @@ yt-live-chat-text-message-renderer #message::before {
   content: "";
   display: inline-block;
   position: absolute;
-  top: ${this.form.showUserNames ? (this.form.userNameLineHeight || this.form.userNameFontSize) + 10 : 20}px;
-  left: ${this.form.showAvatars ? this.form.avatarSize + (this.form.avatarSize / 4) - 8 : -8}px;
+  top: -3px;
+  left: -10px;
   border: 8px solid transparent;
   border-right: 18px solid;
   transform: rotate(35deg);
@@ -538,7 +540,7 @@ yt-live-chat-membership-item-renderer #header-content-inner-column,
 yt-live-chat-membership-item-renderer #header-content-inner-column * {
   font-family: "${common.cssEscapeStr(this.form.firstLineFont)}"${common.FALLBACK_FONTS};
   font-size: ${this.form.firstLineFontSize}px !important;
-  line-height: ${this.form.firstLineLineHeight || this.form.firstLineFontSize}px !important;
+  line-height: ${this.form.firstLineLineHeight || (this.form.firstLineFontSize + 2)}px !important;
 }
 
 yt-live-chat-paid-message-renderer #purchase-amount,
@@ -547,14 +549,14 @@ yt-live-chat-membership-item-renderer #header-subtext,
 yt-live-chat-membership-item-renderer #header-subtext * {
   font-family: "${common.cssEscapeStr(this.form.secondLineFont)}"${common.FALLBACK_FONTS};
   font-size: ${this.form.secondLineFontSize}px !important;
-  line-height: ${this.form.secondLineLineHeight || this.form.secondLineFontSize}px !important;
+  line-height: ${this.form.secondLineLineHeight || (this.form.secondLineFontSize + 2)}px !important;
 }
 
 yt-live-chat-paid-message-renderer #content,
 yt-live-chat-paid-message-renderer #content * {
   font-family: "${common.cssEscapeStr(this.form.scContentFont)}"${common.FALLBACK_FONTS};
   font-size: ${this.form.scContentFontSize}px !important;
-  line-height: ${this.form.scContentLineHeight || this.form.scContentFontSize}px !important;
+  line-height: ${this.form.scContentLineHeight || (this.form.scContentFontSize + 2)}px !important;
 }`
     },
     showNewMemberBgStyle() {
