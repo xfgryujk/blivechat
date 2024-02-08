@@ -16,17 +16,37 @@
       <el-menu-item :index="$router.resolve({ name: 'help' }).href">
         <i class="el-icon-question"></i>{{ $t('sidebar.help') }}
       </el-menu-item>
-      <a href="https://github.com/xfgryujk/blivechat" target="_blank">
-        <el-menu-item>
-          <i class="el-icon-share"></i>{{ $t('sidebar.projectAddress') }}
-        </el-menu-item>
-      </a>
-      <a href="https://link.bilibili.com/p/center/index#/live-data/gift-list" target="_blank">
-        <el-menu-item>
-          <i class="el-icon-link"></i>{{ $t('sidebar.giftRecordOfficial') }}
-        </el-menu-item>
-      </a>
-      <el-submenu index="null">
+      <el-submenu index="1">
+        <template slot="title">
+          <i class="el-icon-link"></i>{{ $t('sidebar.links') }}
+        </template>
+        <a href="https://github.com/xfgryujk/blivechat" target="_blank">
+          <el-menu-item>
+            <i class="el-icon-share"></i>{{ $t('sidebar.projectAddress') }}
+          </el-menu-item>
+        </a>
+        <a href="https://github.com/xfgryujk/blivechat/discussions" target="_blank">
+          <el-menu-item>
+            <i class="el-icon-s-comment"></i>{{ $t('sidebar.discussion') }}
+          </el-menu-item>
+        </a>
+        <a href="https://github.com/xfgryujk/blivechat/wiki" target="_blank">
+          <el-menu-item>
+            <i class="el-icon-document"></i>{{ $t('sidebar.documentation') }}
+          </el-menu-item>
+        </a>
+        <a href="https://play-live.bilibili.com/details/1694397161340" target="_blank">
+          <el-menu-item>
+            <i class="el-icon-s-goods"></i>{{ $t('sidebar.mall') }}
+          </el-menu-item>
+        </a>
+        <a href="https://link.bilibili.com/p/center/index#/live-data/gift-list" target="_blank">
+          <el-menu-item>
+            <i class="el-icon-s-finance"></i>{{ $t('sidebar.giftRecordOfficial') }}
+          </el-menu-item>
+        </a>
+      </el-submenu>
+      <el-submenu index="2">
         <template slot="title">
           <i class="el-icon-chat-line-square"></i>Language
         </template>

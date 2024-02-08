@@ -103,6 +103,8 @@
 
 **自建服务器时强烈建议不使用加载器**，否则可能因为混合HTTP和HTTPS等原因加载不出来
 
-## 更多文档
+## 常用链接
 
-[blivechat wiki](https://github.com/xfgryujk/blivechat/wiki)
+* [文档](https://github.com/xfgryujk/blivechat/wiki)
+* [交流社区](https://github.com/xfgryujk/blivechat/discussions)
+* [B站商店](https://play-live.bilibili.com/details/1694397161340)
