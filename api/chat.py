@@ -223,7 +223,8 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
 
     # 跨域测试用
     def check_origin(self, origin):
-        if self.application.settings['debug']:
+        cfg = config.get_config()
+        if cfg.debug:
             return True
         return super().check_origin(origin)
 
@@ -241,24 +242,24 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
             self.close()
 
     async def _on_joined_room(self):
-        if self.settings['debug']:
+        cfg = config.get_config()
+        if cfg.debug:
             await self._send_test_message()
 
         # 不允许自动翻译的提示
-        if self.auto_translate:
-            cfg = config.get_config()
-            if (
-                cfg.allow_translate_rooms
-                # 身份码就不管了吧，反正配置正确的情况下不会看到这个提示
-                and self.room_key.type == services.chat.RoomKeyType.ROOM_ID
-                and self.room_key.value not in cfg.allow_translate_rooms
-            ):
-                self.send_cmd_data(Command.ADD_TEXT, make_text_message_data(
-                    author_name='blivechat',
-                    author_type=2,
-                    content='Translation is not allowed in this room. Please download to use translation',
-                    author_level=60,
-                ))
+        if (
+            self.auto_translate
+            and cfg.allow_translate_rooms
+            # 身份码就不管了吧，反正配置正确的情况下不会看到这个提示
+            and self.room_key.type == services.chat.RoomKeyType.ROOM_ID
+            and self.room_key.value not in cfg.allow_translate_rooms
+        ):
+            self.send_cmd_data(Command.ADD_TEXT, make_text_message_data(
+                author_name='blivechat',
+                author_type=2,
+                content='Translation is not allowed in this room. Please download to use translation',
+                author_level=60,
+            ))
 
     # 测试用
     async def _send_test_message(self):

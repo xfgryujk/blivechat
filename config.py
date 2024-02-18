@@ -18,15 +18,19 @@ CONFIG_PATH_LIST = [
 _config: Optional['AppConfig'] = None
 
 
-def init():
-    if reload():
+def init(cmd_args):
+    if reload(cmd_args):
         return
     logger.warning('Using default config')
+
+    config = AppConfig()
+    config.load_cmd_args(cmd_args)
+
     global _config
-    _config = AppConfig()
+    _config = config
 
 
-def reload():
+def reload(cmd_args):
     config_path = ''
     for path in CONFIG_PATH_LIST:
         if os.path.exists(path):
@@ -38,6 +42,8 @@ def reload():
     config = AppConfig()
     if not config.load(config_path):
         return False
+    config.load_cmd_args(cmd_args)
+
     global _config
     _config = config
     return True
@@ -49,6 +55,7 @@ def get_config():
 
 class AppConfig:
     def __init__(self):
+        self.debug = False
         self.host = '127.0.0.1'
         self.port = 12450
         self.database_url = 'sqlite:///data/database.db'
@@ -77,6 +84,13 @@ class AppConfig:
         return (
             self.open_live_access_key_id != '' and self.open_live_access_key_secret != '' and self.open_live_app_id != 0
         )
+
+    def load_cmd_args(self, args):
+        if args.host is not None:
+            self.host = args.host
+        if args.port is not None:
+            self.port = args.port
+        self.debug = args.debug
 
     def load(self, path):
         try:

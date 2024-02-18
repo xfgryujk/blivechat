@@ -59,17 +59,17 @@ def init():
 
     init_logging(args.debug)
     logger.info('App started, initializing')
-    config.init()
+    config.init(args)
 
     utils.request.init()
-    models.database.init(args.debug)
+    models.database.init()
 
     services.avatar.init()
     services.translate.init()
     services.open_live.init()
     services.chat.init()
 
-    init_server(args.host, args.port, args.debug)
+    init_server()
     if server is None:
         return False
 
@@ -123,36 +123,31 @@ def init_logging(debug):
     logging.getLogger('tornado.access').setLevel(logging.WARNING)
 
 
-def init_server(host, port, debug):
+def init_server():
     cfg = config.get_config()
-    if host is None:
-        host = cfg.host
-    if port is None:
-        port = cfg.port
-
     app = tornado.web.Application(
         ROUTES,
         websocket_ping_interval=10,
-        debug=debug,
+        debug=cfg.debug,
         autoreload=False
     )
     try:
         global server
         server = app.listen(
-            port,
-            host,
+            cfg.port,
+            cfg.host,
             xheaders=cfg.tornado_xheaders,
             max_body_size=1024 * 1024,
             max_buffer_size=1024 * 1024
         )
     except OSError:
-        logger.warning('Address is used %s:%d', host, port)
+        logger.warning('Address is used %s:%d', cfg.host, cfg.port)
         return
     finally:
         if cfg.open_browser_at_startup:
-            url = 'http://localhost/' if port == 80 else f'http://localhost:{port}/'
+            url = 'http://localhost/' if cfg.port == 80 else f'http://localhost:{cfg.port}/'
             webbrowser.open(url)
-    logger.info('Server started: %s:%d', host, port)
+    logger.info('Server started: %s:%d', cfg.host, cfg.port)
 
 
 async def run():
