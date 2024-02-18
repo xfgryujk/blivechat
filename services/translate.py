@@ -90,6 +90,10 @@ def create_translate_provider(cfg):
             cfg['query_interval'], cfg['source_language'], cfg['target_language'],
             cfg['app_id'], cfg['secret']
         )
+    elif type_ == 'GeminiTranslate':
+        return GeminiTranslate(            
+            cfg['query_interval'], cfg['app_id'], cfg['prompt'], cfg['temperature']
+        )
     return None
 
 
@@ -675,3 +679,70 @@ class BaiduTranslate(TranslateProvider):
     def _on_cool_down_timeout(self):
         self._cool_down_timer_handle = None
         self._on_availability_change()
+
+class GeminiTranslate(TranslateProvider):
+    def __init__(self, query_interval, app_id, prompt, temperature=0.9):
+        super().__init__(query_interval)
+        self._app_id = app_id
+        self._prompt = prompt
+        self._temperature = temperature
+
+    async def _do_translate(self, text) -> Optional[str]:
+        api_endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
+        api_key = self._app_id
+        
+        payload = {
+            "contents": [
+                {
+                    "role": "user",
+                    "parts": [{"text": self._prompt + text + "\n译文:"}]
+                },
+            ],
+            "safetySettings": [
+                {
+                "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                "threshold": "BLOCK_NONE"
+                },
+                {
+                "category": "HARM_CATEGORY_HATE_SPEECH",
+                "threshold": "BLOCK_NONE"
+                },
+                {
+                "category": "HARM_CATEGORY_HARASSMENT",
+                "threshold": "BLOCK_NONE"
+                },
+                {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_NONE"
+                }
+            ],
+            "generationConfig": {
+                "temperature": str(self._temperature),
+                "topP": "1",
+                "topK": "32",
+                "candidateCount": "1",
+                "maxOutputTokens": "8192"
+            }
+        }
+        
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        
+        async with utils.request.http_session.post(
+            f'{api_endpoint}?key={api_key}',
+            headers=headers,
+            json=payload
+            ) as r:
+            if r.status != 200:
+                logger.warning('GeminiTranslate request failed: status=%d %s', r.status, r.reason)
+                return None
+            data = await r.json()
+        
+        # 处理返回结果，根据Gemini API的实际返回结构进行调整
+        try:
+            translated_text = data["candidates"][0]["content"]["parts"][0]["text"]
+            return translated_text
+        except (KeyError, IndexError):
+            logger.warning('GeminiTranslate failed to process response: %s', data)
+            return None
