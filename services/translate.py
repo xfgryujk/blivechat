@@ -695,7 +695,7 @@ class GeminiTranslate(TranslateProvider):
             "contents": [
                 {
                     "role": "user",
-                    "parts": [{"text": self._prompt + text + "\n译文:"}]
+                    "parts": [{"text": self._prompt + text + "\nOutput:"}]
                 },
             ],
             "safetySettings": [
