@@ -205,9 +205,10 @@ class Plugin:
         token = ''.join(random.choice(string.hexdigits) for _ in range(32))
         self._set_token(token)
 
+        cfg = config.get_config()
         env = {
             **os.environ,
-            'BLC_PORT': str(12450),  # TODO 读配置
+            'BLC_PORT': str(cfg.port),
             'BLC_TOKEN': self._token,
         }
         try:

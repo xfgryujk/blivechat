@@ -147,20 +147,25 @@ def is_sdk_version_compatible():
     """
     assert _init_msg is not None, 'Please call init() first'
 
-    major_ver_pattern = r'(\d+)\.\d+\.\d+'
+    version_pattern = r'(\d+)\.(\d+)\.\d+'
     remote_ver = get_blc_sdk_version()
 
-    m = re.match(major_ver_pattern, remote_ver)
+    m = re.match(version_pattern, remote_ver)
     if m is None:
         raise exc.SdkError(f"Bad remote version format: {remote_ver}")
     remote_major_ver = m[1]
+    remote_minor_ver = m[2]
 
-    m = re.match(major_ver_pattern, __version__)
+    m = re.match(version_pattern, __version__)
     if m is None:
         raise exc.SdkError(f"Bad local version format: {__version__}")
     local_major_ver = m[1]
+    local_minor_ver = m[2]
 
-    res = remote_major_ver == local_major_ver
+    res = (
+        remote_major_ver == local_major_ver
+        and int(remote_minor_ver) >= int(local_minor_ver)
+    )
     if not res:
         logger.warning('SDK version is not compatible, remote=%s, local=%s', remote_ver, __version__)
     return res

@@ -46,10 +46,10 @@ const PRICE_CONFIGS = [
     colors: {
       contentBg: 'rgba(153, 236, 255, 1)',
       headerBg: 'rgba(153, 236, 255, 1)',
-      header: 'rgba(255,255,255,1)',
-      authorName: 'rgba(255,255,255,0.701961)',
-      time: 'rgba(255,255,255,0.501961)',
-      content: 'rgba(255,255,255,1)'
+      header: 'rgba(0,0,0,1)',
+      authorName: 'rgba(0,0,0,0.701961)',
+      time: 'rgba(0,0,0,0.501961)',
+      content: 'rgba(0,0,0,1)'
     },
     pinTime: 0,
     priceLevel: 0,
