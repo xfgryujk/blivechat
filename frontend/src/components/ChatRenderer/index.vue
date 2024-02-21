@@ -5,7 +5,7 @@
     <ticker class="style-scope yt-live-chat-renderer" :messages.sync="paidMessages" :showGiftName="showGiftName"></ticker>
     <yt-live-chat-item-list-renderer class="style-scope yt-live-chat-renderer" allow-scroll>
       <div ref="scroller" id="item-scroller" class="style-scope yt-live-chat-item-list-renderer animated" @scroll="onScroll">
-        <div ref="itemOffset" id="item-offset" class="style-scope yt-live-chat-item-list-renderer" style="height: 0px;">
+        <div ref="itemOffset" id="item-offset" class="style-scope yt-live-chat-item-list-renderer">
           <div ref="items" id="items" class="style-scope yt-live-chat-item-list-renderer" style="overflow: hidden"
             :style="{ transform: `translateY(${Math.floor(scrollPixelsRemaining)}px)` }"
           >
@@ -579,6 +579,7 @@ export default {
 
     maybeResizeScrollContainer() {
       this.$refs.itemOffset.style.height = `${this.$refs.items.clientHeight}px`
+      this.$refs.itemOffset.style.minHeight = `${this.$refs.scroller.clientHeight}px`
       this.maybeScrollToBottom()
     },
     maybeScrollToBottom() {
