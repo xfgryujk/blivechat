@@ -92,7 +92,8 @@ def create_translate_provider(cfg):
         )
     elif type_ == 'GeminiTranslate':
         return GeminiTranslate(            
-            cfg['query_interval'], cfg['app_id'], cfg['prompt'], cfg['temperature']
+            cfg['query_interval'], cfg['app_id'], cfg['prompt'], cfg['temperature'], 
+            cfg['model_name'], cfg['is_use_proxy'], cfg['proxy']
         )
     return None
 
@@ -681,47 +682,51 @@ class BaiduTranslate(TranslateProvider):
         self._on_availability_change()
 
 class GeminiTranslate(TranslateProvider):
-    def __init__(self, query_interval, app_id, prompt, temperature=0.9):
+    def __init__(self, query_interval, app_id, prompt, temperature=0.9, model_name="gemini-1.0-pro", is_use_proxy=False, proxy=None):
         super().__init__(query_interval)
         self._app_id = app_id
         self._prompt = prompt
         self._temperature = temperature
+        self._model_name = model_name
+        self._is_use_proxy = is_use_proxy
+        self._proxy = proxy
 
     async def _do_translate(self, text) -> Optional[str]:
-        api_endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
+        api_endpoint = f'https://generativelanguage.googleapis.com/v1beta/models/{self._model_name}:generateContent'
         api_key = self._app_id
         
+        final_prompt = self._prompt.replace('{{original_text}}', text)
         payload = {
-            "contents": [
+            'contents': [
                 {
-                    "role": "user",
-                    "parts": [{"text": self._prompt + text + "\nOutput:"}]
+                    'role': 'user',
+                    'parts': [{'text': final_prompt}]
                 },
             ],
-            "safetySettings": [
+            'safetySettings': [
                 {
-                "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                "threshold": "BLOCK_NONE"
+                    'category': 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+                    'threshold': 'BLOCK_NONE'
                 },
                 {
-                "category": "HARM_CATEGORY_HATE_SPEECH",
-                "threshold": "BLOCK_NONE"
+                    'category': 'HARM_CATEGORY_HATE_SPEECH',
+                    'threshold': 'BLOCK_NONE'
                 },
                 {
-                "category": "HARM_CATEGORY_HARASSMENT",
-                "threshold": "BLOCK_NONE"
+                    'category': 'HARM_CATEGORY_HARASSMENT',
+                    'threshold': 'BLOCK_NONE'
                 },
                 {
-                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-                "threshold": "BLOCK_NONE"
+                    'category': 'HARM_CATEGORY_DANGEROUS_CONTENT',
+                    'threshold': 'BLOCK_NONE'
                 }
             ],
-            "generationConfig": {
-                "temperature": str(self._temperature),
-                "topP": "1",
-                "topK": "32",
-                "candidateCount": "1",
-                "maxOutputTokens": "8192"
+            'generationConfig': {
+                'temperature': str(self._temperature),
+                'topP': '1',
+                'topK': '32',
+                'candidateCount': '1',
+                'maxOutputTokens': '8192'
             }
         }
         
@@ -729,20 +734,52 @@ class GeminiTranslate(TranslateProvider):
             'Content-Type': 'application/json',
         }
         
-        async with utils.request.http_session.post(
-            f'{api_endpoint}?key={api_key}',
-            headers=headers,
-            json=payload
-            ) as r:
-            if r.status != 200:
-                logger.warning('GeminiTranslate request failed: status=%d %s', r.status, r.reason)
-                return None
-            data = await r.json()
+        if self._is_use_proxy:
+            proxy = self._proxy
+        else:
+            proxy = None
         
-        # 处理返回结果，根据Gemini API的实际返回结构进行调整
-        try:
-            translated_text = data["candidates"][0]["content"]["parts"][0]["text"]
-            return translated_text
-        except (KeyError, IndexError):
-            logger.warning('GeminiTranslate failed to process response: %s', data)
-            return None
+        max_retries = 3
+        retry_delay = 1
+        attempts = 0  # 初始化尝试计数
+        while attempts < max_retries:
+            try:
+                # 设置超时时间为10秒
+                timeout = aiohttp.ClientTimeout(total=10)        
+                async with utils.request.http_session.post(
+                    f'{api_endpoint}?key={api_key}',
+                    headers=headers,
+                    json=payload,
+                    proxy=proxy,
+                    timeout=timeout
+                ) as r:
+                    if r.status == 200:
+                        data = await r.json()
+                        try:
+                            translated_text = data['candidates'][0]['content']['parts'][0]['text']
+                            return translated_text  # 成功获取翻译文本，返回结果
+                        except (KeyError, IndexError):
+                            logger.warning('Failed to process the response correctly: %s', data)
+                            # 如果响应结构有误，则退出循环
+                            return None
+                    else:
+                        logger.warning('Request failed with status %d: %s', r.status, r.reason)
+            except asyncio.TimeoutError as toe:
+                logger.warning('Request timeout occurred: %s', str(toe))
+            except Exception as e:
+                log_str = f'{str(e)}\ndata:\n{data}'
+                logger.error('An error occurred during the request: %s', log_str)
+                try:
+                    logger.error('FinishReason: ' + {data['candidates'][0]['finishReason']})
+                except:
+                    pass
+            
+            # 未成功获取翻译文本，增加尝试次数并等待重新尝试
+            attempts += 1
+            if attempts < max_retries:
+                logger.info('Retrying request (%d/%d)...', attempts, max_retries)
+                await asyncio.sleep(retry_delay)
+
+        # 如果所有重试尝试后还未成功，则记录日志并返回 None
+        logger.error('All retry attempts failed.')
+        return None

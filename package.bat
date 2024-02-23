@@ -1,1 +1,0 @@
-pyinstaller --clean --hidden-import=tornado --noconfirm --name=blivechat --icon=frontend\public\favicon.ico --add-data "data;data" --add-data "log;log" --add-data "frontend/dist;frontend/dist" --contents-directory "." main.py
