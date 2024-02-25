@@ -164,7 +164,7 @@ class AppConfig:
                     translator_config['proxy'] = section['proxy']
                     translator_config['api_key'] = section['api_key']
                     translator_config['model_code'] = section['model_code']
-                    translator_config['prompt'] = section['prompt']
+                    translator_config['prompt'] = section['prompt'].replace('\n', ' ').replace('\\n', '\n')
                     translator_config['temperature'] = section.getfloat('temperature')
                 else:
                     raise ValueError(f'Invalid translator type: {type_}')

@@ -688,7 +688,7 @@ class GeminiTranslate(TranslateProvider):
         self._proxy = proxy or None
         self._api_key = api_key
         self._url = f'https://generativelanguage.googleapis.com/v1beta/{model_code}:generateContent'
-        self._prompt = prompt.replace('\n', ' ').replace('\\n', '\n')
+        self._prompt = prompt
         self._body = {
             'contents': [
                 {
