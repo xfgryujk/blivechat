@@ -161,12 +161,11 @@ class AppConfig:
                     translator_config['app_id'] = section['app_id']
                     translator_config['secret'] = section['secret']
                 elif type_ == 'GeminiTranslate':
-                    translator_config['app_id'] = section['app_id']
-                    translator_config['prompt'] = section['prompt']
-                    translator_config['temperature'] = section['temperature']
-                    translator_config['model_name'] = section['model_name']
-                    translator_config['is_use_proxy'] = section.getboolean('is_use_proxy')
                     translator_config['proxy'] = section['proxy']
+                    translator_config['api_key'] = section['api_key']
+                    translator_config['model_code'] = section['model_code']
+                    translator_config['prompt'] = section['prompt']
+                    translator_config['temperature'] = section.getfloat('temperature')
                 else:
                     raise ValueError(f'Invalid translator type: {type_}')
             except Exception:  # noqa
