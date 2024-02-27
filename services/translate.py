@@ -730,7 +730,7 @@ class GeminiTranslate(TranslateProvider):
         return self._cool_down_timer_handle is None and super().is_available
 
     async def _do_translate(self, text) -> Optional[str]:
-        input_text = self._prompt.replace('{{original_text}}', text)
+        input_text = self._prompt.format(original_text=text)
         self._body['contents'][0]['parts'][0]['text'] = input_text
         try:
             async with utils.request.http_session.post(
