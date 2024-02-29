@@ -50,7 +50,7 @@ class MsgHandler(blcsdk.BaseHandler):
             author_name=message.author_name,
             content=message.content,
         )
-        tts.say(text)
+        tts.say_text(text)
 
     def _on_add_gift(self, client: blcsdk.BlcPluginClient, message: sdk_models.AddGiftMsg, extra: sdk_models.ExtraData):
         if extra.is_from_plugin:
@@ -61,14 +61,15 @@ class MsgHandler(blcsdk.BaseHandler):
         if template == '':
             return
 
-        text = template.format(
+        task = tts.GiftTtsTask(
+            priority=tts.Priority.HIGH if is_paid_gift else tts.Priority.NORMAL,
             author_name=message.author_name,
             num=message.num,
             gift_name=message.gift_name,
             price=message.total_coin / 1000,
             total_coin=message.total_coin if is_paid_gift else message.total_free_coin,
         )
-        tts.say(text, tts.Priority.HIGH if is_paid_gift else tts.Priority.NORMAL)
+        tts.say(task)
 
     def _on_add_member(
         self, client: blcsdk.BlcPluginClient, message: sdk_models.AddMemberMsg, extra: sdk_models.ExtraData
@@ -94,7 +95,7 @@ class MsgHandler(blcsdk.BaseHandler):
             unit=message.unit,
             guard_name=guard_name,
         )
-        tts.say(text, tts.Priority.HIGH)
+        tts.say_text(text, tts.Priority.HIGH)
 
     def _on_add_super_chat(
         self, client: blcsdk.BlcPluginClient, message: sdk_models.AddSuperChatMsg, extra: sdk_models.ExtraData
@@ -110,4 +111,4 @@ class MsgHandler(blcsdk.BaseHandler):
             price=message.price,
             content=message.content,
         )
-        tts.say(text, tts.Priority.HIGH)
+        tts.say_text(text, tts.Priority.HIGH)

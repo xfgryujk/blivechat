@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
+import collections
 import dataclasses
 import enum
 import logging
-import queue
 import threading
 from typing import *
 
@@ -23,7 +23,55 @@ class Priority(enum.IntEnum):
 @dataclasses.dataclass
 class TtsTask:
     priority: Priority
+
+    @property
+    def tts_text(self):
+        raise NotImplementedError
+
+    def merge(self, task: 'TtsTask'):
+        return False
+
+
+@dataclasses.dataclass
+class TextTtsTask(TtsTask):
     text: str
+
+    @property
+    def tts_text(self):
+        return self.text
+
+
+@dataclasses.dataclass
+class GiftTtsTask(TtsTask):
+    author_name: str
+    num: int
+    gift_name: str
+    price: float
+    total_coin: int
+
+    @property
+    def tts_text(self):
+        cfg = config.get_config()
+        is_paid_gift = self.price > 0.
+        template = cfg.template_paid_gift if is_paid_gift else cfg.template_free_gift
+        text = template.format(
+            author_name=self.author_name,
+            num=self.num,
+            gift_name=self.gift_name,
+            price=self.price,
+            total_coin=self.total_coin,
+        )
+        return text
+
+    def merge(self, task: 'TtsTask'):
+        if not isinstance(task, GiftTtsTask):
+            return False
+        if task.author_name != self.author_name or task.gift_name != self.gift_name:
+            return False
+        self.num += task.num
+        self.price += task.price
+        self.total_coin += task.total_coin
+        return True
 
 
 def init():
@@ -32,15 +80,19 @@ def init():
     return _tts.init()
 
 
-def say(text, priority: Priority = Priority.NORMAL):
-    logger.debug('%s', text)
-    task = TtsTask(priority=priority, text=text)
+def say_text(text, priority: Priority = Priority.NORMAL):
+    task = TextTtsTask(priority=priority, text=text)
+    return say(task)
+
+
+def say(task: TtsTask):
+    logger.debug('%s', task.tts_text)
     res = _tts.push_task(task)
     if not res:
         if task.priority == Priority.HIGH:
-            logger.info('Dropped high priority task: %s', task.text)
+            logger.info('Dropped high priority task: %s', task.tts_text)
         else:
-            logger.debug('Dropped task: %s', task.text)
+            logger.debug('Dropped task: %s', task.tts_text)
     return res
 
 
@@ -52,10 +104,7 @@ class Tts:
         self._thread_init_event = threading.Event()
 
         cfg = config.get_config()
-        self._task_queues: List[queue.Queue['TtsTask']] = [
-            queue.Queue(cfg.max_tts_queue_size) for _ in range(len(Priority))
-        ]
-        """任务队列，索引是优先级"""
+        self._task_queues = TaskQueue(cfg.max_tts_queue_size)
 
     def init(self):
         self._worker_thread.start()
@@ -79,49 +128,70 @@ class Tts:
 
         self._thread_init_event.set()
 
-    # TODO 自己实现队列，合并礼物消息
     def push_task(self, task: TtsTask):
-        q = self._task_queues[task.priority]
-        try:
-            q.put_nowait(task)
-            return True
-        except queue.Full:
-            pass
-
-        if task.priority != Priority.HIGH:
-            return False
-
-        # 高优先级的尝试降级，挤掉低优先级的任务
-        q = self._task_queues[Priority.NORMAL]
-        while True:
-            try:
-                q.put_nowait(task)
-                break
-            except queue.Full:
-                try:
-                    task = q.get_nowait()
-                    if task.priority == Priority.HIGH:
-                        logger.info('Dropped high priority task: %s', task.text)
-                    else:
-                        logger.debug('Dropped task: %s', task.text)
-                except queue.Empty:
-                    pass
-        return True
-
-    def _pop_task(self) -> TtsTask:
-        while True:
-            # 按优先级遍历，轮询等待任务
-            for q in self._task_queues:
-                try:
-                    return q.get(timeout=0.1)
-                except queue.Empty:
-                    pass
+        return self._task_queues.push(task)
 
     def _worker_thread_func(self):
         self._init_in_worker_thread()
 
         logger.info('Running TTS worker')
         while True:
-            task = self._pop_task()
-            self._engine.say(task.text)
+            task = self._task_queues.pop()
+            self._engine.say(task.tts_text)
             self._engine.runAndWait()
+
+
+class TaskQueue:
+    def __init__(self, max_size=None):
+        self._max_size: Optional[int] = max_size
+        self._queues: List[collections.deque[TtsTask]] = [
+            collections.deque(maxlen=self._max_size) for _ in Priority
+        ]
+        """任务队列，索引是优先级"""
+        self._lock = threading.Lock()
+        self._not_empty_condition = threading.Condition(self._lock)
+
+    def push(self, task: TtsTask):
+        with self._lock:
+            q = self._queues[task.priority]
+
+            # 尝试合并
+            for old_task in reversed(q):
+                if old_task.merge(task):
+                    return True
+
+            # 没满直接push
+            if (
+                self._max_size is None
+                or sum(len(q_) for q_ in self._queues) < self._max_size
+            ):
+                q.append(task)
+                self._not_empty_condition.notify()
+                return True
+
+            if task.priority != Priority.HIGH:
+                return False
+
+            # 高优先级的尝试挤掉低优先级的任务
+            lower_q = self._queues[Priority.NORMAL]
+            try:
+                old_task = lower_q.popleft()
+            except IndexError:
+                return False
+            logger.debug('Dropped task: %s', old_task.tts_text)
+
+            q.append(task)
+            self._not_empty_condition.notify()
+            return True
+
+    def pop(self) -> TtsTask:
+        with self._lock:
+            while True:
+                # 按优先级遍历查找任务
+                for q in self._queues:
+                    try:
+                        return q.popleft()
+                    except IndexError:
+                        pass
+
+                self._not_empty_condition.wait()
