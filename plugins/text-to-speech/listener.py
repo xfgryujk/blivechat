@@ -2,6 +2,7 @@
 import __main__
 import logging
 import os
+import subprocess
 import sys
 from typing import *
 
@@ -33,11 +34,19 @@ class MsgHandler(blcsdk.BaseHandler):
     def _on_open_plugin_admin_ui(
         self, client: blcsdk.BlcPluginClient, message: sdk_models.OpenPluginAdminUiMsg, extra: sdk_models.ExtraData
     ):
+        config_path = ''
+        for path in config.CONFIG_PATH_LIST:
+            if os.path.exists(path):
+                config_path = path
+                break
+        if config_path == '':
+            logger.warning('Config file not found, candidates: %s', config.CONFIG_PATH_LIST)
+            return
+
         if sys.platform == 'win32':
-            # TODO 浏览配置文件
-            os.startfile(config.LOG_PATH)
+            subprocess.run(['explorer', '/select,' + config_path])
         else:
-            logger.info('Log path is "%s"', config.LOG_PATH)
+            logger.info('Config path is "%s"', config_path)
 
     def _on_add_text(self, client: blcsdk.BlcPluginClient, message: sdk_models.AddTextMsg, extra: sdk_models.ExtraData):
         if extra.is_from_plugin:

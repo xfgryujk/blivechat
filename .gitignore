@@ -105,15 +105,5 @@ venv.bak/
 
 
 .idea/
-data/*
-!data/config.example.ini
-!data/emoticons/
-data/emoticons/*
-!data/emoticons/.gitkeep
-!data/custom_public/
-data/custom_public/*
-!data/custom_public/README.txt
-!data/plugins/
-data/plugins/*
-!data/plugins/.gitkeep
-log/*
+data/
+log/

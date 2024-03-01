@@ -121,7 +121,7 @@ class Tts:
         logger.info('Available voices:\n%s', '\n'.join(map(str, voices)))
 
         cfg = config.get_config()
-        if cfg.tts_voice_id is not None:
+        if cfg.tts_voice_id != '':
             self._engine.setProperty('voice', cfg.tts_voice_id)
         self._engine.setProperty('rate', cfg.tts_rate)
         self._engine.setProperty('volume', cfg.tts_volume)
