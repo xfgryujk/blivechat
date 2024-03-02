@@ -1,0 +1,8 @@
+{
+  "name": "消息日志",
+  "version": "1.0.0",
+  "author": "xfgryujk",
+  "description": "把收到的消息记录到文件中",
+  "run": "msg-logging.exe",
+  "enabled": true
+}

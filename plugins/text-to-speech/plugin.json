@@ -1,0 +1,8 @@
+{
+  "name": "文字转语音",
+  "version": "1.0.0",
+  "author": "xfgryujk",
+  "description": "用语音读出收到的消息",
+  "run": "text-to-speech.exe",
+  "enabled": true
+}
