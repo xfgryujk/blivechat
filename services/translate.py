@@ -24,11 +24,6 @@ import utils.request
 
 logger = logging.getLogger(__name__)
 
-NO_TRANSLATE_TEXTS = {
-    '草', '草草', '草草草', '草生', '大草原', '上手', '上手上手', '理解', '理解理解', '天才', '天才天才',
-    '强', '余裕', '余裕余裕', '大丈夫', '再放送', '放送事故', '清楚', '清楚清楚'
-}
-
 _translate_providers: List['TranslateProvider'] = []
 # text -> res
 _translate_cache: Optional[cachetools.LRUCache] = None
@@ -100,17 +95,24 @@ def create_translate_provider(cfg):
 
 def need_translate(text):
     text = text.strip()
-    # 没有中文，平时打不出的字不管
-    if not any(0x4E00 <= ord(c) <= 0x9FFF for c in text):
+    # 中文数，不算平时打不出的字
+    zh_num = 0
+    # 日文假名数
+    ja_num = 0
+    for c in text:
+        if 0x4E00 <= ord(c) <= 0x9FFF:
+            zh_num += 1
+        elif 0x3040 <= ord(c) <= 0x30FF:
+            ja_num += 1
+        elif c == '【':
+            # 弹幕同传
+            return False
+
+    # 没有中文
+    if zh_num == 0:
         return False
-    # 含有日文假名
-    if any(0x3040 <= ord(c) <= 0x30FF for c in text):
-        return False
-    # 弹幕同传
-    if '【' in text:
-        return False
-    # 中日双语
-    if text in NO_TRANSLATE_TEXTS:
+    # 日文假名较多
+    if ja_num * 2 >= zh_num:
         return False
     return True
 
