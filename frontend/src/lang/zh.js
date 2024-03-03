@@ -20,9 +20,9 @@ export default {
     disabledByServer: '已被服务器禁用',
 
     general: '常规',
-    useAuthCodeWarning: '请优先使用身份码',
+    useAuthCodeWarning: '请优先使用身份码，否则无法显示头像和昵称',
     room: '房间',
-    roomId: '房间ID',
+    roomId: '房间ID（不推荐）',
     authCode: '身份码',
     howToGetAuthCode: '如何获取身份码',
     showDanmaku: '显示弹幕',

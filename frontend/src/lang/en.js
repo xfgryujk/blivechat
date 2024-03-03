@@ -20,9 +20,9 @@ export default {
     disabledByServer: 'Disabled by the server',
 
     general: 'General',
-    useAuthCodeWarning: 'Please prioritize the identity code',
+    useAuthCodeWarning: 'Please prioritize the identity code, otherwise the avatars and usernames will not display',
     room: 'Room',
-    roomId: 'Room ID',
+    roomId: 'Room ID (not recommended)',
     authCode: 'Identity code',
     howToGetAuthCode: 'How to get identity code',
     showDanmaku: 'Show messages',

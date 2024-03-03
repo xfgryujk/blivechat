@@ -20,9 +20,9 @@ export default {
     disabledByServer: 'サーバーによって無効にされました',
 
     general: '常規',
-    useAuthCodeWarning: 'アイデンティティコードを優先的に使用してください',
+    useAuthCodeWarning: 'アイデンティティコードを優先的に使用してください。そうしないと、アイコンやユーザー名が表示されません',
     room: 'ルーム',
-    roomId: 'ルームID',
+    roomId: 'ルームID（推奨されません）',
     authCode: 'アイデンティティコード',
     howToGetAuthCode: 'アイデンティティコードの取得方法',
     showDanmaku: 'コメントを表示する',
