@@ -10,6 +10,7 @@ import tornado.websocket
 import api.base
 import api.chat
 import blcsdk.models as models
+import config
 import services.avatar
 import services.chat
 import services.plugin
@@ -17,7 +18,71 @@ import services.plugin
 logger = logging.getLogger(__name__)
 
 
-class _PluginHandlerBase(api.base.ApiHandler):
+class _AdminHandlerBase(api.base.ApiHandler):
+    def prepare(self):
+        cfg = config.get_config()
+        if not cfg.enable_admin_plugins:
+            raise tornado.web.HTTPError(403)
+
+        super().prepare()
+
+    def _get_plugin(self):
+        plugin_id = self.json_args.get('pluginId', None)
+        if not isinstance(plugin_id, str) or plugin_id == '':
+            raise tornado.web.MissingArgumentError('pluginId')
+        plugin = services.plugin.get_plugin(plugin_id)
+        if plugin is None:
+            raise tornado.web.HTTPError(404, 'no plugin, plugin_id=%s', plugin_id)
+        return plugin
+
+
+# 不继承_AdminHandlerBase，为了忽略enable_admin_plugins
+class PluginsHandler(api.base.ApiHandler):
+    async def get(self):
+        plugin_dicts = []
+        for plugin in services.plugin.iter_plugins():
+            plugin_cfg = plugin.config
+            plugin_dicts.append({
+                'id': plugin.id,
+                'name': plugin_cfg.name,
+                'version': plugin_cfg.version,
+                'author': plugin_cfg.author,
+                'description': plugin_cfg.description,
+                'enabled': plugin.enabled,
+                'isStarted': plugin.is_started,
+                'isConnected': plugin.is_connected,
+            })
+        self.write({'plugins': plugin_dicts})
+
+
+class EnableHandler(_AdminHandlerBase):
+    async def post(self):
+        enabled = bool(self.json_args.get('enabled', False))
+
+        plugin = self._get_plugin()
+        msg = ''
+        try:
+            plugin.enabled = enabled
+        except services.plugin.StartTooFrequently as e:
+            msg = str(e)
+            plugin.enabled = False
+        except services.plugin.StartPluginError as e:
+            msg = str(e)
+        self.write({
+            'enabled': plugin.enabled,
+            'msg': msg
+        })
+
+
+class OpenAdminUiHandler(_AdminHandlerBase):
+    async def post(self):
+        plugin = self._get_plugin()
+        plugin.send_cmd_data(models.Command.OPEN_PLUGIN_ADMIN_UI, {})
+        self.write({})
+
+
+class _PluginApiHandlerBase(api.base.ApiHandler):
+    """给插件用的接口"""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.plugin: Optional[services.plugin.Plugin] = None
@@ -46,7 +111,7 @@ def make_message_body(cmd, data, extra: Optional[dict] = None):
     return json.dumps(body).encode('utf-8')
 
 
-class PluginWsHandler(_PluginHandlerBase, tornado.websocket.WebSocketHandler):
+class PluginWsHandler(_PluginApiHandlerBase, tornado.websocket.WebSocketHandler):
     HEARTBEAT_INTERVAL = 10
     RECEIVE_TIMEOUT = HEARTBEAT_INTERVAL + 5
 
@@ -161,7 +226,7 @@ class PluginWsHandler(_PluginHandlerBase, tornado.websocket.WebSocketHandler):
             self.close()
 
 
-class RoomsHandler(api.base.ApiHandler):
+class RoomsHandler(_PluginApiHandlerBase):
     async def get(self):
         rooms = [
             {
@@ -174,6 +239,9 @@ class RoomsHandler(api.base.ApiHandler):
 
 
 ROUTES = [
+    (r'/api/plugin/plugins', PluginsHandler),
+    (r'/api/plugin/enable_plugin', EnableHandler),
+    (r'/api/plugin/open_admin_ui', OpenAdminUiHandler),
     (r'/api/plugin/websocket', PluginWsHandler),
     (r'/api/plugin/rooms', RoomsHandler),
 ]

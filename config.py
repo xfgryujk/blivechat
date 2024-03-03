@@ -63,6 +63,7 @@ class AppConfig:
         self.loader_url = ''
         self.open_browser_at_startup = True
         self.enable_upload_file = True
+        self.enable_admin_plugins = True
 
         self.fetch_avatar_max_queue_size = 4
         self.avatar_cache_size = 10000
@@ -114,6 +115,7 @@ class AppConfig:
         self.loader_url = app_section.get('loader_url', self.loader_url)
         self.open_browser_at_startup = app_section.getboolean('open_browser_at_startup', self.open_browser_at_startup)
         self.enable_upload_file = app_section.getboolean('enable_upload_file', self.enable_upload_file)
+        self.enable_admin_plugins = app_section.getboolean('enable_admin_plugins', self.enable_admin_plugins)
 
         self.fetch_avatar_max_queue_size = app_section.getint(
             'fetch_avatar_max_queue_size', self.fetch_avatar_max_queue_size

@@ -72,6 +72,10 @@ def iter_plugins() -> Iterable['Plugin']:
     return _plugins.values()
 
 
+def get_plugin(plugin_id):
+    return _plugins.get(plugin_id, None)
+
+
 def get_plugin_by_token(token):
     if token == '':
         return None
@@ -155,6 +159,10 @@ class Plugin:
     @property
     def id(self):
         return self._id
+
+    @property
+    def config(self):
+        return self._config
 
     @property
     def enabled(self):

@@ -46,7 +46,8 @@ class ServerInfoHandler(api.base.ApiHandler):
             'config': {
                 'enableTranslate': cfg.enable_translate,
                 'enableUploadFile': cfg.enable_upload_file,
-                'loaderUrl': cfg.loader_url
+                'loaderUrl': cfg.loader_url,
+                'enableAdminPlugins': cfg.enable_admin_plugins,
             }
         })
 
