@@ -21,7 +21,8 @@ const router = new VueRouter({
       children: [
         { path: '', name: 'home', component: () => import('./views/Home') },
         { path: 'stylegen', name: 'stylegen', component: () => import('./views/StyleGenerator') },
-        { path: 'help', name: 'help', component: () => import('./views/Help') }
+        { path: 'help', name: 'help', component: () => import('./views/Help') },
+        { path: 'plugins', name: 'plugins', component: () => import('./views/Plugins') },
       ]
     },
     {

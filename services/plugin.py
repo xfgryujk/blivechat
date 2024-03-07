@@ -37,7 +37,7 @@ def init():
         if plugin.enabled:
             try:
                 plugin.start()
-            except StartPluginError:
+            except SwitchPluginError:
                 pass
 
 
@@ -130,21 +130,21 @@ class PluginConfig:
         cfg['version'] = self.version
         cfg['author'] = self.author
         cfg['description'] = self.description
-        cfg['run_cmd'] = self.run_cmd
+        cfg['run'] = self.run_cmd
         cfg['enabled'] = self.enabled
 
         tmp_path = path + '.tmp'
-        with open(tmp_path, encoding='utf-8') as f:
+        with open(tmp_path, 'w', encoding='utf-8') as f:
             json.dump(cfg, f, ensure_ascii=False, indent=2)
         os.replace(tmp_path, path)
 
 
-class StartPluginError(Exception):
-    """启动插件时错误"""
+class SwitchPluginError(Exception):
+    """开关插件时错误"""
 
 
-class StartTooFrequently(StartPluginError):
-    """启动插件太频繁"""
+class SwitchTooFrequently(SwitchPluginError):
+    """开关插件太频繁"""
 
 
 class Plugin:
@@ -152,7 +152,7 @@ class Plugin:
         self._id = plugin_id
         self._config = cfg
 
-        self._last_start_time = datetime.datetime.fromtimestamp(0)
+        self._last_switch_time = datetime.datetime.fromtimestamp(0)
         self._token = ''
         self._client: Optional['api.plugin.PluginWsHandler'] = None
 
@@ -204,11 +204,7 @@ class Plugin:
     def start(self):
         if self.is_started:
             return
-
-        cur_time = datetime.datetime.now()
-        if cur_time - self._last_start_time < datetime.timedelta(seconds=3):
-            raise StartTooFrequently(f'plugin={self._id} starts too frequently')
-        self._last_start_time = cur_time
+        self._refresh_last_switch_time()
 
         token = ''.join(random.choice(string.hexdigits) for _ in range(32))
         self._set_token(token)
@@ -228,11 +224,20 @@ class Plugin:
             )
         except OSError as e:
             logger.exception('plugin=%s failed to start', self._id)
-            raise StartPluginError(str(e))
+            raise SwitchPluginError(str(e))
+
+    def _refresh_last_switch_time(self):
+        cur_time = datetime.datetime.now()
+        if cur_time - self._last_switch_time < datetime.timedelta(seconds=3):
+            raise SwitchTooFrequently(f'plugin={self._id} switches too frequently')
+        self._last_switch_time = cur_time
 
     def stop(self):
-        if self.is_started:
-            self._set_token('')
+        if not self.is_started:
+            return
+        self._refresh_last_switch_time()
+
+        self._set_token('')
 
     def _set_token(self, token):
         if self._token == token:

@@ -3,6 +3,7 @@ export default {
     home: 'トップページ',
     stylegen: 'スタイルジェネレータ',
     help: 'ヘルプ',
+    plugins: 'プラグイン',
     links: 'リンク',
     projectAddress: 'プロジェクトアドレス',
     discussion: '議論',
@@ -169,5 +170,25 @@ export default {
     sendGift: '{giftName}x{num} を贈りました',
     membershipTitle: '新規メンバー',
     tickerMembership: 'メンバー'
-  }
+  },
+  plugins: {
+    plugins: 'プラグイン',
+    help: 'ヘルプ',
+    helpContent: `\
+<p>プラグインは、メッセージの記録、テキスト読み上げ、曲リクエストなど、blivechatにさらなる機能を追加できます。
+  プラグインはサードパーティの作者によって開発される場合があり、セキュリティと品質はプラグイン作者の責任です。
+  いくつかの公開されたプラグインは<a target="_blank" href="https://github.com/xfgryujk/blivechat/discussions/categories/%E6%8F%92%E4%BB%B6"
+  >GitHub Discussions</a>で見つけることができます</p>
+<p>プラグインのインストール方法：抽出されたプラグインディレクトリを「data/plugins」ディレクトリに配置し、blivechatを再起動します</p>
+<p>注意：ほとんどのプラグインは、「サーバを介してメッセージを転送する」オプションを有効にし、メッセージを受信するために
+  ルームに接続する必要があります</p>
+<p><a target="_blank" href="https://github.com/xfgryujk/blivechat/wiki/%E6%8F%92%E4%BB%B6%E7%B3%BB%E7%BB%9F"
+  >プラグイン開発ドキュメント</a></p>
+`,
+    author: '作者：',
+    disabledByServer: 'プラグインの管理は、サーバーによって無効にされています',
+    admin: '管理',
+    connected: '接続済み',
+    unconnected: '未接続',
+  },
 }

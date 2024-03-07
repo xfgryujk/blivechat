@@ -16,6 +16,9 @@
       <el-menu-item :index="$router.resolve({ name: 'help' }).href">
         <i class="el-icon-question"></i>{{ $t('sidebar.help') }}
       </el-menu-item>
+      <el-menu-item :index="$router.resolve({ name: 'plugins' }).href">
+        <i class="el-icon-magic-stick"></i>{{ $t('sidebar.plugins') }}
+      </el-menu-item>
       <el-submenu index="1">
         <template slot="title">
           <i class="el-icon-link"></i>{{ $t('sidebar.links') }}

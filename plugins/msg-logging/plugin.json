@@ -2,7 +2,7 @@
   "name": "消息日志",
   "version": "1.0.0",
   "author": "xfgryujk",
-  "description": "把收到的消息记录到文件中",
+  "description": "把收到的消息记录到文件中。点击管理打开日志目录。日志不会自动清理，记得定期清理",
   "run": "msg-logging.exe",
   "enabled": true
 }

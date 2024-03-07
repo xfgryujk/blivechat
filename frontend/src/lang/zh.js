@@ -3,6 +3,7 @@ export default {
     home: '首页',
     stylegen: '样式生成器',
     help: '帮助',
+    plugins: '插件',
     links: '常用链接',
     projectAddress: '项目地址',
     discussion: '反馈 / 交流',
@@ -169,5 +170,22 @@ export default {
     sendGift: '赠送 {giftName}x{num}',
     membershipTitle: '新会员',
     tickerMembership: '会员'
-  }
+  },
+  plugins: {
+    plugins: '插件',
+    help: '帮助',
+    helpContent: `\
+<p>插件可以给blivechat添加更多功能，比如消息日志、语音播报、点歌等。插件可能由第三方作者开发，其安全性和质量由插件作者负责。
+  你可以在<a target="_blank" href="https://github.com/xfgryujk/blivechat/discussions/categories/%E6%8F%92%E4%BB%B6"
+  >GitHub Discussions</a>获取一些已发布的插件</p>
+<p>插件安装方法：把解压后的插件目录放到“data/plugins”目录，然后重启blivechat</p>
+<p>注意事项：大部分插件需要开启“通过服务器转发消息”，并且连接到房间，才能接收消息</p>
+<p><a target="_blank" href="https://github.com/xfgryujk/blivechat/wiki/%E6%8F%92%E4%BB%B6%E7%B3%BB%E7%BB%9F">插件开发文档</a></p>
+`,
+    author: '作者：',
+    disabledByServer: '已被服务器禁用',
+    admin: '管理',
+    connected: '已连接',
+    unconnected: '未连接',
+  },
 }

@@ -24,6 +24,8 @@ class _AdminHandlerBase(api.base.ApiHandler):
         if not cfg.enable_admin_plugins:
             raise tornado.web.HTTPError(403)
 
+        logger.info('client=%s requesting admin plugin, cls=%s', self.request.remote_ip, type(self).__name__)
+
         super().prepare()
 
     def _get_plugin(self):
@@ -60,16 +62,21 @@ class EnableHandler(_AdminHandlerBase):
         enabled = bool(self.json_args.get('enabled', False))
 
         plugin = self._get_plugin()
+        old_enabled = plugin.enabled
+        is_switch_success = True
         msg = ''
         try:
             plugin.enabled = enabled
-        except services.plugin.StartTooFrequently as e:
+        except services.plugin.SwitchTooFrequently as e:
+            is_switch_success = False
             msg = str(e)
-            plugin.enabled = False
-        except services.plugin.StartPluginError as e:
+            plugin.enabled = old_enabled
+        except services.plugin.SwitchPluginError as e:
+            is_switch_success = False
             msg = str(e)
         self.write({
             'enabled': plugin.enabled,
+            'isSwitchSuccess': is_switch_success,
             'msg': msg
         })
 

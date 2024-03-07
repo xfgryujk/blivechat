@@ -3,6 +3,7 @@ export default {
     home: 'Home',
     stylegen: 'Style Generator',
     help: 'Help',
+    plugins: 'Plugins',
     links: 'Links',
     projectAddress: 'Project Address',
     discussion: 'Discussions',
@@ -169,5 +170,25 @@ export default {
     sendGift: 'Sent {giftName}x{num}',
     membershipTitle: 'New member',
     tickerMembership: 'Member'
-  }
+  },
+  plugins: {
+    plugins: 'Plugins',
+    help: 'Help',
+    helpContent: `\
+<p>Plugins can add more functionality to blivechat, such as message logging, text to speech, song requests, etc. Plugins may
+  be developed by third-party authors, and the security and quality are the responsibility of the plugin author. You can
+  find some published plugins in <a target="_blank" href="https://github.com/xfgryujk/blivechat/discussions/categories/%E6%8F%92%E4%BB%B6"
+  >GitHub Discussions</a></p>
+<p>Plugin installation method: Put the extracted plugin directory into the "data/plugins" directory, then restart blivechat</p>
+<p>Notes: Most plugins require enabling the "Relay messages by the server" option and connecting to the room
+  in order to receive messages</p>
+<p><a target="_blank" href="https://github.com/xfgryujk/blivechat/wiki/%E6%8F%92%E4%BB%B6%E7%B3%BB%E7%BB%9F">
+  Plugin development documentation</a></p>
+`,
+    author: 'Author: ',
+    disabledByServer: 'Administration for plugins is disabled by the server',
+    admin: 'Admin',
+    connected: 'Connected',
+    unconnected: 'Unconnected',
+  },
 }

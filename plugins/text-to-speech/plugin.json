@@ -2,7 +2,7 @@
   "name": "文字转语音",
   "version": "1.0.0",
   "author": "xfgryujk",
-  "description": "用语音读出收到的消息",
+  "description": "用语音读出收到的消息。点击管理打开配置文件，编辑保存后重启插件生效",
   "run": "text-to-speech.exe",
   "enabled": true
 }
