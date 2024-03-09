@@ -113,18 +113,18 @@ class MsgHandler(blcsdk.BaseHandler):
 
 
 def _get_or_add_room(room_id):
-    ctx = _id_room_dict.get(room_id, None)
-    if ctx is None:
+    room = _id_room_dict.get(room_id, None)
+    if room is None:
         if room_id is None:
             raise TypeError('room_id is None')
-        ctx = _id_room_dict[room_id] = Room(room_id)
-    return ctx
+        room = _id_room_dict[room_id] = Room(room_id)
+    return room
 
 
 def _del_room(room_id):
-    ctx = _id_room_dict.pop(room_id, None)
-    if ctx is not None:
-        ctx.close()
+    room = _id_room_dict.pop(room_id, None)
+    if room is not None:
+        room.close()
 
 
 class Room:

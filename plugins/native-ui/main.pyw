@@ -3,13 +3,16 @@
 import asyncio
 import logging.handlers
 import os
+import signal
 import sys
 from typing import *
 
+import wx
 import wxasync
 
+import blcsdk
 import config
-import designer.ui_base
+import listener
 
 logger = logging.getLogger('native-ui')
 
@@ -26,18 +29,38 @@ async def main():
 
 
 async def init():
+    init_signal_handlers()
+
     init_logging()
 
-    global app
-    app = wxasync.WxAsyncApp()
+    await blcsdk.init()
+    if not blcsdk.is_sdk_version_compatible():
+        raise RuntimeError('SDK version is not compatible')
 
-    # TODO 测试
-    frame = designer.ui_base.RoomFrameBase(None)
-    frame.chat_web_view.LoadURL('http://localhost:12450/room/test?minGiftPrice=0&showGiftName=true&relayMessagesByServer=true&lang=zh')
-    frame.paid_web_view.LoadURL('http://localhost:12450/room/test?showDanmaku=false&showGiftName=true&relayMessagesByServer=true&lang=zh')
-    frame.Show()
+    init_ui()
+    await listener.init()
 
-    app.SetTopWindow(frame)
+
+def init_signal_handlers():
+    signums = (signal.SIGINT, signal.SIGTERM)
+    try:
+        loop = asyncio.get_running_loop()
+        for signum in signums:
+            loop.add_signal_handler(signum, start_shut_down)
+    except NotImplementedError:
+        def signal_handler(*args):
+            asyncio.get_running_loop().call_soon(start_shut_down, *args)
+
+        # 不太安全，但Windows只能用这个
+        for signum in signums:
+            signal.signal(signum, signal_handler)
+
+
+def start_shut_down(*_args):
+    if app is not None:
+        app.ExitMainLoop()
+    else:
+        wx.Exit()
 
 
 def init_logging():
@@ -55,6 +78,11 @@ def init_logging():
     )
 
 
+def init_ui():
+    global app
+    app = wxasync.WxAsyncApp(clearSigInt=False)
+
+
 async def run():
     logger.info('Running event loop')
     await app.MainLoop()
@@ -62,7 +90,8 @@ async def run():
 
 
 async def shut_down():
-    pass
+    listener.shut_down()
+    await blcsdk.shut_down()
 
 
 if __name__ == '__main__':

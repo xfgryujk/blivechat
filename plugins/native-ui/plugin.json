@@ -1,0 +1,8 @@
+{
+  "name": "原生UI",
+  "version": "1.0.0",
+  "author": "xfgryujk",
+  "description": "提供托盘图标和用来看弹幕的窗口。支持置顶窗口和设置不透明度。支持付费消息分开显示。统计弹幕数、付费用户等信息",
+  "run": "native-ui.exe",
+  "enabled": true
+}

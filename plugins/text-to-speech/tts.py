@@ -156,9 +156,14 @@ class TaskQueue:
             q = self._queues[task.priority]
 
             # 尝试合并
+            try_merge_count = 0
             for old_task in reversed(q):
                 if old_task.merge(task):
                     return True
+
+                try_merge_count += 1
+                if try_merge_count >= 5:
+                    break
 
             # 没满直接push
             if (
