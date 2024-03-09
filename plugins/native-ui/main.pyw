@@ -32,8 +32,9 @@ async def init():
     app = wxasync.WxAsyncApp()
 
     # TODO 测试
-    frame = designer.ui_base.RoomFrame(None)
-    frame.chat_web_view.LoadURL('http://localhost:12450/room/test?minGiftPrice=0&showGiftName=true&lang=zh')
+    frame = designer.ui_base.RoomFrameBase(None)
+    frame.chat_web_view.LoadURL('http://localhost:12450/room/test?minGiftPrice=0&showGiftName=true&relayMessagesByServer=true&lang=zh')
+    frame.paid_web_view.LoadURL('http://localhost:12450/room/test?showDanmaku=false&showGiftName=true&relayMessagesByServer=true&lang=zh')
     frame.Show()
 
     app.SetTopWindow(frame)

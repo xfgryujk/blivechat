@@ -12,16 +12,106 @@ import wx.xrc
 import wx.html2
 
 ###########################################################################
-## Class ConfigFrame
+## Class RoomFrameBase
 ###########################################################################
 
-class ConfigFrame ( wx.Frame ):
+class RoomFrameBase ( wx.Frame ):
 
     def __init__( self, parent ):
-        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"设置", pos = wx.DefaultPosition, size = wx.Size( 500,300 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"blivechat - 房间 123456", pos = wx.DefaultPosition, size = wx.Size( 750,650 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 
         self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
+        self.SetForegroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+        self.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_MENU ) )
 
+        bSizer1 = wx.BoxSizer( wx.HORIZONTAL )
+
+        bSizer2 = wx.BoxSizer( wx.VERTICAL )
+
+        bSizer3 = wx.BoxSizer( wx.HORIZONTAL )
+
+        self.config_button = wx.Button( self, wx.ID_ANY, u"设置", wx.DefaultPosition, wx.DefaultSize, 0 )
+        bSizer3.Add( self.config_button, 0, 0, 5 )
+
+        self.stay_on_top_button = wx.ToggleButton( self, wx.ID_ANY, u"置顶", wx.DefaultPosition, wx.DefaultSize, 0 )
+        bSizer3.Add( self.stay_on_top_button, 0, wx.LEFT, 5 )
+
+
+        bSizer3.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+
+        self.collapse_console_button = wx.Button( self, wx.ID_ANY, u"<<", wx.DefaultPosition, wx.DefaultSize, 0 )
+        bSizer3.Add( self.collapse_console_button, 0, 0, 5 )
+
+
+        bSizer2.Add( bSizer3, 0, wx.ALL|wx.EXPAND, 5 )
+
+        self.chat_web_view = wx.html2.WebView.New(self)
+        bSizer2.Add( self.chat_web_view, 1, wx.EXPAND, 5 )
+
+
+        bSizer1.Add( bSizer2, 1, wx.EXPAND, 5 )
+
+        self.console_notebook = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.paid_panel = wx.Panel( self.console_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        bSizer4 = wx.BoxSizer( wx.VERTICAL )
+
+        self.paid_web_view = wx.html2.WebView.New(self.paid_panel)
+        bSizer4.Add( self.paid_web_view, 1, wx.EXPAND, 5 )
+
+
+        self.paid_panel.SetSizer( bSizer4 )
+        self.paid_panel.Layout()
+        bSizer4.Fit( self.paid_panel )
+        self.console_notebook.AddPage( self.paid_panel, u"付费消息", True )
+        self.super_chat_panel = wx.Panel( self.console_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        bSizer5 = wx.BoxSizer( wx.VERTICAL )
+
+        self.super_chat_list = wx.ListCtrl( self.super_chat_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_REPORT )
+        bSizer5.Add( self.super_chat_list, 1, wx.EXPAND, 5 )
+
+
+        self.super_chat_panel.SetSizer( bSizer5 )
+        self.super_chat_panel.Layout()
+        bSizer5.Fit( self.super_chat_panel )
+        self.console_notebook.AddPage( self.super_chat_panel, u"醒目留言", False )
+        self.gift_panel = wx.Panel( self.console_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        bSizer6 = wx.BoxSizer( wx.VERTICAL )
+
+        self.gift_list = wx.ListCtrl( self.gift_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_REPORT )
+        bSizer6.Add( self.gift_list, 1, wx.EXPAND, 5 )
+
+
+        self.gift_panel.SetSizer( bSizer6 )
+        self.gift_panel.Layout()
+        bSizer6.Fit( self.gift_panel )
+        self.console_notebook.AddPage( self.gift_panel, u"礼物&&舰长", False )
+        self.statistics_panel = wx.Panel( self.console_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        bSizer7 = wx.BoxSizer( wx.VERTICAL )
+
+        sbSizer1 = wx.StaticBoxSizer( wx.StaticBox( self.statistics_panel, wx.ID_ANY, u"付费用户" ), wx.VERTICAL )
+
+        self.paid_user_list = wx.ListCtrl( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_REPORT )
+        sbSizer1.Add( self.paid_user_list, 1, wx.EXPAND, 5 )
+
+
+        bSizer7.Add( sbSizer1, 1, wx.EXPAND, 5 )
+
+        self.statistics_text = wx.StaticText( self.statistics_panel, wx.ID_ANY, u"总弹幕数：0  互动用户数：0  总付费：0 元", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.statistics_text.Wrap( -1 )
+
+        bSizer7.Add( self.statistics_text, 0, wx.ALL, 5 )
+
+
+        self.statistics_panel.SetSizer( bSizer7 )
+        self.statistics_panel.Layout()
+        bSizer7.Fit( self.statistics_panel )
+        self.console_notebook.AddPage( self.statistics_panel, u"统计", False )
+
+        bSizer1.Add( self.console_notebook, 1, wx.EXPAND, 5 )
+
+
+        self.SetSizer( bSizer1 )
+        self.Layout()
 
         self.Centre( wx.BOTH )
 
@@ -30,37 +120,117 @@ class ConfigFrame ( wx.Frame ):
 
 
 ###########################################################################
-## Class RoomFrame
+## Class RoomConfigDialogBase
 ###########################################################################
 
-class RoomFrame ( wx.Frame ):
+class RoomConfigDialogBase ( wx.Dialog ):
 
     def __init__( self, parent ):
-        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"房间", pos = wx.DefaultPosition, size = wx.Size( 750,650 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+        wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"房间设置", pos = wx.DefaultPosition, size = wx.Size( -1,-1 ), style = wx.DEFAULT_DIALOG_STYLE )
 
         self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
 
-        bSizer4 = wx.BoxSizer( wx.HORIZONTAL )
+        bSizer1 = wx.BoxSizer( wx.VERTICAL )
 
-        self.chat_web_view = wx.html2.WebView.New(self)
-        bSizer4.Add( self.chat_web_view, 1, wx.EXPAND, 5 )
+        sbSizer1 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"界面" ), wx.VERTICAL )
 
-        bSizer5 = wx.BoxSizer( wx.VERTICAL )
+        fgSizer1 = wx.FlexGridSizer( 0, 2, 0, 0 )
+        fgSizer1.SetFlexibleDirection( wx.BOTH )
+        fgSizer1.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
 
-        m_listBox2Choices = [ u"醒目留言" ]
-        self.m_listBox2 = wx.ListBox( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_listBox2Choices, 0 )
-        bSizer5.Add( self.m_listBox2, 4, wx.EXPAND, 5 )
+        self.opacity_label = wx.StaticText( sbSizer1.GetStaticBox(), wx.ID_ANY, u"窗口不透明度", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.opacity_label.Wrap( -1 )
 
-        m_listBox3Choices = [ u"礼物" ]
-        self.m_listBox3 = wx.ListBox( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_listBox3Choices, 0 )
-        bSizer5.Add( self.m_listBox3, 1, wx.EXPAND, 5 )
+        fgSizer1.Add( self.opacity_label, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT|wx.ALL, 5 )
+
+        self.opacity_slider = wx.Slider( sbSizer1.GetStaticBox(), wx.ID_ANY, 100, 10, 100, wx.DefaultPosition, wx.Size( -1,-1 ), wx.SL_HORIZONTAL )
+        fgSizer1.Add( self.opacity_slider, 1, wx.ALL|wx.EXPAND, 5 )
+
+        self.auto_translate_label = wx.StaticText( sbSizer1.GetStaticBox(), wx.ID_ANY, u"自动翻译弹幕到日语", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.auto_translate_label.Wrap( -1 )
+
+        fgSizer1.Add( self.auto_translate_label, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT|wx.ALL, 5 )
+
+        self.auto_translate_check = wx.CheckBox( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+        fgSizer1.Add( self.auto_translate_check, 1, wx.ALL|wx.EXPAND, 5 )
+
+        self.auto_translate_label1 = wx.StaticText( sbSizer1.GetStaticBox(), wx.ID_ANY, u"标注打赏用户名读音", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.auto_translate_label1.Wrap( -1 )
+
+        fgSizer1.Add( self.auto_translate_label1, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT|wx.ALL, 5 )
+
+        bSizer2 = wx.BoxSizer( wx.HORIZONTAL )
+
+        self.gift_pron_none_radio = wx.RadioButton( sbSizer1.GetStaticBox(), wx.ID_ANY, u"不显示", wx.DefaultPosition, wx.DefaultSize, wx.RB_GROUP )
+        self.gift_pron_none_radio.SetValue( True )
+        bSizer2.Add( self.gift_pron_none_radio, 0, wx.ALL, 5 )
+
+        self.gift_pron_pinyin_radio = wx.RadioButton( sbSizer1.GetStaticBox(), wx.ID_ANY, u"拼音", wx.DefaultPosition, wx.DefaultSize, 0 )
+        bSizer2.Add( self.gift_pron_pinyin_radio, 0, wx.ALL, 5 )
+
+        self.gift_pron_kana_radio = wx.RadioButton( sbSizer1.GetStaticBox(), wx.ID_ANY, u"日文假名", wx.DefaultPosition, wx.DefaultSize, 0 )
+        bSizer2.Add( self.gift_pron_kana_radio, 0, wx.ALL, 5 )
 
 
-        bSizer4.Add( bSizer5, 1, wx.EXPAND, 5 )
+        fgSizer1.Add( bSizer2, 1, wx.ALL|wx.EXPAND, 5 )
 
 
-        self.SetSizer( bSizer4 )
+        sbSizer1.Add( fgSizer1, 1, wx.EXPAND, 5 )
+
+
+        bSizer1.Add( sbSizer1, 0, wx.ALL|wx.EXPAND, 5 )
+
+        sbSizer2 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"消息屏蔽" ), wx.VERTICAL )
+
+        fgSizer2 = wx.FlexGridSizer( 0, 2, 0, 0 )
+        fgSizer2.SetFlexibleDirection( wx.BOTH )
+        fgSizer2.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
+
+        self.min_gift_price_label = wx.StaticText( sbSizer2.GetStaticBox(), wx.ID_ANY, u"最低显示打赏价格（元）", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.min_gift_price_label.Wrap( -1 )
+
+        fgSizer2.Add( self.min_gift_price_label, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT|wx.ALL, 5 )
+
+        self.min_gift_price_edit = wx.TextCtrl( sbSizer2.GetStaticBox(), wx.ID_ANY, u"0", wx.DefaultPosition, wx.Size( -1,-1 ), 0 )
+        self.min_gift_price_edit.SetMinSize( wx.Size( 180,-1 ) )
+
+        fgSizer2.Add( self.min_gift_price_edit, 1, wx.ALL|wx.EXPAND, 5 )
+
+        self.block_gift_danmaku_label = wx.StaticText( sbSizer2.GetStaticBox(), wx.ID_ANY, u"屏蔽礼物弹幕", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.block_gift_danmaku_label.Wrap( -1 )
+
+        fgSizer2.Add( self.block_gift_danmaku_label, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT|wx.ALL, 5 )
+
+        self.block_gift_danmaku_check = wx.CheckBox( sbSizer2.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.block_gift_danmaku_check.SetValue(True)
+        fgSizer2.Add( self.block_gift_danmaku_check, 1, wx.ALL|wx.EXPAND, 5 )
+
+
+        sbSizer2.Add( fgSizer2, 1, wx.EXPAND, 5 )
+
+
+        bSizer1.Add( sbSizer2, 0, wx.ALL|wx.EXPAND, 5 )
+
+        bSizer3 = wx.BoxSizer( wx.HORIZONTAL )
+
+
+        bSizer3.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+
+        self.ok_button = wx.Button( self, wx.ID_ANY, u"确定", wx.DefaultPosition, wx.DefaultSize, 0 )
+
+        self.ok_button.SetDefault()
+        bSizer3.Add( self.ok_button, 0, wx.ALL, 5 )
+
+        self.cancel_button = wx.Button( self, wx.ID_ANY, u"取消", wx.DefaultPosition, wx.DefaultSize, 0 )
+        bSizer3.Add( self.cancel_button, 0, wx.ALL, 5 )
+
+
+        bSizer1.Add( bSizer3, 0, wx.ALL|wx.EXPAND, 5 )
+
+
+        self.SetSizer( bSizer1 )
         self.Layout()
+        bSizer1.Fit( self )
 
         self.Centre( wx.BOTH )
 
