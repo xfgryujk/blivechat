@@ -5,6 +5,8 @@ import datetime
 import logging
 from typing import *
 
+import pubsub.pub as pub
+
 import blcsdk
 import blcsdk.models as sdk_models
 
@@ -41,7 +43,7 @@ class MsgHandler(blcsdk.BaseHandler):
     def _on_open_plugin_admin_ui(
         self, client: blcsdk.BlcPluginClient, message: sdk_models.OpenPluginAdminUiMsg, extra: sdk_models.ExtraData
     ):
-        pass
+        pub.sendMessage('open_admin_ui')
 
     def _on_room_init(
         self, client: blcsdk.BlcPluginClient, message: sdk_models.RoomInitMsg, extra: sdk_models.ExtraData
@@ -119,6 +121,10 @@ class MsgHandler(blcsdk.BaseHandler):
         ))
 
 
+def iter_rooms() -> Iterable['Room']:
+    return _key_room_dict.values()
+
+
 def get_room(room_key: sdk_models.RoomKey):
     return _key_room_dict.get(room_key, None)
 
@@ -128,14 +134,15 @@ def _get_or_add_room(room_key: sdk_models.RoomKey, room_id):
     if room is None:
         if room_id is None:
             raise TypeError('room_id is None')
-        room = _key_room_dict[room_id] = Room(room_key, room_id)
-        # TODO 打开房间窗口
+        room = _key_room_dict[room_key] = Room(room_key, room_id)
+        pub.sendMessage('add_room', room_key=room_key)
     return room
 
 
 def _del_room(room_key: sdk_models.RoomKey):
-    _key_room_dict.pop(room_key, None)
-    # TODO 关闭房间窗口
+    room = _key_room_dict.pop(room_key, None)
+    if room is not None:
+        pub.sendMessage('del_room', room_key=room_key)
 
 
 @dataclasses.dataclass
@@ -177,44 +184,77 @@ class Room:
         self._interact_uids: Set[str] = set()
         self._total_paid_price = 0
 
+    @property
+    def room_key(self):
+        return self._room_key
+
+    @property
+    def room_id(self):
+        return self._room_id
+
+    @property
+    def super_chats(self):
+        return self._super_chats
+
+    @property
+    def gifts(self):
+        return self._gifts
+
+    @property
+    def uid_paid_user_dict(self):
+        return self._uid_paid_user_dict
+
+    @property
+    def danmaku_num(self):
+        return self._danmaku_num
+
+    @property
+    def interact_uids(self):
+        return self._interact_uids
+
+    @property
+    def total_paid_price(self):
+        return self._total_paid_price
+
     def add_danmaku(self, uid):
         self._danmaku_num += 1
+        pub.sendMessage('room_data_change.danmaku_num', room=self, value=self._danmaku_num)
+
+        self._add_interact_uid(uid)
+
+    def _add_interact_uid(self, uid):
+        if uid in self._interact_uids:
+            return
+
         self._interact_uids.add(uid)
+        pub.sendMessage(
+            'room_data_change.interact_uids',
+            room=self,
+            value=self._interact_uids,
+            index=uid,
+            is_new=True,
+        )
 
     def add_super_chat(self, super_chat: SuperChatRecord):
         self._super_chats.append(super_chat)
+        pub.sendMessage(
+            'room_data_change.super_chats',
+            room=self,
+            value=self._super_chats,
+            index=len(self._super_chats) - 1,
+            is_new=True,
+        )
+
         self._add_user_paid_price(PaidUserRecord(
             uid=super_chat.uid,
             name=super_chat.author_name,
             price=super_chat.price,
         ))
-        self._danmaku_num += 1
-        self._interact_uids.add(super_chat.uid)
+
         self._total_paid_price += super_chat.price
+        pub.sendMessage('room_data_change.total_paid_price', room=self, value=self._total_paid_price)
 
-    def add_gift(self, gift: GiftRecord):
-        # 尝试合并
-        is_merged = False
-        min_time_to_merge = gift.time - datetime.timedelta(seconds=10)
-        for old_gift in reversed(self._gifts):
-            if old_gift.time < min_time_to_merge:
-                break
-            if old_gift.uid == gift.uid and old_gift.gift_name == gift.gift_name:
-                old_gift.num += gift.num
-                old_gift.price += gift.price
-                is_merged = True
-                break
-
-        if not is_merged:
-            self._gifts.append(gift)
-        if gift.price > 0.:
-            self._add_user_paid_price(PaidUserRecord(
-                uid=gift.uid,
-                name=gift.author_name,
-                price=gift.price,
-            ))
-        self._interact_uids.add(gift.uid)
-        self._total_paid_price += gift.price
+        self.add_danmaku(super_chat.uid)
 
     def _add_user_paid_price(self, paid_user: PaidUserRecord):
         old_paid_user = self._uid_paid_user_dict.get(paid_user.uid, None)
@@ -224,4 +264,53 @@ class Room:
                 name=paid_user.name,
                 price=0,
             )
+            is_new = True
+        else:
+            is_new = False
         old_paid_user.price += paid_user.price
+
+        pub.sendMessage(
+            'room_data_change.uid_paid_user_dict',
+            room=self,
+            value=self._uid_paid_user_dict,
+            index=paid_user.uid,
+            is_new=is_new,
+        )
+
+    def add_gift(self, gift: GiftRecord):
+        # 尝试合并
+        is_merged = False
+        min_time_to_merge = gift.time - datetime.timedelta(seconds=10)
+        index = len(self._gifts)
+        for index in range(len(self._gifts) - 1, -1, -1):
+            old_gift = self._gifts[index]
+
+            if old_gift.time < min_time_to_merge:
+                break
+            if old_gift.uid == gift.uid and old_gift.gift_name == gift.gift_name:
+                old_gift.num += gift.num
+                old_gift.price += gift.price
+                is_merged = True
+                break
+        if not is_merged:
+            index = len(self._gifts)
+            self._gifts.append(gift)
+        pub.sendMessage(
+            'room_data_change.gifts',
+            room=self,
+            value=self._gifts,
+            index=index,
+            is_new=not is_merged,
+        )
+
+        if gift.price > 0.:
+            self._add_user_paid_price(PaidUserRecord(
+                uid=gift.uid,
+                name=gift.author_name,
+                price=gift.price,
+            ))
+
+        self._add_interact_uid(gift.uid)
+
+        self._total_paid_price += gift.price
+        pub.sendMessage('room_data_change.total_paid_price', room=self, value=self._total_paid_price)

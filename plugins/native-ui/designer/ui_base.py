@@ -18,7 +18,7 @@ import wx.html2
 class RoomFrameBase ( wx.Frame ):
 
     def __init__( self, parent ):
-        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"blivechat - 房间 123456", pos = wx.DefaultPosition, size = wx.Size( 750,650 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"blivechat - 房间 123456", pos = wx.DefaultPosition, size = wx.Size( 800,650 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 
         self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
         self.SetForegroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
@@ -39,7 +39,7 @@ class RoomFrameBase ( wx.Frame ):
 
         bSizer3.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 
-        self.collapse_console_button = wx.Button( self, wx.ID_ANY, u"<<", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.collapse_console_button = wx.Button( self, wx.ID_ANY, u">>", wx.DefaultPosition, wx.DefaultSize, 0 )
         bSizer3.Add( self.collapse_console_button, 0, 0, 5 )
 
 
@@ -52,6 +52,8 @@ class RoomFrameBase ( wx.Frame ):
         bSizer1.Add( bSizer2, 1, wx.EXPAND, 5 )
 
         self.console_notebook = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.console_notebook.SetMinSize( wx.Size( 200,-1 ) )
+
         self.paid_panel = wx.Panel( self.console_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         bSizer4 = wx.BoxSizer( wx.VERTICAL )
 
@@ -66,7 +68,7 @@ class RoomFrameBase ( wx.Frame ):
         self.super_chat_panel = wx.Panel( self.console_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         bSizer5 = wx.BoxSizer( wx.VERTICAL )
 
-        self.super_chat_list = wx.ListCtrl( self.super_chat_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_REPORT )
+        self.super_chat_list = wx.ListCtrl( self.super_chat_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_REPORT|wx.LC_SINGLE_SEL )
         bSizer5.Add( self.super_chat_list, 1, wx.EXPAND, 5 )
 
 
@@ -77,7 +79,7 @@ class RoomFrameBase ( wx.Frame ):
         self.gift_panel = wx.Panel( self.console_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         bSizer6 = wx.BoxSizer( wx.VERTICAL )
 
-        self.gift_list = wx.ListCtrl( self.gift_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_REPORT )
+        self.gift_list = wx.ListCtrl( self.gift_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_REPORT|wx.LC_SINGLE_SEL )
         bSizer6.Add( self.gift_list, 1, wx.EXPAND, 5 )
 
 
@@ -90,7 +92,7 @@ class RoomFrameBase ( wx.Frame ):
 
         sbSizer1 = wx.StaticBoxSizer( wx.StaticBox( self.statistics_panel, wx.ID_ANY, u"付费用户" ), wx.VERTICAL )
 
-        self.paid_user_list = wx.ListCtrl( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_REPORT )
+        self.paid_user_list = wx.ListCtrl( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_REPORT|wx.LC_SINGLE_SEL )
         sbSizer1.Add( self.paid_user_list, 1, wx.EXPAND, 5 )
 
 
@@ -115,8 +117,28 @@ class RoomFrameBase ( wx.Frame ):
 
         self.Centre( wx.BOTH )
 
+        # Connect Events
+        self.Bind( wx.EVT_CLOSE, self._on_close )
+        self.config_button.Bind( wx.EVT_BUTTON, self._on_config_button_click )
+        self.stay_on_top_button.Bind( wx.EVT_TOGGLEBUTTON, self._on_stay_on_top_button_toggle )
+        self.collapse_console_button.Bind( wx.EVT_BUTTON, self._on_collapse_console_button_click )
+
     def __del__( self ):
         pass
+
+
+    # Virtual event handlers, override them in your derived class
+    def _on_close( self, event ):
+        event.Skip()
+
+    def _on_config_button_click( self, event ):
+        event.Skip()
+
+    def _on_stay_on_top_button_toggle( self, event ):
+        event.Skip()
+
+    def _on_collapse_console_button_click( self, event ):
+        event.Skip()
 
 
 ###########################################################################

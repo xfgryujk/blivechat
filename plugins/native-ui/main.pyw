@@ -5,18 +5,15 @@ import logging.handlers
 import os
 import signal
 import sys
-from typing import *
 
 import wx
-import wxasync
 
 import blcsdk
 import config
 import listener
+import ui.app
 
 logger = logging.getLogger('native-ui')
-
-app: Optional[wxasync.WxAsyncApp] = None
 
 
 async def main():
@@ -37,7 +34,7 @@ async def init():
     if not blcsdk.is_sdk_version_compatible():
         raise RuntimeError('SDK version is not compatible')
 
-    init_ui()
+    ui.app.init()
     await listener.init()
 
 
@@ -57,6 +54,7 @@ def init_signal_handlers():
 
 
 def start_shut_down(*_args):
+    app = wx.GetApp()
     if app is not None:
         app.ExitMainLoop()
     else:
@@ -78,14 +76,9 @@ def init_logging():
     )
 
 
-def init_ui():
-    global app
-    app = wxasync.WxAsyncApp(clearSigInt=False)
-
-
 async def run():
     logger.info('Running event loop')
-    await app.MainLoop()
+    await wx.GetApp().MainLoop()
     logger.info('Start to shut down')
 
 
