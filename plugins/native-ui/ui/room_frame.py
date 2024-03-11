@@ -112,11 +112,14 @@ class RoomFrame(designer.ui_base.RoomFrameBase):
     #
 
     def _on_super_chats_change(self, room: listener.Room, value: List[listener.SuperChatRecord], index, is_new):  # noqa
+        if room.room_key != self._room_key:
+            return
+
         super_chat = value[index]
         col_texts = [
             self._format_time(super_chat.time),
             super_chat.author_name,
-            str(super_chat.price),
+            f'{super_chat.price:.1f}',
             super_chat.content,
         ]
         self._update_list_ctrl(self.super_chat_list, index, is_new, col_texts)
@@ -155,19 +158,25 @@ class RoomFrame(designer.ui_base.RoomFrameBase):
             list_ctrl.Focus(last_row_index)
 
     def _on_gifts_change(self, room: listener.Room, value: List[listener.GiftRecord], index, is_new):  # noqa
+        if room.room_key != self._room_key:
+            return
+
         gift = value[index]
         col_texts = [
             self._format_time(gift.time),
             gift.author_name,
             gift.gift_name,
             str(gift.num),
-            str(gift.price),
+            f'{gift.price:.1f}',
         ]
         self._update_list_ctrl(self.gift_list, index, is_new, col_texts)
 
     def _on_uid_paid_user_dict_change(
         self, room: listener.Room, value: Dict[str, listener.PaidUserRecord], index, is_new  # noqa
     ):
+        if room.room_key != self._room_key:
+            return
+
         item_data = self._uid_to_paid_user_item_data.get(index, None)
         if item_data is None:
             item_data = self._uid_to_paid_user_item_data[index] = self._next_paid_user_item_data
@@ -176,10 +185,13 @@ class RoomFrame(designer.ui_base.RoomFrameBase):
         paid_user = value[index]
         col_texts = [
             paid_user.name,
-            str(paid_user.price),
+            f'{paid_user.price:.1f}',
         ]
         self._update_list_ctrl(self.paid_user_list, item_data, is_new, col_texts)
 
     def _on_simple_statistics_change(self, room: listener.Room, value=None, index=None, is_new=None):  # noqa
-        text = f'总弹幕数：{room.danmaku_num}  互动用户数：{len(room.interact_uids)}  总付费：{room.total_paid_price} 元'
+        if room.room_key != self._room_key:
+            return
+
+        text = f'总弹幕数：{room.danmaku_num}  互动用户数：{len(room.interact_uids)}  总付费：{room.total_paid_price:.1f} 元'
         self.statistics_text.SetLabelText(text)
