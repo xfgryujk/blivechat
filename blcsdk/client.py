@@ -29,7 +29,7 @@ class BlcPluginClient:
         ws_url: str,
         *,
         session: Optional[aiohttp.ClientSession] = None,
-        heartbeat_interval: float = 10,
+        heartbeat_interval: float = 30,
     ):
         self._ws_url = ws_url
 

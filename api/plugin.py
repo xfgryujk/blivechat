@@ -119,7 +119,7 @@ def make_message_body(cmd, data, extra: Optional[dict] = None):
 
 
 class PluginWsHandler(_PluginApiHandlerBase, tornado.websocket.WebSocketHandler):
-    HEARTBEAT_INTERVAL = 10
+    HEARTBEAT_INTERVAL = 30
     RECEIVE_TIMEOUT = HEARTBEAT_INTERVAL + 5
 
     def __init__(self, *args, **kwargs):
