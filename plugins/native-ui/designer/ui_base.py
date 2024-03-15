@@ -40,7 +40,7 @@ class RoomFrameBase ( wx.Frame ):
         bSizer3.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 
         self.collapse_console_button = wx.Button( self, wx.ID_ANY, u">>", wx.DefaultPosition, wx.DefaultSize, 0 )
-        bSizer3.Add( self.collapse_console_button, 0, 0, 5 )
+        bSizer3.Add( self.collapse_console_button, 0, wx.LEFT, 5 )
 
 
         bSizer2.Add( bSizer3, 0, wx.ALL|wx.EXPAND, 5 )
@@ -64,7 +64,7 @@ class RoomFrameBase ( wx.Frame ):
         self.paid_panel.SetSizer( bSizer4 )
         self.paid_panel.Layout()
         bSizer4.Fit( self.paid_panel )
-        self.console_notebook.AddPage( self.paid_panel, u"付费消息", True )
+        self.console_notebook.AddPage( self.paid_panel, u"付费消息", False )
         self.super_chat_panel = wx.Panel( self.console_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         bSizer5 = wx.BoxSizer( wx.VERTICAL )
 
@@ -103,11 +103,19 @@ class RoomFrameBase ( wx.Frame ):
 
         bSizer7.Add( self.statistics_text, 0, wx.ALL, 5 )
 
+        bSizer11 = wx.BoxSizer( wx.HORIZONTAL )
+
+        self.export_excel_button = wx.Button( self.statistics_panel, wx.ID_ANY, u"导出Excel", wx.DefaultPosition, wx.DefaultSize, 0 )
+        bSizer11.Add( self.export_excel_button, 0, 0, 5 )
+
+
+        bSizer7.Add( bSizer11, 0, wx.ALL|wx.EXPAND, 5 )
+
 
         self.statistics_panel.SetSizer( bSizer7 )
         self.statistics_panel.Layout()
         bSizer7.Fit( self.statistics_panel )
-        self.console_notebook.AddPage( self.statistics_panel, u"统计", False )
+        self.console_notebook.AddPage( self.statistics_panel, u"统计", True )
 
         bSizer1.Add( self.console_notebook, 1, wx.EXPAND, 5 )
 
@@ -122,6 +130,7 @@ class RoomFrameBase ( wx.Frame ):
         self.config_button.Bind( wx.EVT_BUTTON, self._on_config_button_click )
         self.stay_on_top_button.Bind( wx.EVT_TOGGLEBUTTON, self._on_stay_on_top_button_toggle )
         self.collapse_console_button.Bind( wx.EVT_BUTTON, self._on_collapse_console_button_click )
+        self.export_excel_button.Bind( wx.EVT_BUTTON, self._on_export_excel_button_click )
 
     def __del__( self ):
         pass
@@ -138,6 +147,9 @@ class RoomFrameBase ( wx.Frame ):
         event.Skip()
 
     def _on_collapse_console_button_click( self, event ):
+        event.Skip()
+
+    def _on_export_excel_button_click( self, event ):
         event.Skip()
 
 
