@@ -10,6 +10,7 @@ import xlsxwriter.exceptions
 
 import blcsdk
 import blcsdk.models as sdk_models
+import config
 import designer.ui_base
 import listener
 
@@ -25,10 +26,7 @@ class RoomFrame(designer.ui_base.RoomFrameBase):
         room_str = str(room.room_id) if room is not None else str(self._room_key)
         self.SetTitle(f'blivechat - 房间 {room_str}')
 
-        room_params = {'minGiftPrice': 0, 'showGiftName': 'true'}
-        self.chat_web_view.LoadURL(self._get_room_url(room_params))
-        room_params['showDanmaku'] = 'false'
-        self.paid_web_view.LoadURL(self._get_room_url(room_params))
+        self._apply_config(True)
 
         self.super_chat_list.AppendColumn('时间', width=50)
         self.super_chat_list.AppendColumn('用户名', width=120)
@@ -53,6 +51,9 @@ class RoomFrame(designer.ui_base.RoomFrameBase):
         for index in room.uid_paid_user_dict:
             self._on_uid_paid_user_dict_change(room, room.uid_paid_user_dict, index, True)
 
+        pub.subscribe(self._on_preview_room_opacity, 'preview_room_opacity')
+        pub.subscribe(self._on_room_config_dialog_cancel, 'room_config_dialog_cancel')
+        pub.subscribe(self._on_config_change, 'config_change')
         pub.subscribe(self._on_super_chats_change, 'room_data_change.super_chats')
         pub.subscribe(self._on_gifts_change, 'room_data_change.gifts')
         pub.subscribe(self._on_uid_paid_user_dict_change, 'room_data_change.uid_paid_user_dict')
@@ -60,22 +61,8 @@ class RoomFrame(designer.ui_base.RoomFrameBase):
         pub.subscribe(self._on_simple_statistics_change, 'room_data_change.interact_uids')
         pub.subscribe(self._on_simple_statistics_change, 'room_data_change.total_paid_price')
 
-    def _get_room_url(self, params: dict):
-        params = params.copy()
-        params['roomKeyType'] = self._room_key.type.value
-        params['relayMessagesByServer'] = 'true'
-
-        query = '&'.join(
-            f'{urllib.parse.quote_plus(key)}={urllib.parse.quote_plus(str(value))}'
-            for key, value in params.items()
-        )
-        blc_port = blcsdk.get_blc_port()
-        encoded_room_key_value = urllib.parse.quote_plus(str(self._room_key.value))
-        url = f'http://localhost:{blc_port}/room/{encoded_room_key_value}?{query}'
-        return url
-
     #
-    # UI事件
+    # 本窗口UI事件
     #
 
     def _on_close(self, event):
@@ -83,9 +70,7 @@ class RoomFrame(designer.ui_base.RoomFrameBase):
         super()._on_close(event)
 
     def _on_config_button_click(self, event):
-        # TODO WIP
-        dialog = designer.ui_base.RoomConfigDialogBase(self)
-        dialog.Show()
+        pub.sendMessage('open_room_config_dialog')
 
     def _on_stay_on_top_button_toggle(self, event: wx.CommandEvent):
         style = self.GetWindowStyle()
@@ -160,6 +145,51 @@ class RoomFrame(designer.ui_base.RoomFrameBase):
         yield [list_ctrl.GetColumn(col).GetText() for col in range(col_num)]
         for row in range(row_num):
             yield [list_ctrl.GetItemText(row, col) for col in range(col_num)]
+
+    #
+    # 配置事件
+    #
+
+    def _on_preview_room_opacity(self, room_opacity):
+        self._set_opacity(room_opacity)
+
+    def _set_opacity(self, opacity):
+        opacity = min(max(opacity, 10), 100)
+        alpha = round(opacity * wx.IMAGE_ALPHA_OPAQUE / 100)
+        return self.SetTransparent(alpha)
+
+    def _on_room_config_dialog_cancel(self):
+        cfg = config.get_config()
+        self._set_opacity(cfg.room_opacity)
+
+    def _on_config_change(self, new_config: config.AppConfig, old_config: config.AppConfig):
+        self._apply_config(new_config.is_url_params_changed(old_config))
+
+    def _apply_config(self, reload_web_views):
+        cfg = config.get_config()
+        self._set_opacity(cfg.room_opacity)
+        if reload_web_views:
+            self.chat_web_view.LoadURL(self._get_room_url(cfg.chat_url_params))
+            self.paid_web_view.LoadURL(self._get_room_url(cfg.paid_url_params, {'showDanmaku': 'false'}))
+
+    def _get_room_url(self, params: dict, override_params: Optional[dict] = None):
+        if override_params is None:
+            override_params = {}
+        params = {
+            **params,
+            'roomKeyType': self._room_key.type.value,
+            'relayMessagesByServer': 'true',
+            **override_params,
+        }
+
+        query = '&'.join(
+            f'{urllib.parse.quote_plus(key)}={urllib.parse.quote_plus(str(value))}'
+            for key, value in params.items()
+        )
+        blc_port = blcsdk.get_blc_port()
+        encoded_room_key_value = urllib.parse.quote_plus(str(self._room_key.value))
+        url = f'http://localhost:{blc_port}/room/{encoded_room_key_value}?{query}'
+        return url
 
     #
     # 模型事件

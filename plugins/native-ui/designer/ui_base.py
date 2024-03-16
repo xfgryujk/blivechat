@@ -64,7 +64,7 @@ class RoomFrameBase ( wx.Frame ):
         self.paid_panel.SetSizer( bSizer4 )
         self.paid_panel.Layout()
         bSizer4.Fit( self.paid_panel )
-        self.console_notebook.AddPage( self.paid_panel, u"付费消息", False )
+        self.console_notebook.AddPage( self.paid_panel, u"付费消息", True )
         self.super_chat_panel = wx.Panel( self.console_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         bSizer5 = wx.BoxSizer( wx.VERTICAL )
 
@@ -115,7 +115,7 @@ class RoomFrameBase ( wx.Frame ):
         self.statistics_panel.SetSizer( bSizer7 )
         self.statistics_panel.Layout()
         bSizer7.Fit( self.statistics_panel )
-        self.console_notebook.AddPage( self.statistics_panel, u"统计", True )
+        self.console_notebook.AddPage( self.statistics_panel, u"统计", False )
 
         bSizer1.Add( self.console_notebook, 1, wx.EXPAND, 5 )
 
@@ -160,7 +160,7 @@ class RoomFrameBase ( wx.Frame ):
 class RoomConfigDialogBase ( wx.Dialog ):
 
     def __init__( self, parent ):
-        wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"房间设置", pos = wx.DefaultPosition, size = wx.Size( -1,-1 ), style = wx.DEFAULT_DIALOG_STYLE )
+        wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"房间设置", pos = wx.DefaultPosition, size = wx.Size( -1,-1 ), style = wx.DEFAULT_DIALOG_STYLE|wx.DIALOG_NO_PARENT )
 
         self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
 
@@ -177,7 +177,7 @@ class RoomConfigDialogBase ( wx.Dialog ):
 
         fgSizer1.Add( self.opacity_label, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT|wx.ALL, 5 )
 
-        self.opacity_slider = wx.Slider( sbSizer1.GetStaticBox(), wx.ID_ANY, 100, 10, 100, wx.DefaultPosition, wx.Size( -1,-1 ), wx.SL_HORIZONTAL )
+        self.opacity_slider = wx.Slider( sbSizer1.GetStaticBox(), wx.ID_ANY, 100, 10, 100, wx.DefaultPosition, wx.Size( 200,-1 ), wx.SL_HORIZONTAL )
         fgSizer1.Add( self.opacity_slider, 1, wx.ALL|wx.EXPAND, 5 )
 
         self.auto_translate_label = wx.StaticText( sbSizer1.GetStaticBox(), wx.ID_ANY, u"自动翻译弹幕到日语", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -188,22 +188,17 @@ class RoomConfigDialogBase ( wx.Dialog ):
         self.auto_translate_check = wx.CheckBox( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
         fgSizer1.Add( self.auto_translate_check, 1, wx.ALL|wx.EXPAND, 5 )
 
-        self.auto_translate_label1 = wx.StaticText( sbSizer1.GetStaticBox(), wx.ID_ANY, u"标注打赏用户名读音", wx.DefaultPosition, wx.DefaultSize, 0 )
-        self.auto_translate_label1.Wrap( -1 )
+        self.gift_pron_label = wx.StaticText( sbSizer1.GetStaticBox(), wx.ID_ANY, u"标注打赏用户名读音", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.gift_pron_label.Wrap( -1 )
 
-        fgSizer1.Add( self.auto_translate_label1, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT|wx.ALL, 5 )
+        fgSizer1.Add( self.gift_pron_label, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT|wx.ALL, 5 )
 
         bSizer2 = wx.BoxSizer( wx.HORIZONTAL )
 
-        self.gift_pron_none_radio = wx.RadioButton( sbSizer1.GetStaticBox(), wx.ID_ANY, u"不显示", wx.DefaultPosition, wx.DefaultSize, wx.RB_GROUP )
-        self.gift_pron_none_radio.SetValue( True )
-        bSizer2.Add( self.gift_pron_none_radio, 0, wx.ALL, 5 )
-
-        self.gift_pron_pinyin_radio = wx.RadioButton( sbSizer1.GetStaticBox(), wx.ID_ANY, u"拼音", wx.DefaultPosition, wx.DefaultSize, 0 )
-        bSizer2.Add( self.gift_pron_pinyin_radio, 0, wx.ALL, 5 )
-
-        self.gift_pron_kana_radio = wx.RadioButton( sbSizer1.GetStaticBox(), wx.ID_ANY, u"日文假名", wx.DefaultPosition, wx.DefaultSize, 0 )
-        bSizer2.Add( self.gift_pron_kana_radio, 0, wx.ALL, 5 )
+        gift_pron_choiceChoices = [ u"不显示", u"拼音", u"日文假名" ]
+        self.gift_pron_choice = wx.Choice( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, gift_pron_choiceChoices, 0 )
+        self.gift_pron_choice.SetSelection( 0 )
+        bSizer2.Add( self.gift_pron_choice, 1, wx.ALL|wx.EXPAND, 5 )
 
 
         fgSizer1.Add( bSizer2, 1, wx.ALL|wx.EXPAND, 5 )
@@ -250,12 +245,12 @@ class RoomConfigDialogBase ( wx.Dialog ):
 
         bSizer3.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 
-        self.ok_button = wx.Button( self, wx.ID_ANY, u"确定", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.ok_button = wx.Button( self, wx.ID_OK, u"确定", wx.DefaultPosition, wx.DefaultSize, 0 )
 
         self.ok_button.SetDefault()
         bSizer3.Add( self.ok_button, 0, wx.ALL, 5 )
 
-        self.cancel_button = wx.Button( self, wx.ID_ANY, u"取消", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.cancel_button = wx.Button( self, wx.ID_CANCEL, u"取消", wx.DefaultPosition, wx.DefaultSize, 0 )
         bSizer3.Add( self.cancel_button, 0, wx.ALL, 5 )
 
 
@@ -268,7 +263,23 @@ class RoomConfigDialogBase ( wx.Dialog ):
 
         self.Centre( wx.BOTH )
 
+        # Connect Events
+        self.opacity_slider.Bind( wx.EVT_SLIDER, self._on_opacity_slider_change )
+        self.ok_button.Bind( wx.EVT_BUTTON, self._on_ok )
+        self.cancel_button.Bind( wx.EVT_BUTTON, self._on_cancel )
+
     def __del__( self ):
         pass
+
+
+    # Virtual event handlers, override them in your derived class
+    def _on_opacity_slider_change( self, event ):
+        event.Skip()
+
+    def _on_ok( self, event ):
+        event.Skip()
+
+    def _on_cancel( self, event ):
+        event.Skip()
 
 

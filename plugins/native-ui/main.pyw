@@ -29,6 +29,7 @@ async def init():
     init_signal_handlers()
 
     init_logging()
+    config.init()
 
     await blcsdk.init()
     if not blcsdk.is_sdk_version_compatible():
