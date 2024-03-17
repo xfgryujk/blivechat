@@ -245,7 +245,7 @@ async def send_text(
     content: str,
     author_name: str = '',
     *,
-    uid: int = 0,
+    uid: str = '',
     avatar_url: str = '',
     author_type: int = models.AuthorType.NORMAL.value,
     guard_level: int = models.GuardLevel.NONE.value,
@@ -260,7 +260,7 @@ async def send_text(
 
     :param content: 内容
     :param author_name: 用户名，默认为当前插件ID
-    :param uid: 用户ID
+    :param uid: 用户Open ID或ID
     :param avatar_url: 用户头像URL，默认自动生成
     :param author_type: 用户类型，见AuthorType
     :param guard_level: 舰队等级，见GuardLevel

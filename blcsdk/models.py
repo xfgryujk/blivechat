@@ -217,8 +217,8 @@ class AddTextMsg:
     """内容类型，见ContentType"""
     content_type_params: Union[dict, list] = dataclasses.field(default_factory=dict)
     """跟内容类型相关的参数"""
-    uid: int = 0
-    """用户ID"""
+    uid: str = ''
+    """用户Open ID或ID"""
     medal_name: str = ''
     """勋章名"""
 
@@ -274,8 +274,8 @@ class AddGiftMsg:
     """礼物ID"""
     gift_icon_url: str = ''
     """礼物图标URL"""
-    uid: int = 0
-    """用户ID"""
+    uid: str = ''
+    """用户Open ID或ID"""
     privilege_type: int = GuardLevel.NONE.value
     """舰队等级，见GuardLevel"""
     medal_level: int = 0
@@ -321,8 +321,8 @@ class AddMemberMsg:
     """数量"""
     unit: str = ''
     """单位（月）"""
-    uid: int = 0
-    """用户ID"""
+    uid: str = ''
+    """用户Open ID或ID"""
     medal_level: int = 0
     """勋章等级，如果没戴当前房间勋章则为0"""
     medal_name: str = ''
@@ -362,8 +362,8 @@ class AddSuperChatMsg:
     """内容"""
     translation: str = ''
     """内容翻译"""
-    uid: int = 0
-    """用户ID"""
+    uid: str = ''
+    """用户Open ID或ID"""
     privilege_type: int = GuardLevel.NONE.value
     """舰队等级，见GuardLevel"""
     medal_level: int = 0

@@ -548,7 +548,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             content_type=content_type,
             content_type_params=content_type_params,
             # 给插件用的字段
-            uid=message.uid,
+            uid=str(message.uid) if message.uid != 0 else message.uname,
             medal_name='' if message.medal_room_id != client.room_id else message.medal_name,
         )
         room.send_cmd_data(api.chat.Command.ADD_TEXT, data)
@@ -580,7 +580,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             # 给插件用的字段
             'giftId': message.gift_id,
             'giftIconUrl': '',
-            'uid': message.uid,
+            'uid': str(message.uid) if message.uid != 0 else message.uname,
             'privilegeType': message.guard_level,
             'medalLevel': 0,
             'medalName': '',
@@ -611,7 +611,8 @@ class LiveMsgHandler(blivedm.BaseHandler):
             # 给插件用的字段
             'num': message.num,
             'unit': '月',  # 单位在USER_TOAST_MSG消息里，不想改消息。现在没有别的单位，web接口也很少有人用了，先写死吧
-            'uid': message.uid,
+            # TODO price
+            'uid': str(message.uid) if message.uid != 0 else message.username,
             'medalLevel': 0,
             'medalName': '',
         }
@@ -649,7 +650,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'content': message.message,
             'translation': translation,
             # 给插件用的字段
-            'uid': message.uid,
+            'uid': str(message.uid) if message.uid != 0 else message.uname,
             'privilegeType': message.guard_level,
             'medalLevel': 0,
             'medalName': '',
@@ -713,14 +714,11 @@ class LiveMsgHandler(blivedm.BaseHandler):
     #
 
     def _on_open_live_danmaku(self, client: OpenLiveClient, message: dm_open_models.DanmakuMessage):
-        avatar_url = message.uface
-        services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
-
         room = client_room_manager.get_room(client.room_key)
         if room is None:
             return
 
-        if message.uid == client.room_owner_uid:
+        if message.open_id == client.room_owner_open_id:
             author_type = 3  # 主播
         elif message.guard_level != 0:  # 1总督，2提督，3舰长
             author_type = 1  # 舰队
@@ -748,7 +746,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             translation = ''
 
         data = api.chat.make_text_message_data(
-            avatar_url=avatar_url,
+            avatar_url=services.avatar.process_avatar_url(message.uface),
             timestamp=message.timestamp,
             author_name=message.uname,
             author_type=author_type,
@@ -760,7 +758,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             content_type=content_type,
             content_type_params=content_type_params,
             # 给插件用的字段
-            uid=message.uid,
+            uid=message.open_id,
             medal_name='' if not message.fans_medal_wearing_status else message.fans_medal_name,
         )
         room.send_cmd_data(api.chat.Command.ADD_TEXT, data)
@@ -774,9 +772,6 @@ class LiveMsgHandler(blivedm.BaseHandler):
             ))
 
     def _on_open_live_gift(self, client: OpenLiveClient, message: dm_open_models.GiftMessage):
-        avatar_url = services.avatar.process_avatar_url(message.uface)
-        services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
-
         room = client_room_manager.get_room(client.room_key)
         if room is None:
             return
@@ -784,7 +779,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
         total_coin = message.price * message.gift_num
         data = {
             'id': message.msg_id,
-            'avatarUrl': avatar_url,
+            'avatarUrl': services.avatar.process_avatar_url(message.uface),
             'timestamp': message.timestamp,
             'authorName': message.uname,
             'totalCoin': 0 if not message.paid else total_coin,
@@ -794,7 +789,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             # 给插件用的字段
             'giftId': message.gift_id,
             'giftIconUrl': message.gift_icon,
-            'uid': message.uid,
+            'uid': message.open_id,
             'privilegeType': message.guard_level,
             'medalLevel': 0 if not message.fans_medal_wearing_status else message.fans_medal_level,
             'medalName': '' if not message.fans_medal_wearing_status else message.fans_medal_name,
@@ -805,23 +800,21 @@ class LiveMsgHandler(blivedm.BaseHandler):
         )
 
     def _on_open_live_buy_guard(self, client: OpenLiveClient, message: dm_open_models.GuardBuyMessage):
-        avatar_url = message.user_info.uface
-        services.avatar.update_avatar_cache_if_expired(message.user_info.uid, avatar_url)
-
         room = client_room_manager.get_room(client.room_key)
         if room is None:
             return
 
         data = {
             'id': message.msg_id,
-            'avatarUrl': avatar_url,
+            'avatarUrl': services.avatar.process_avatar_url(message.user_info.uface),
             'timestamp': message.timestamp,
             'authorName': message.user_info.uname,
             'privilegeType': message.guard_level,
             # 给插件用的字段
             'num': message.guard_num,
             'unit': message.guard_unit,
-            'uid': message.user_info.uid,
+            # TODO price
+            'uid': message.user_info.open_id,
             'medalLevel': 0 if not message.fans_medal_wearing_status else message.fans_medal_level,
             'medalName': '' if not message.fans_medal_wearing_status else message.fans_medal_name,
         }
@@ -831,9 +824,6 @@ class LiveMsgHandler(blivedm.BaseHandler):
         )
 
     def _on_open_live_super_chat(self, client: OpenLiveClient, message: dm_open_models.SuperChatMessage):
-        avatar_url = services.avatar.process_avatar_url(message.uface)
-        services.avatar.update_avatar_cache_if_expired(message.uid, avatar_url)
-
         room = client_room_manager.get_room(client.room_key)
         if room is None:
             return
@@ -852,14 +842,14 @@ class LiveMsgHandler(blivedm.BaseHandler):
         msg_id = str(message.message_id)
         data = {
             'id': msg_id,
-            'avatarUrl': avatar_url,
+            'avatarUrl': services.avatar.process_avatar_url(message.uface),
             'timestamp': message.start_time,
             'authorName': message.uname,
             'price': message.rmb,
             'content': message.message,
             'translation': translation,
             # 给插件用的字段
-            'uid': message.uid,
+            'uid': message.open_id,
             'privilegeType': message.guard_level,
             'medalLevel': 0 if not message.fans_medal_wearing_status else message.fans_medal_level,
             'medalName': '' if not message.fans_medal_wearing_status else message.fans_medal_name,

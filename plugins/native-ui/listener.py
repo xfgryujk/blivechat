@@ -74,7 +74,7 @@ class MsgHandler(blcsdk.BaseHandler):
             return
         room = _get_or_add_room(extra.room_key, extra.room_id)
         room.add_gift(GiftRecord(
-            uid=str(message.uid),  # TODO SDK的uid改成Open ID
+            uid=message.uid,
             author_name=message.author_name,
             gift_name=message.gift_name,
             num=message.num,
@@ -104,7 +104,7 @@ class MsgHandler(blcsdk.BaseHandler):
         guard_name += f'（{message.unit}）'
 
         room.add_gift(GiftRecord(
-            uid=str(message.uid),  # TODO SDK的uid改成Open ID
+            uid=message.uid,
             author_name=message.author_name,
             gift_name=guard_name,
             num=message.num,
@@ -118,7 +118,7 @@ class MsgHandler(blcsdk.BaseHandler):
             return
         room = _get_or_add_room(extra.room_key, extra.room_id)
         room.add_super_chat(SuperChatRecord(
-            uid=str(message.uid),  # TODO SDK的uid改成Open ID
+            uid=message.uid,
             author_name=message.author_name,
             price=message.price,
             content=message.content,

@@ -199,10 +199,10 @@ class PluginWsHandler(_PluginApiHandlerBase, tornado.websocket.WebSocketHandler)
         author_name = str(data['authorName'])
         if author_name == '':
             author_name = self.plugin.id
-        uid = int(data['uid'])
+        uid = str(data['uid'])
         avatar_url = str(data['avatarUrl'])
         if avatar_url == '':
-            avatar_url = services.avatar.get_default_avatar_url(uid, author_name)
+            avatar_url = services.avatar.get_default_avatar_url(username=author_name)
 
         data_to_send = api.chat.make_text_message_data(
             content=str(data['content']),

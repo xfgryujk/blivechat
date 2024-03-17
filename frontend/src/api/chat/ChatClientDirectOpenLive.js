@@ -15,7 +15,7 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
     this.roomOwnerAuthCode = roomOwnerAuthCode
 
     // 调用initRoom后初始化
-    this.roomOwnerUid = null
+    this.roomOwnerOpenId = null
     this.hostServerUrlList = []
     this.authBody = null
     this.gameId = null
@@ -82,7 +82,7 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
     this.hostServerUrlList = websocketInfo.wss_link
     let anchorInfo = data.anchor_info
     // this.roomId = anchorInfo.room_id
-    this.roomOwnerUid = anchorInfo.uid
+    this.roomOwnerOpenId = anchorInfo.open_id
     return true
   }
 
@@ -178,7 +178,7 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
     let data = command.data
 
     let authorType
-    if (data.uid === this.roomOwnerUid) {
+    if (data.open_id === this.roomOwnerOpenId) {
       authorType = 3
     } else if (data.guard_level !== 0) {
       authorType = 1

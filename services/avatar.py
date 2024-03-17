@@ -56,14 +56,14 @@ async def _do_init():
     _avatar_fetchers = fetchers
 
 
-async def get_avatar_url(user_id, username) -> str:
+async def get_avatar_url(user_id: int, username) -> str:
     avatar_url = await get_avatar_url_or_none(user_id)
     if avatar_url is None:
         avatar_url = get_default_avatar_url(user_id, username)
     return avatar_url
 
 
-def get_default_avatar_url(user_id=0, username=''):
+def get_default_avatar_url(user_id: int = 0, username=''):
     if user_id != 0:
         str_to_hash = str(user_id)
     elif username != '':
@@ -74,7 +74,7 @@ def get_default_avatar_url(user_id=0, username=''):
     return f'//cravatar.cn/avatar/{id_hash}?s=256&d=robohash&f=y'
 
 
-async def get_avatar_url_or_none(user_id) -> Optional[str]:
+async def get_avatar_url_or_none(user_id: int) -> Optional[str]:
     if user_id == 0:
         return None
 
@@ -109,14 +109,14 @@ async def _refresh_avatar_cache_from_web(user_id):
     update_avatar_cache(user_id, avatar_url)
 
 
-def update_avatar_cache(user_id, avatar_url):
+def update_avatar_cache(user_id: int, avatar_url):
     if user_id == 0:
         return
     _update_avatar_cache_in_memory(user_id, avatar_url)
     _update_avatar_cache_in_database(user_id, avatar_url)
 
 
-def update_avatar_cache_if_expired(user_id, avatar_url):
+def update_avatar_cache_if_expired(user_id: int, avatar_url):
     # 内存缓存过期了才更新，减少写入数据库的频率
     if _get_avatar_url_from_memory(user_id) is None:
         update_avatar_cache(user_id, avatar_url)
