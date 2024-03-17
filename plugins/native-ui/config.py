@@ -8,7 +8,7 @@ import pubsub.pub as pub
 
 logger = logging.getLogger('native-ui.' + __name__)
 
-BASE_PATH = os.path.realpath(os.getcwd())
+BASE_PATH = os.path.dirname(os.path.realpath(__file__))
 LOG_PATH = os.path.join(BASE_PATH, 'log')
 DATA_PATH = os.path.join(BASE_PATH, 'data')
 
@@ -17,6 +17,8 @@ CONFIG_PATH_LIST = [
     SAVE_CONFIG_PATH,
     os.path.join(DATA_PATH, 'config.example.ini')
 ]
+
+BLC_ICON_PATH = os.path.join(DATA_PATH, 'blivechat.ico')
 
 _config: Optional['AppConfig'] = None
 

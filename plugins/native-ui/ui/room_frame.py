@@ -25,31 +25,35 @@ class RoomFrame(designer.ui_base.RoomFrameBase):
         room = listener.get_room(self._room_key)
         room_str = str(room.room_id) if room is not None else str(self._room_key)
         self.SetTitle(f'blivechat - 房间 {room_str}')
-
-        self._apply_config(True)
+        self.SetIcon(wx.Icon(config.BLC_ICON_PATH, wx.BITMAP_TYPE_ICO))
 
         self.super_chat_list.AppendColumn('时间', width=50)
         self.super_chat_list.AppendColumn('用户名', width=120)
         self.super_chat_list.AppendColumn('金额', width=50)
         self.super_chat_list.AppendColumn('内容', width=300)
-        for index in range(len(room.super_chats)):
-            self._on_super_chats_change(room, room.super_chats, index, True)
 
         self.gift_list.AppendColumn('时间', width=50)
         self.gift_list.AppendColumn('用户名', width=120)
         self.gift_list.AppendColumn('礼物名', width=100)
         self.gift_list.AppendColumn('数量', width=50)
         self.gift_list.AppendColumn('总价', width=50)
-        for index in range(len(room.gifts)):
-            self._on_gifts_change(room, room.gifts, index, True)
 
         # item_data只能存int，这里做个映射
         self._uid_to_paid_user_item_data: Dict[str, int] = {}
         self._next_paid_user_item_data = 1
         self.paid_user_list.AppendColumn('用户名', width=120)
         self.paid_user_list.AppendColumn('总付费', width=60)
-        for index in room.uid_paid_user_dict:
-            self._on_uid_paid_user_dict_change(room, room.uid_paid_user_dict, index, True)
+
+        self._apply_config(True)
+
+        if room is not None:
+            for index in range(len(room.super_chats)):
+                self._on_super_chats_change(room, room.super_chats, index, True)
+            for index in range(len(room.gifts)):
+                self._on_gifts_change(room, room.gifts, index, True)
+            for index in room.uid_paid_user_dict:
+                self._on_uid_paid_user_dict_change(room, room.uid_paid_user_dict, index, True)
+            self._on_simple_statistics_change(room)
 
         pub.subscribe(self._on_preview_room_opacity, 'preview_room_opacity')
         pub.subscribe(self._on_room_config_dialog_cancel, 'room_config_dialog_cancel')
@@ -195,7 +199,7 @@ class RoomFrame(designer.ui_base.RoomFrameBase):
     # 模型事件
     #
 
-    def _on_super_chats_change(self, room: listener.Room, value: List[listener.SuperChatRecord], index, is_new):  # noqa
+    def _on_super_chats_change(self, room: listener.Room, value: List[listener.SuperChatRecord], index, is_new):
         if room.room_key != self._room_key:
             return
 
@@ -243,7 +247,7 @@ class RoomFrame(designer.ui_base.RoomFrameBase):
         if height_to_bottom < last_row_rect.GetHeight() * 3:
             list_ctrl.Focus(last_row_index)
 
-    def _on_gifts_change(self, room: listener.Room, value: List[listener.GiftRecord], index, is_new):  # noqa
+    def _on_gifts_change(self, room: listener.Room, value: List[listener.GiftRecord], index, is_new):
         if room.room_key != self._room_key:
             return
 
@@ -260,7 +264,7 @@ class RoomFrame(designer.ui_base.RoomFrameBase):
         ]
 
     def _on_uid_paid_user_dict_change(
-        self, room: listener.Room, value: Dict[str, listener.PaidUserRecord], index, is_new  # noqa
+        self, room: listener.Room, value: Dict[str, listener.PaidUserRecord], index, is_new
     ):
         if room.room_key != self._room_key:
             return

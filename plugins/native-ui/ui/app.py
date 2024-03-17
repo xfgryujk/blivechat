@@ -6,9 +6,9 @@ import pubsub.pub as pub
 import wxasync
 
 import blcsdk.models as sdk_models
-import listener
 import ui.room_config_dialog
 import ui.room_frame
+import ui.task_bar_icon
 
 logger = logging.getLogger('native-ui.' + __name__)
 
@@ -22,6 +22,8 @@ def init():
 
 class App(wxasync.WxAsyncApp):
     def __init__(self, *args, **kwargs):
+        self._task_bar_icon: Optional[ui.task_bar_icon.TaskBarIcon] = None
+
         super().__init__(*args, clearSigInt=False, **kwargs)
         self.SetExitOnFrameDelete(False)
 
@@ -29,10 +31,12 @@ class App(wxasync.WxAsyncApp):
         self._room_config_dialog: Optional[ui.room_config_dialog.RoomConfigDialog] = None
 
     def OnInit(self):
+        self._task_bar_icon = ui.task_bar_icon.TaskBarIcon()
+
         pub.subscribe(self._on_add_room, 'add_room')
         pub.subscribe(self._on_del_room, 'del_room')
         pub.subscribe(self._on_room_frame_close, 'room_frame_close')
-        pub.subscribe(self._on_open_admin_ui, 'open_admin_ui')
+        pub.subscribe(self._on_add_room, 'open_room')
         pub.subscribe(self._on_open_room_config_dialog, 'open_room_config_dialog')
         return True
 
@@ -50,10 +54,6 @@ class App(wxasync.WxAsyncApp):
 
     def _on_room_frame_close(self, room_key: sdk_models.RoomKey):
         self._key_room_frame_dict.pop(room_key, None)
-
-    def _on_open_admin_ui(self):
-        for room in listener.iter_rooms():
-            self._on_add_room(room.room_key)
 
     def _on_open_room_config_dialog(self):
         if self._room_config_dialog is None or self._room_config_dialog.IsBeingDeleted():
