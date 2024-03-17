@@ -26,6 +26,14 @@ DATAS = [
     ('data/blivechat.ico', 'data'),
     ('log/.gitkeep', 'log'),
 ]
+# 动态库
+BINARIES = []
+if sys.platform == 'win32':
+    import wx
+
+    # https://docs.wxpython.org/wx.html2.WebView.html#phoenix-title-webview-backend-edge-msw
+    bin_path = os.path.join(os.path.dirname(wx.__file__), 'WebView2Loader.dll')
+    BINARIES.append((bin_path, '.'))
 
 block_cipher = None
 
@@ -33,7 +41,7 @@ block_cipher = None
 a = Analysis(
     ['main.pyw'],
     pathex=PYTHONPATH,
-    binaries=[],
+    binaries=BINARIES,
     datas=DATAS,
     hiddenimports=[],
     hookspath=[],
