@@ -6,6 +6,7 @@ import logging
 from typing import *
 
 import pubsub.pub as pub
+import wx
 
 import blcsdk
 import blcsdk.models as sdk_models
@@ -26,7 +27,7 @@ async def init():
         blc_rooms = await blcsdk.get_rooms()
         for blc_room in blc_rooms:
             if blc_room.room_id is not None:
-                _get_or_add_room(blc_room.room_key, blc_room.room_id)
+                wx.CallAfter(_get_or_add_room, blc_room.room_key, blc_room.room_id)
     except blcsdk.SdkError:
         pass
 
@@ -38,7 +39,10 @@ def shut_down():
 class MsgHandler(blcsdk.BaseHandler):
     def on_client_stopped(self, client: blcsdk.BlcPluginClient, exception: Optional[Exception]):
         logger.info('blivechat disconnected')
-        __main__.start_shut_down()
+        wx.CallAfter(__main__.start_shut_down)
+
+    def handle(self, client: blcsdk.BlcPluginClient, command: dict):
+        wx.CallAfter(super().handle, client, command)
 
     def _on_open_plugin_admin_ui(
         self, client: blcsdk.BlcPluginClient, message: sdk_models.OpenPluginAdminUiMsg, extra: sdk_models.ExtraData
