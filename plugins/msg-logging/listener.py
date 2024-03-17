@@ -78,7 +78,7 @@ class MsgHandler(blcsdk.BaseHandler):
         if message.total_coin != 0:
             content = (
                 f'[paid_gift] {message.author_name} 赠送了 {message.gift_name} x {message.num}，'
-                f'总价 {message.total_coin / 1000} 元'
+                f'总价 {message.total_coin / 1000:.1f} 元'
             )
         else:
             content = (
@@ -101,7 +101,8 @@ class MsgHandler(blcsdk.BaseHandler):
             guard_name = '总督'
         else:
             guard_name = '未知舰队等级'
-        room.log(f'[guard] {message.author_name} 购买了 {message.num}{message.unit} {guard_name}')
+        room.log(f'[guard] {message.author_name} 购买了 {message.num}{message.unit} {guard_name}，'
+                 f'总价 {message.total_coin / 1000:.1f} 元')
 
     def _on_add_super_chat(
         self, client: blcsdk.BlcPluginClient, message: sdk_models.AddSuperChatMsg, extra: sdk_models.ExtraData

@@ -88,19 +88,14 @@ class MsgHandler(blcsdk.BaseHandler):
             return
         room = _get_or_add_room(extra.room_key, extra.room_id)
 
-        # 消息里没有价格，这里按最低算
         if message.privilege_type == sdk_models.GuardLevel.LV1:
             guard_name = '舰长'
-            price = 138
         elif message.privilege_type == sdk_models.GuardLevel.LV2:
             guard_name = '提督'
-            price = 1998
         elif message.privilege_type == sdk_models.GuardLevel.LV3:
             guard_name = '总督'
-            price = 19998
         else:
             guard_name = '未知舰队等级'
-            price = 0
         guard_name += f'（{message.unit}）'
 
         room.add_gift(GiftRecord(
@@ -108,7 +103,7 @@ class MsgHandler(blcsdk.BaseHandler):
             author_name=message.author_name,
             gift_name=guard_name,
             num=message.num,
-            price=price,
+            price=message.total_coin / 1000,
         ))
 
     def _on_add_super_chat(

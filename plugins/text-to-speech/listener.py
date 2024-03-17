@@ -103,6 +103,8 @@ class MsgHandler(blcsdk.BaseHandler):
             num=message.num,
             unit=message.unit,
             guard_name=guard_name,
+            price=message.total_coin / 1000,
+            total_coin=message.total_coin,
         )
         tts.say_text(text, tts.Priority.HIGH)
 

@@ -56,12 +56,12 @@ class AppConfig:
 
         self.max_tts_queue_size = 5
 
-        self.template_text = '{author_name} 说：{content}'
+        self.template_text = '{author_name} 说，{content}'
         # self.template_free_gift = '{author_name} 赠送了{num}个{gift_name}，总价{total_coin}银瓜子'
         self.template_free_gift = '{author_name} 赠送了{num}个{gift_name}'
         self.template_paid_gift = '{author_name} 赠送了{num}个{gift_name}，总价{price:.1f}元'
-        self.template_member = '{author_name} 购买了{num}{unit} {guard_name}'
-        self.template_super_chat = '{author_name} 发送了{price}元的醒目留言：{content}'
+        self.template_member = '{author_name} 购买了{num}{unit} {guard_name}，总价{price:.1f}元'
+        self.template_super_chat = '{author_name} 发送了{price}元的醒目留言，{content}'
 
     def load(self, path):
         try:

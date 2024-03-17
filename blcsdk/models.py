@@ -321,6 +321,8 @@ class AddMemberMsg:
     """数量"""
     unit: str = ''
     """单位（月）"""
+    total_coin: int = 0
+    """总价付费瓜子数，1000金瓜子 = 1元"""
     uid: str = ''
     """用户Open ID或ID"""
     medal_level: int = 0
@@ -338,6 +340,7 @@ class AddMemberMsg:
             privilege_type=data['privilegeType'],
             num=data['num'],
             unit=data['unit'],
+            total_coin=data['total_coin'],
             uid=data['uid'],
             medal_level=data['medalLevel'],
             medal_name=data['medalName'],

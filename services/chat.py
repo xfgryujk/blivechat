@@ -611,7 +611,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             # 给插件用的字段
             'num': message.num,
             'unit': '月',  # 单位在USER_TOAST_MSG消息里，不想改消息。现在没有别的单位，web接口也很少有人用了，先写死吧
-            # TODO price
+            'total_coin': message.price * message.num,
             'uid': str(message.uid) if message.uid != 0 else message.username,
             'medalLevel': 0,
             'medalName': '',
@@ -813,7 +813,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             # 给插件用的字段
             'num': message.guard_num,
             'unit': message.guard_unit,
-            # TODO price
+            'total_coin': message.price * message.guard_num,
             'uid': message.user_info.open_id,
             'medalLevel': 0 if not message.fans_medal_wearing_status else message.fans_medal_level,
             'medalName': '' if not message.fans_medal_wearing_status else message.fans_medal_name,
