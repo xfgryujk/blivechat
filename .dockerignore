@@ -1,30 +1,30 @@
 # compiled output
 **/__pycache__/
-build/
+**/build/
 **/dist/
 
 # dependencies
+frontend/package-lock.json
 **/node_modules/
 
 # IDEs and editors
-.idea/
+**/.idea/
 
 # misc
 **/.git*
-*.spec
+**/*.spec
 screenshots/
-README.md
+
+plugins/
 
 # runtime data
 data/*
 !data/config.example.ini
-!data/emoticons/
-data/emoticons/*
-!data/emoticons/.gitkeep
 !data/custom_public/
 data/custom_public/*
 !data/custom_public/README.txt
+!data/emoticons/
+data/emoticons/*
 !data/plugins/
 data/plugins/*
-!data/plugins/.gitkeep
 log/*
