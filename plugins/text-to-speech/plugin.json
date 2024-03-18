@@ -1,5 +1,5 @@
 {
-  "name": "文字转语音",
+  "name": "语音播报",
   "version": "1.0.0",
   "author": "xfgryujk",
   "description": "用语音读出收到的消息。点击管理打开配置文件，编辑保存后重启插件生效。发布地址：https://github.com/xfgryujk/blivechat/discussions/164",

@@ -11,14 +11,14 @@
 ## 特性
 
 * 兼容YouTube直播评论栏的样式
-* 付费礼物模仿醒目留言显示
-* 高亮舰队、房管、主播的用户名
-* 支持屏蔽弹幕、合并相似弹幕等设置
+* 高亮舰队、 ~~房管~~ 、主播的用户名
 * 自带两种样式生成器，经典YouTube风格和仿微信风格
+* 支持屏蔽弹幕、合并礼物等设置
 * 支持前端直连B站服务器或者通过后端转发
 * 支持自动翻译弹幕、醒目留言到日语，可以在后台配置翻译目标语言
 * 支持标注打赏用户名的读音，可选拼音或日文假名
 * 支持配置自定义表情，不需要开通B站官方表情
+* 支持插件开发
 
 ## 使用方法
 
@@ -26,8 +26,8 @@
 
 ### 一、本地使用
 
-1. 下载[发布版](https://github.com/xfgryujk/blivechat/releases)（仅提供x64 Windows版）
-2. 双击`blivechat.exe`运行服务器，或者用命令行可以指定host和端口号：
+1. 下载[本地分发版](https://github.com/xfgryujk/blivechat/releases)（仅提供x64 Windows版）。也可以在[B站商店](https://play-live.bilibili.com/details/1694397161340)下载
+2. 双击`blivechat.exe`运行服务器。或者用命令行可以指定host和端口号：
 
     ```sh
     blivechat.exe --host 127.0.0.1 --port 12450
