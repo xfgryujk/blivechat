@@ -57,6 +57,7 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
       platform: 'web',
       type: 2,
       buvid: '',
+      // TODO B站开始检查key了，有空时加上
     }
     this.websocket.send(this.makePacket(authParams, base.OP_AUTH))
   }

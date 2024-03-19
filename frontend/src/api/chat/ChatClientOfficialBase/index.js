@@ -73,20 +73,25 @@ export default class ChatClientOfficialBase {
   }
 
   makePacket(data, operation) {
-    let body
     if (typeof data === 'object') {
-      body = textEncoder.encode(JSON.stringify(data))
-    } else { // string
-      body = textEncoder.encode(data)
+      data = JSON.stringify(data)
     }
-    let header = new ArrayBuffer(HEADER_SIZE)
-    let headerView = new DataView(header)
-    headerView.setUint32(0, HEADER_SIZE + body.byteLength)   // pack_len
-    headerView.setUint16(4, HEADER_SIZE)                     // raw_header_size
-    headerView.setUint16(6, 1)                               // ver
-    headerView.setUint32(8, operation)                       // operation
-    headerView.setUint32(12, 1)                              // seq_id
-    return new Blob([header, body])
+    let bodyArr = textEncoder.encode(data)
+
+    let headerBuf = new ArrayBuffer(HEADER_SIZE)
+    let headerView = new DataView(headerBuf)
+    headerView.setUint32(0, HEADER_SIZE + bodyArr.byteLength)  // pack_len
+    headerView.setUint16(4, HEADER_SIZE)                       // raw_header_size
+    headerView.setUint16(6, 1)                                 // ver
+    headerView.setUint32(8, operation)                         // operation
+    headerView.setUint32(12, 1)                                // seq_id
+
+    // 这里如果直接返回 new Blob([headerBuf, bodyArr])，在Chrome抓包会显示空包，实际上是有数据的，为了调试体验最好还是拷贝一遍
+    let headerArr = new Uint8Array(headerBuf)
+    let packetArr = new Uint8Array(bodyArr.length + headerArr.length)
+    packetArr.set(headerArr)
+    packetArr.set(bodyArr, headerArr.length)
+    return packetArr
   }
 
   sendAuth() {
