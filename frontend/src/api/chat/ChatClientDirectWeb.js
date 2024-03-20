@@ -16,6 +16,8 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
     this.hostServerList = [
       { host: "broadcastlv.chat.bilibili.com", port: 2243, wss_port: 443, ws_port: 2244 }
     ]
+    this.hostServerToken = null
+    this.buvid = ''
   }
 
   async initRoom() {
@@ -32,6 +34,8 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
     if (res.hostServerList.length !== 0) {
       this.hostServerList = res.hostServerList
     }
+    this.hostServerToken = res.hostServerToken
+    this.buvid = res.buvid
     return true
   }
 
@@ -56,8 +60,10 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
       protover: 3,
       platform: 'web',
       type: 2,
-      buvid: '',
-      // TODO B站开始检查key了，有空时加上
+      buvid: this.buvid,
+    }
+    if (this.hostServerToken !== null) {
+      authParams.key = this.hostServerToken
     }
     this.websocket.send(this.makePacket(authParams, base.OP_AUTH))
   }
