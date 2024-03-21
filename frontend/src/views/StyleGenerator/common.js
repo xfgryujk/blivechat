@@ -88,7 +88,7 @@ export function getTimeStyle(config) {
 yt-live-chat-text-message-renderer #timestamp {
   display: ${config.showTime ? 'inline' : 'none'} !important;
   ${config.timeColor ? `color: ${config.timeColor} !important;` : ''}
-  font-family: "${cssEscapeStr(config.timeFont)}"${FALLBACK_FONTS};
+  font-family: ${cssFontStr(config.timeFont)}${FALLBACK_FONTS};
   font-size: ${config.timeFontSize}px !important;
   line-height: ${config.timeLineHeight || config.timeFontSize}px !important;
 }`
@@ -134,6 +134,15 @@ yt-live-chat-paid-message-renderer {
   animation: anim ${totalTime}ms;
   animation-fill-mode: both;
 }`
+}
+
+export function cssFontStr(str) {
+  let fontNameArr = str.split(',')
+  let fontNameOutput = []
+  fontNameArr.map(e => {
+    fontNameOutput.push(`"${cssEscapeStr(e)}"`)
+  })
+  return fontNameOutput.join(',')
 }
 
 export function cssEscapeStr(str) {
