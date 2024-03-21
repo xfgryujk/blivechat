@@ -1,0 +1,103 @@
+name: Bundle with Pyinstaller
+on: push
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.set_tag.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - id: set_tag
+        run: |
+          if ${{ startsWith(github.ref, 'refs/tags/v') }}; then
+            echo "tag=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Build Frontend
+        working-directory: frontend
+        run: |
+          npm install
+          npm run build
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend
+          path: frontend/dist
+
+  backend:
+    needs: frontend
+    strategy:
+      matrix:
+        os: [macos, ubuntu, windows]
+    runs-on: ${{ matrix.os }}-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Download Frontend
+        uses: actions/download-artifact@v3
+        with:
+          name: frontend
+          path: frontend/dist
+
+      - name: Install Dependencies
+        run: pip3 install -r requirements.txt
+
+      - name: Bundle blivechat (Unix)
+        if: matrix.os != 'windows'
+        run: |
+          pip3 install pyinstaller
+          pyinstaller --noconfirm \
+            --add-data="data:data" \
+            --add-data="log:log" \
+            --add-data="frontend/dist:frontend/dist" \
+            --name blivechat \
+            main.py
+
+      - name: Bundle blivechat (Windows)
+        if: matrix.os == 'windows'
+        run: |
+          pip3 install pyinstaller
+          pyinstaller --noconfirm `
+            --add-data="data;data" `
+            --add-data="log;log" `
+            --add-data="frontend\dist;frontend\dist" `
+            --name blivechat `
+            main.py
+
+      - name: Package Bundle
+        working-directory: dist
+        run: 7z a -tzip blivechat-${{ needs.frontend.outputs.tag }}-${{ matrix.os }}-x64.zip blivechat
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: blivechat-${{ matrix.os }}-x64
+          path: dist/blivechat-*.zip
+
+  release:
+    needs: backend
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./**/blivechat-*.zip
