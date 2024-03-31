@@ -362,6 +362,15 @@ export default {
         this.$router.push({ name: 'help' })
       }
     },
+    /** @param {chatModels.DebugMsg} data */
+    onDebugMsg(data) {
+      this.onAddText(new chatModels.AddTextMsg({
+        authorName: 'blivechat',
+        authorType: constants.AUTHOR_TYPE_ADMIN,
+        content: data.content,
+        authorLevel: 60,
+      }))
+    },
 
     filterTextMessage(data) {
       if (this.config.blockGiftDanmaku && data.isGiftDanmaku) {

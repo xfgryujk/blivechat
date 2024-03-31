@@ -41,9 +41,17 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
     if (this.gameId && this.gameHeartbeatTimerId === null) {
       this.gameHeartbeatTimerId = window.setTimeout(this.onSendGameHeartbeat.bind(this), GAME_HEARTBEAT_INTERVAL)
     }
+
+    this.msgHandler.onDebugMsg(new chatModels.DebugMsg({
+      content: '开始连接房间'
+    }))
   }
 
   onWsClose() {
+    this.msgHandler.onDebugMsg(new chatModels.DebugMsg({
+      content: '房间连接已断开'
+    }))
+
     if (this.gameHeartbeatTimerId) {
       window.clearTimeout(this.gameHeartbeatTimerId)
       this.gameHeartbeatTimerId = null
@@ -69,6 +77,10 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
       }
     } catch (e) {
       console.error('startGame failed:', e)
+      this.msgHandler.onDebugMsg(new chatModels.DebugMsg({
+        content: `开放平台开启项目失败：${e}`
+      }))
+
       if (e instanceof chatModels.ChatClientFatalError) {
         throw e
       }
@@ -87,6 +99,10 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
   }
 
   async endGame() {
+    this.msgHandler.onDebugMsg(new chatModels.DebugMsg({
+      content: '开放平台关闭项目'
+    }))
+
     if (!this.gameId) {
       return true
     }
@@ -130,6 +146,9 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
       })).data
       if (res.code !== 0) {
         console.error(`sendGameHeartbeat failed: code=${res.code}, message=${res.message}, request_id=${res.request_id}`)
+        this.msgHandler.onDebugMsg(new chatModels.DebugMsg({
+          content: `开放平台项目心跳失败：code=${res.code}, message=${res.message}`
+        }))
 
         if (res.code === 7003 && this.gameId === gameId) {
           // 项目异常关闭，可能是心跳超时，需要重新开启项目
@@ -141,6 +160,9 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
       }
     } catch (e) {
       console.error('sendGameHeartbeat failed:', e)
+      this.msgHandler.onDebugMsg(new chatModels.DebugMsg({
+        content: `开放平台项目心跳失败：${e}`
+      }))
       return false
     }
     return true
@@ -161,6 +183,10 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
   }
 
   sendAuth() {
+    this.msgHandler.onDebugMsg(new chatModels.DebugMsg({
+      content: '已连接到房间，发送认证消息'
+    }))
+
     this.websocket.send(this.makePacket(this.authBody, base.OP_AUTH))
   }
 
@@ -170,6 +196,10 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
       this.needInitRoom = true
       this.endGame()
     }
+
+    this.msgHandler.onDebugMsg(new chatModels.DebugMsg({
+      content: `计划下次重连，当前页面${document.visibilityState === 'visible' ? '可见' : '不可见'}`
+    }))
 
     super.delayReconnect()
   }

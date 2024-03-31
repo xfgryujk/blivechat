@@ -121,3 +121,11 @@ export class ChatClientFatalError extends Error {
     this.type = type
   }
 }
+
+export class DebugMsg {
+  constructor({
+    content = '',
+  } = {}) {
+    this.content = content
+  }
+}
