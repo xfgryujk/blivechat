@@ -24,7 +24,12 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
   }
 
   stop() {
+    if (this.gameHeartbeatTimerId) {
+      window.clearTimeout(this.gameHeartbeatTimerId)
+      this.gameHeartbeatTimerId = null
+    }
     this.endGame()
+
     super.stop()
   }
 
@@ -33,29 +38,19 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
   }
 
   async wsConnect() {
-    await super.wsConnect()
-    if (this.isDestroying) {
-      return
+    if (!this.isDestroying) {
+      this.msgHandler.onDebugMsg(new chatModels.DebugMsg({
+        content: '开始连接房间'
+      }))
     }
 
-    if (this.gameId && this.gameHeartbeatTimerId === null) {
-      this.gameHeartbeatTimerId = window.setTimeout(this.onSendGameHeartbeat.bind(this), GAME_HEARTBEAT_INTERVAL)
-    }
-
-    this.msgHandler.onDebugMsg(new chatModels.DebugMsg({
-      content: '开始连接房间'
-    }))
+    return super.wsConnect()
   }
 
   onWsClose() {
     this.msgHandler.onDebugMsg(new chatModels.DebugMsg({
       content: '房间连接已断开'
     }))
-
-    if (this.gameHeartbeatTimerId) {
-      window.clearTimeout(this.gameHeartbeatTimerId)
-      this.gameHeartbeatTimerId = null
-    }
 
     super.onWsClose()
   }
@@ -103,24 +98,28 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
       content: '开放平台关闭项目'
     }))
 
+    this.needInitRoom = true
     if (!this.gameId) {
       return true
     }
+    let gameId = this.gameId
+    // 直接丢弃将要关闭的gameId
+    this.gameId = null
 
     try {
       let res = (await axios.post('/api/open_live/end_game', {
         app_id: 0,
-        game_id: this.gameId
+        game_id: gameId
       })).data
-      if (res.code !== 0) {
-        if (res.code === 7000 || res.code === 7003) {
-          // 项目已经关闭了也算成功
-          return true
-        }
+      // 项目已经关闭了也算成功
+      if ([0, 7000, 7003].indexOf(res.code) === -1) {
         throw Error(`code=${res.code}, message=${res.message}, request_id=${res.request_id}`)
       }
     } catch (e) {
       console.error('endGame failed:', e)
+      this.msgHandler.onDebugMsg(new chatModels.DebugMsg({
+        content: `开放平台关闭项目失败：${e}`
+      }))
       return false
     }
     return true
@@ -141,22 +140,20 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
     // 保存一下，防止await之后gameId改变
     let gameId = this.gameId
     try {
-      let res = (await axios.post('/api/open_live/game_heartbeat', {
-        game_id: this.gameId
-      })).data
+      let res = (await axios.post(
+        '/api/open_live/game_heartbeat',
+        { game_id: gameId },
+        // 服务器有心跳合批，超时时间应该长一点
+        { timeout: 15 * 1000 }
+      )).data
       if (res.code !== 0) {
-        console.error(`sendGameHeartbeat failed: code=${res.code}, message=${res.message}, request_id=${res.request_id}`)
-        this.msgHandler.onDebugMsg(new chatModels.DebugMsg({
-          content: `开放平台项目心跳失败：code=${res.code}, message=${res.message}`
-        }))
-
         if (res.code === 7003 && this.gameId === gameId) {
           // 项目异常关闭，可能是心跳超时，需要重新开启项目
+          this.gameId = null
           this.needInitRoom = true
           this.discardWebsocket()
         }
-
-        return false
+        throw Error(`code=${res.code}, message=${res.message}, request_id=${res.request_id}`)
       }
     } catch (e) {
       console.error('sendGameHeartbeat failed:', e)
@@ -172,9 +169,9 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
     // 重连次数太多则重新initRoom，保险
     let reinitPeriod = Math.max(3, (this.hostServerUrlList || []).length)
     if (this.retryCount > 0 && this.retryCount % reinitPeriod === 0) {
-      this.needInitRoom = true
       await this.endGame()
     }
+
     return super.onBeforeWsConnect()
   }
 
@@ -182,9 +179,17 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
     return this.hostServerUrlList[this.retryCount % this.hostServerUrlList.length]
   }
 
+  onWsOpen() {
+    super.onWsOpen()
+
+    if (this.gameId && this.gameHeartbeatTimerId === null) {
+      this.gameHeartbeatTimerId = window.setTimeout(this.onSendGameHeartbeat.bind(this), GAME_HEARTBEAT_INTERVAL)
+    }
+  }
+
   sendAuth() {
     this.msgHandler.onDebugMsg(new chatModels.DebugMsg({
-      content: '已连接到房间，发送认证消息'
+      content: '已连接到房间，认证中'
     }))
 
     this.websocket.send(this.makePacket(this.authBody, base.OP_AUTH))
@@ -193,7 +198,6 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
   delayReconnect() {
     if (document.visibilityState !== 'visible') {
       // 不知道什么时候才能重连，先endGame吧
-      this.needInitRoom = true
       this.endGame()
     }
 

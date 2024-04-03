@@ -145,7 +145,9 @@ export default class ChatClientOfficialBase {
 
   onWsOpen() {
     this.sendAuth()
-    this.heartbeatTimerId = window.setInterval(this.sendHeartbeat.bind(this), HEARTBEAT_INTERVAL)
+    if (this.heartbeatTimerId === null) {
+      this.heartbeatTimerId = window.setInterval(this.sendHeartbeat.bind(this), HEARTBEAT_INTERVAL)
+    }
     this.refreshReceiveTimeoutTimer()
   }
 
