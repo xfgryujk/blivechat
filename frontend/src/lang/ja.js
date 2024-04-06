@@ -69,7 +69,7 @@ export default {
     roomUrlUpdated: 'ルームのURLが更新されました。再度コピーすることをお忘れなく',
     roomUrl: 'ルームのURL',
     enterRoom: 'ルームに入る',
-    enterTestRoom: 'テストルームに入る',
+    copyTestRoomUrl: 'テストルームのURLをコピーする',
     exportConfig: 'コンフィグの導出',
     importConfig: 'コンフィグの導入',
 
@@ -150,6 +150,7 @@ export default {
 
     result: '結果',
     copy: 'コピー',
+    editor: 'エディタ',
     resetConfig: 'デフォルトに戻す'
   },
   help: {

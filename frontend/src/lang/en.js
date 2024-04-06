@@ -69,7 +69,7 @@ export default {
     roomUrlUpdated: 'The room URL is updated. Remember to copy it again',
     roomUrl: 'Room URL',
     enterRoom: 'Enter room',
-    enterTestRoom: 'Enter test room',
+    copyTestRoomUrl: 'Copy test room URL',
     exportConfig: 'Export config',
     importConfig: 'Import config',
 
@@ -150,6 +150,7 @@ export default {
 
     result: 'Result',
     copy: 'Copy',
+    editor: 'Editor',
     resetConfig: 'Reset config'
   },
   help: {

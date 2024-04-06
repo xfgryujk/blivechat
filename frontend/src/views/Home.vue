@@ -235,7 +235,7 @@
           </el-tooltip>
           <el-form-item>
             <el-button type="primary" :disabled="!roomUrl" @click="enterRoom">{{$t('home.enterRoom')}}</el-button>
-            <el-button @click="enterTestRoom">{{$t('home.enterTestRoom')}}</el-button>
+            <el-button @click="copyTestRoomUrl">{{$t('home.copyTestRoomUrl')}}</el-button>
             <el-button @click="exportConfig">{{$t('home.exportConfig')}}</el-button>
             <el-button @click="importConfig">{{$t('home.importConfig')}}</el-button>
           </el-form-item>
@@ -378,8 +378,8 @@ export default {
     enterRoom() {
       window.open(this.roomUrl, `room ${this.roomKeyValue}`, 'menubar=0,location=0,scrollbars=0,toolbar=0,width=600,height=600')
     },
-    enterTestRoom() {
-      window.open(this.getUnvalidatedRoomUrl(true), 'test room', 'menubar=0,location=0,scrollbars=0,toolbar=0,width=600,height=600')
+    copyTestRoomUrl() {
+      window.navigator.clipboard.writeText(this.getUnvalidatedRoomUrl(true))
     },
     getUnvalidatedRoomUrl(isTestRoom) {
       // 重要的字段放在前面，因为如果被截断就连接不了房间了

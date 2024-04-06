@@ -18,6 +18,9 @@
           </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="copyResult">{{ $t('stylegen.copy') }}</el-button>
+            <a target="_blank" href="https://vscode.dev/">
+              <el-button style="margin: 0 10px">{{ $t('stylegen.editor') }}</el-button>
+            </a>
             <el-button @click="resetConfig">{{ $t('stylegen.resetConfig') }}</el-button>
           </el-form-item>
         </el-card>

@@ -69,7 +69,7 @@ export default {
     roomUrlUpdated: '房间URL已更新，记得重新复制',
     roomUrl: '房间URL',
     enterRoom: '进入房间',
-    enterTestRoom: '进入测试房间',
+    copyTestRoomUrl: '复制测试房间URL',
     exportConfig: '导出配置',
     importConfig: '导入配置',
 
@@ -150,6 +150,7 @@ export default {
 
     result: '结果',
     copy: '复制',
+    editor: '编辑器',
     resetConfig: '恢复默认设置'
   },
   help: {
