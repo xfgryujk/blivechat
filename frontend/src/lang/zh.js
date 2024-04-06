@@ -45,6 +45,8 @@ export default {
     blockMedalLevel: '屏蔽当前直播间勋章等级低于',
 
     advanced: '高级',
+    showDebugMessages: '显示调试消息',
+    showDebugMessagesTip: '如果消息不能显示，可以开启这个用来调试，否则没必要开启',
     relayMessagesByServer: '通过服务器转发消息',
     relayMessagesByServerTip: '开启时的消息路径：B站服务器 -> blivechat服务器 -> 你的浏览器。部分高级功能需要开启这个。推荐只在本地使用blivechat时开启，而通过远程服务器使用时不开启',
     autoTranslate: '自动翻译弹幕到日语',

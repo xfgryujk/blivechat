@@ -143,6 +143,15 @@
           </el-tab-pane>
 
           <el-tab-pane :label="$t('home.advanced')">
+            <el-row>
+              <el-col :xs="24" :sm="8">
+                <el-tooltip :content="$t('home.showDebugMessagesTip')">
+                  <el-form-item :label="$t('home.showDebugMessages')">
+                    <el-switch v-model="form.showDebugMessages"></el-switch>
+                  </el-form-item>
+                </el-tooltip>
+              </el-col>
+            </el-row>
             <el-row :gutter="20">
               <el-col :xs="24" :sm="8">
                 <el-tooltip :content="$t('home.relayMessagesByServerTip')">

@@ -45,6 +45,8 @@ export default {
     blockMedalLevel: 'ブロック勲章等級がx未満',
 
     advanced: 'アドバンスド',
+    showDebugMessages: 'デバッグメッセージを表示する',
+    showDebugMessagesTip: 'メッセージが表示されない場合、デバッグのためにこれを有効にすることができます。それ以外の場合は、有効にする必要はありません',
     relayMessagesByServer: 'サーバを介してメッセージを転送する',
     relayMessagesByServerTip: '有効になった場合のメッセージパス：Bilibiliサーバー -> blivechatサーバー -> あなたのブラウザー。一部の高度な機能では、これが有効になっている必要があります。blivechatをローカルで使用する場合にのみ有効にすることを推奨します。リモートサーバーを介して使用する場合には、有効にしないようにしてください',
     autoTranslate: 'コメントを日本語に翻訳する',

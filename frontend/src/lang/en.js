@@ -45,6 +45,8 @@ export default {
     blockMedalLevel: 'Block medal level lower than',
 
     advanced: 'Advanced',
+    showDebugMessages: 'Show debug messages',
+    showDebugMessagesTip: 'If the messages cannot be displayed, you can enable this for debugging. Otherwise there is no need to enable it',
     relayMessagesByServer: 'Relay messages by the server',
     relayMessagesByServerTip: 'Message path when enabled: Bilibili server -> blivechat server -> your browser. Some advanced features require this to be enabled. It is recommended to enable it only when using blivechat locally, and not when using through a remote server',
     autoTranslate: 'Auto translate messages to Japanese',

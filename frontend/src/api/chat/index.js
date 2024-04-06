@@ -11,6 +11,7 @@ export function getDefaultMsgHandler() {
     onUpdateTranslation: dummyFunc,
 
     onFatalError: dummyFunc,
+    onDebugMsg: dummyFunc,
   }
 }
 

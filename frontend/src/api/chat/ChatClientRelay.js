@@ -41,10 +41,17 @@ export default class ChatClientRelay {
     }
   }
 
+  addDebugMsg(content) {
+    this.msgHandler.onDebugMsg(new chatModels.DebugMsg({ content }))
+  }
+
   wsConnect() {
     if (this.isDestroying) {
       return
     }
+
+    this.addDebugMsg('Connecting')
+
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
     const url = `${protocol}://${window.location.host}/api/chat`
     this.websocket = new WebSocket(url)
@@ -54,6 +61,8 @@ export default class ChatClientRelay {
   }
 
   onWsOpen() {
+    this.addDebugMsg('Connected and authenticating')
+
     this.websocket.send(JSON.stringify({
       cmd: COMMAND_JOIN_ROOM,
       data: {
@@ -74,16 +83,23 @@ export default class ChatClientRelay {
   }
 
   onReceiveTimeout() {
-    console.warn('接收消息超时')
     this.receiveTimeoutTimerId = null
+    console.warn('接收消息超时')
+    this.addDebugMsg('Receiving message timed out')
 
-    // 直接丢弃阻塞的websocket，不等onclose回调了
-    this.websocket.onopen = this.websocket.onclose = this.websocket.onmessage = null
-    this.websocket.close()
-    this.onWsClose()
+    if (this.websocket) {
+      if (this.websocket.onclose) {
+        window.setTimeout(() => this.onWsClose(), 0)
+      }
+      // 直接丢弃阻塞的websocket，不等onclose回调了
+      this.websocket.onopen = this.websocket.onclose = this.websocket.onmessage = null
+      this.websocket.close()
+    }
   }
 
   onWsClose() {
+    this.addDebugMsg('Disconnected')
+
     this.websocket = null
     if (this.receiveTimeoutTimerId) {
       window.clearTimeout(this.receiveTimeoutTimerId)
@@ -106,6 +122,8 @@ export default class ChatClientRelay {
       this.msgHandler.onFatalError(error)
       return
     }
+
+    this.addDebugMsg('Scheduling reconnection')
 
     // 这边不用判断页面是否可见，因为发心跳包不是由定时器触发的，即使是不活动页面也不会心跳超时
     window.setTimeout(this.wsConnect.bind(this), this.getReconnectInterval())

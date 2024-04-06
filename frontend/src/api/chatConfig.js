@@ -19,6 +19,7 @@ export const DEFAULT_CONFIG = {
   blockUsers: '',
   blockMedalLevel: 0,
 
+  showDebugMessages: false,
   relayMessagesByServer: false,
   autoTranslate: false,
   giftUsernamePronunciation: '',
@@ -43,7 +44,10 @@ export function getLocalConfig() {
     sanitizeConfig(config)
     return config
   } catch {
-    return deepCloneDefaultConfig()
+    let config = deepCloneDefaultConfig()
+    // 新用户默认开启调试消息，免得总有人问
+    config.showDebugMessages = true
+    return config
   }
 }
 

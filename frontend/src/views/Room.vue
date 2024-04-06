@@ -172,6 +172,7 @@ export default {
       cfg.blockNotMobileVerified = toBool(cfg.blockNotMobileVerified)
       cfg.blockMedalLevel = toInt(cfg.blockMedalLevel, chatConfig.DEFAULT_CONFIG.blockMedalLevel)
 
+      cfg.showDebugMessages = toBool(cfg.showDebugMessages)
       cfg.relayMessagesByServer = toBool(cfg.relayMessagesByServer)
       cfg.autoTranslate = toBool(cfg.autoTranslate)
       cfg.importPresetCss = toBool(cfg.importPresetCss)
@@ -364,6 +365,9 @@ export default {
     },
     /** @param {chatModels.DebugMsg} data */
     onDebugMsg(data) {
+      if (!this.config.showDebugMessages) {
+        return
+      }
       this.onAddText(new chatModels.AddTextMsg({
         authorName: 'blivechat',
         authorType: constants.AUTHOR_TYPE_ADMIN,

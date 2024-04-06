@@ -98,11 +98,16 @@ export default class ChatClientOfficialBase {
     throw Error('Not implemented')
   }
 
+  addDebugMsg(content) {
+    this.msgHandler.onDebugMsg(new chatModels.DebugMsg({ content }))
+  }
+
   async wsConnect() {
     if (this.isDestroying) {
       return
     }
 
+    this.addDebugMsg('Connecting')
     await this.onBeforeWsConnect()
     if (this.isDestroying) {
       return
@@ -133,7 +138,7 @@ export default class ChatClientOfficialBase {
     }
 
     if (!res) {
-      this.onWsClose()
+      window.setTimeout(() => this.onWsClose(), 0)
       throw Error('initRoom failed')
     }
     this.needInitRoom = false
@@ -144,6 +149,8 @@ export default class ChatClientOfficialBase {
   }
 
   onWsOpen() {
+    this.addDebugMsg('Connected and authenticating')
+
     this.sendAuth()
     if (this.heartbeatTimerId === null) {
       this.heartbeatTimerId = window.setInterval(this.sendHeartbeat.bind(this), HEARTBEAT_INTERVAL)
@@ -164,6 +171,8 @@ export default class ChatClientOfficialBase {
 
   onReceiveTimeout() {
     console.warn('接收消息超时')
+    this.addDebugMsg('Receiving message timed out')
+
     this.discardWebsocket()
   }
 
@@ -173,13 +182,19 @@ export default class ChatClientOfficialBase {
       this.receiveTimeoutTimerId = null
     }
 
-    // 直接丢弃阻塞的websocket，不等onclose回调了
-    this.websocket.onopen = this.websocket.onclose = this.websocket.onmessage = null
-    this.websocket.close()
-    this.onWsClose()
+    if (this.websocket) {
+      if (this.websocket.onclose) {
+        window.setTimeout(() => this.onWsClose(), 0)
+      }
+      // 直接丢弃阻塞的websocket，不等onclose回调了
+      this.websocket.onopen = this.websocket.onclose = this.websocket.onmessage = null
+      this.websocket.close()
+    }
   }
 
   onWsClose() {
+    this.addDebugMsg('Disconnected')
+
     this.websocket = null
     if (this.heartbeatTimerId) {
       window.clearInterval(this.heartbeatTimerId)
@@ -211,6 +226,8 @@ export default class ChatClientOfficialBase {
   }
 
   delayReconnect() {
+    this.addDebugMsg(`Scheduling reconnection. The page is ${document.visibilityState === 'visible' ? 'visible' : 'invisible'}`)
+
     if (document.visibilityState === 'visible') {
       window.setTimeout(this.wsConnect.bind(this), this.getReconnectInterval())
       return
