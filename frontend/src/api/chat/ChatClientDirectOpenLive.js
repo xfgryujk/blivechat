@@ -24,10 +24,6 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
   }
 
   stop() {
-    if (this.gameHeartbeatTimerId) {
-      window.clearTimeout(this.gameHeartbeatTimerId)
-      this.gameHeartbeatTimerId = null
-    }
     this.endGame()
 
     super.stop()
@@ -51,6 +47,11 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
     this.msgHandler.onDebugMsg(new chatModels.DebugMsg({
       content: '房间连接已断开'
     }))
+
+    if (this.gameHeartbeatTimerId) {
+      window.clearTimeout(this.gameHeartbeatTimerId)
+      this.gameHeartbeatTimerId = null
+    }
 
     super.onWsClose()
   }
