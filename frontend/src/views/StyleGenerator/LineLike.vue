@@ -155,6 +155,11 @@
               <el-color-picker v-model="form.bgColor" show-alpha></el-color-picker>
             </el-form-item>
           </el-col>
+          <el-col :xs="24" :sm="12">
+            <el-form-item :label="$t('stylegen.showLargeEmoticonBg')">
+              <el-switch v-model="form.showLargeEmoticonBg"></el-switch>
+            </el-form-item>
+          </el-col>
         </el-row>
         <el-row :gutter="20">
           <el-col :xs="24" :sm="12">
@@ -346,6 +351,7 @@ export const DEFAULT_CONFIG = {
   ownerMessageBgColor: 'rgba(231, 199, 30, 1)',
   moderatorMessageBgColor: 'rgba(41, 95, 251, 1)',
   memberMessageBgColor: 'rgba(43, 234, 43, 1)',
+  showLargeEmoticonBg: true,
 
   firstLineFont: 'Noto Sans SC',
   firstLineFontSize: 20,
@@ -475,6 +481,10 @@ yt-live-chat-text-message-renderer #message {
   border-radius: 24px;
 }
 
+yt-live-chat-text-message-renderer #message:has(.emoji.blc-large-emoji) {
+  ${this.form.showLargeEmoticonBg ? '' : 'padding: 0;'}
+}
+
 yt-live-chat-text-message-renderer #message .emoji {
   width: auto !important;
   height: ${this.form.emoticonSize}px !important;
@@ -494,6 +504,10 @@ yt-live-chat-text-message-renderer #message::before {
   border: 8px solid transparent;
   border-right: 18px solid;
   transform: rotate(35deg);
+}
+
+yt-live-chat-text-message-renderer #message:has(.emoji.blc-large-emoji)::before {
+  ${this.form.showLargeEmoticonBg ? '' : 'content: none;'}
 }`
     },
     timeStyle() {
@@ -512,7 +526,11 @@ ${this.getBgStyleForAuthorType('owner', this.form.ownerMessageBgColor)}
 
 ${this.getBgStyleForAuthorType('moderator', this.form.moderatorMessageBgColor)}
 
-${this.getBgStyleForAuthorType('member', this.form.memberMessageBgColor)}`
+${this.getBgStyleForAuthorType('member', this.form.memberMessageBgColor)}
+
+yt-live-chat-text-message-renderer #message:has(.emoji.blc-large-emoji) {
+  ${this.form.showLargeEmoticonBg ? '' : 'background-color: transparent !important;'}
+}`
     },
     scAndNewMemberStyle() {
       return `/* SuperChat/Fan Funding Messages */

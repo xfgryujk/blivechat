@@ -116,6 +116,7 @@ export default {
     backgrounds: '背景',
     bgColor: '背景色',
     useBarsInsteadOfBg: '背景に代わります',
+    showLargeEmoticonBg: '大きなスタンプの背景を表示する',
     messageBgColor: 'コメント背景色',
     ownerMessageBgColor: 'オーナーコメント背景色',
     moderatorMessageBgColor: '管理者コメント背景色',

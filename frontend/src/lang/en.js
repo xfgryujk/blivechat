@@ -116,6 +116,7 @@ export default {
     backgrounds: 'Backgrounds',
     bgColor: 'Background color',
     useBarsInsteadOfBg: 'Use bars instead of backgrounds',
+    showLargeEmoticonBg: 'Show large emoticon background',
     messageBgColor: 'Message background color',
     ownerMessageBgColor: 'Owner background color',
     moderatorMessageBgColor: 'Moderator background color',
