@@ -434,7 +434,7 @@ class RoomInfoHandler(api.base.ApiHandler):
 
 class AvatarHandler(api.base.ApiHandler):
     async def get(self):
-        # uid基本是0了，现在这个接口唯一的作用是算用户名MD5，其实可以放到前端
+        # uid基本是0了，现在都是前端计算默认头像URL，这个接口留着只是为了兼容旧版
         uid = int(self.get_query_argument('uid'))
         username = self.get_query_argument('username', '')
         avatar_url = await services.avatar.get_avatar_url_or_none(uid)

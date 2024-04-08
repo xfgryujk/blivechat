@@ -10,6 +10,7 @@
   "dependencies": {
     "axios": "^1.4.0",
     "core-js": "^3.8.3",
+    "crypto-js": "^4.2.0",
     "downloadjs": "^1.4.7",
     "element-ui": "^2.15.13",
     "lodash": "^4.17.21",
