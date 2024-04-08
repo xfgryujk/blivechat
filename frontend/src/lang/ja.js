@@ -186,6 +186,7 @@ export default {
 <p>プラグインのインストール方法：抽出されたプラグインディレクトリを「data/plugins」ディレクトリに配置し、blivechatを再起動します</p>
 <p>注意：ほとんどのプラグインは、「サーバを介してメッセージを転送する」オプションを有効にし、メッセージを受信するために
   ルームに接続する必要があります</p>
+<p><a target="_blank" href="https://www.bilibili.com/video/BV1nZ42187TX/">紹介動画</a></p>
 <p><a target="_blank" href="https://github.com/xfgryujk/blivechat/wiki/%E6%8F%92%E4%BB%B6%E7%B3%BB%E7%BB%9F"
   >プラグイン開発ドキュメント</a></p>
 `,

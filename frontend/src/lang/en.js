@@ -186,6 +186,7 @@ export default {
 <p>Plugin installation method: Put the extracted plugin directory into the "data/plugins" directory, then restart blivechat</p>
 <p>Notes: Most plugins require enabling the "Relay messages by the server" option and connecting to the room
   in order to receive messages</p>
+<p><a target="_blank" href="https://www.bilibili.com/video/BV1nZ42187TX/">Introducing video</a></p>
 <p><a target="_blank" href="https://github.com/xfgryujk/blivechat/wiki/%E6%8F%92%E4%BB%B6%E7%B3%BB%E7%BB%9F">
   Plugin development documentation</a></p>
 `,

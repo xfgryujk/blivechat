@@ -184,6 +184,7 @@ export default {
   >GitHub Discussions</a>获取一些已发布的插件</p>
 <p>插件安装方法：把解压后的插件目录放到“data/plugins”目录，然后重启blivechat</p>
 <p>注意事项：大部分插件需要开启“通过服务器转发消息”，并且连接到房间，才能接收消息</p>
+<p><a target="_blank" href="https://www.bilibili.com/video/BV1nZ42187TX/">介绍视频</a></p>
 <p><a target="_blank" href="https://github.com/xfgryujk/blivechat/wiki/%E6%8F%92%E4%BB%B6%E7%B3%BB%E7%BB%9F">插件开发文档</a></p>
 `,
     author: '作者：',
