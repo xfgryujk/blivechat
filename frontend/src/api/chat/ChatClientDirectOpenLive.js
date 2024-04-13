@@ -45,8 +45,11 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
         if (res.code === 7007) {
           // 身份码错误
           throw new chatModels.ChatClientFatalError(chatModels.FATAL_ERROR_TYPE_AUTH_CODE_ERROR, msg)
+        } else if (res.code === 7010) {
+          // 同一个房间连接数超过上限
+          throw new chatModels.ChatClientFatalError(chatModels.FATAL_ERROR_TYPE_TOO_MANY_CONNECTIONS, msg)
         }
-        throw Error(msg)
+        throw new Error(msg)
       }
     } catch (e) {
       console.error('startGame failed:', e)
@@ -87,7 +90,7 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
       })).data
       // 项目已经关闭了也算成功
       if ([0, 7000, 7003].indexOf(res.code) === -1) {
-        throw Error(`code=${res.code}, message=${res.message}, request_id=${res.request_id}`)
+        throw new Error(`code=${res.code}, message=${res.message}, request_id=${res.request_id}`)
       }
     } catch (e) {
       console.error('endGame failed:', e)
@@ -125,7 +128,7 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
           this.needInitRoom = true
           this.discardWebsocket()
         }
-        throw Error(`code=${res.code}, message=${res.message}, request_id=${res.request_id}`)
+        throw new Error(`code=${res.code}, message=${res.message}, request_id=${res.request_id}`)
       }
     } catch (e) {
       console.error('sendGameHeartbeat failed:', e)

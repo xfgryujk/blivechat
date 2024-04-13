@@ -44,6 +44,7 @@ class ContentType(enum.IntEnum):
 class FatalErrorType(enum.IntEnum):
     AUTH_CODE_ERROR = 1
     TOO_MANY_RETRIES = 2
+    TOO_MANY_CONNECTIONS = 3
 
 
 def make_message_body(cmd, data):

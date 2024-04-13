@@ -278,6 +278,14 @@ class OpenLiveClient(blivedm.OpenLiveClient):
                         'type': api.chat.FatalErrorType.AUTH_CODE_ERROR,
                         'msg': str(e)
                     })
+            elif e.code == 7010:
+                # 同一个房间连接数超过上限
+                room = client_room_manager.get_room(self.room_key)
+                if room is not None:
+                    room.send_cmd_data(api.chat.Command.FATAL_ERROR, {
+                        'type': api.chat.FatalErrorType.TOO_MANY_CONNECTIONS,
+                        'msg': str(e)
+                    })
 
             return False
         return self._parse_start_game(data['data'])

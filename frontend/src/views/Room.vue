@@ -349,7 +349,7 @@ export default {
     onFatalError(error) {
       this.$message.error({
         message: error.toString(),
-        duration: 10 * 1000
+        duration: 30 * 1000
       })
       this.onAddText(new chatModels.AddTextMsg({
         authorName: 'blivechat',

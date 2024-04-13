@@ -69,7 +69,7 @@ export default class ChatClientOfficialBase {
   }
 
   async initRoom() {
-    throw Error('Not implemented')
+    throw new Error('Not implemented')
   }
 
   makePacket(data, operation) {
@@ -95,7 +95,7 @@ export default class ChatClientOfficialBase {
   }
 
   sendAuth() {
-    throw Error('Not implemented')
+    throw new Error('Not implemented')
   }
 
   addDebugMsg(content) {
@@ -139,13 +139,13 @@ export default class ChatClientOfficialBase {
 
     if (!res) {
       window.setTimeout(() => this.onWsClose(), 0)
-      throw Error('initRoom failed')
+      throw new Error('initRoom failed')
     }
     this.needInitRoom = false
   }
 
   getWsUrl() {
-    throw Error('Not implemented')
+    throw new Error('Not implemented')
   }
 
   onWsOpen() {
