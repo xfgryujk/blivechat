@@ -1,6 +1,7 @@
 import * as fonts from './fonts'
 
-export const FALLBACK_FONTS = ', "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "\\5FAE \\8F6F \\96C5 \\9ED1 ", SimHei, Arial, sans-serif'
+const FALLBACK_FONTS_CSS = '"Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", \
+"\\5FAE \\8F6F \\96C5 \\9ED1 ", SimHei, Arial, sans-serif'
 
 export const COMMON_STYLE = `/* Transparent background */
 yt-live-chat-renderer {
@@ -53,7 +54,14 @@ yt-live-chat-membership-item-renderer a {
   text-decoration: none !important;
 }`
 
-export function getImportStyle(allFonts) {
+export function getImportStyle(allFontsStrs) {
+  let allFonts = new Set()
+  for (let fontsStr of allFontsStrs) {
+    for (let font of fontsStrToArr(fontsStr)) {
+      allFonts.add(font)
+    }
+  }
+
   let fontsNeedToImport = new Set()
   for (let font of allFonts) {
     if (fonts.NETWORK_FONTS.indexOf(font) !== -1) {
@@ -88,7 +96,7 @@ export function getTimeStyle(config) {
 yt-live-chat-text-message-renderer #timestamp {
   display: ${config.showTime ? 'inline' : 'none'} !important;
   ${config.timeColor ? `color: ${config.timeColor} !important;` : ''}
-  font-family: ${cssFontStr(config.timeFont)}${FALLBACK_FONTS};
+  font-family: ${fontsStrToCss(config.timeFont)};
   font-size: ${config.timeFontSize}px !important;
   line-height: ${config.timeLineHeight || config.timeFontSize}px !important;
 }`
@@ -136,21 +144,30 @@ yt-live-chat-paid-message-renderer {
 }`
 }
 
-export function cssFontStr(str) {
-  let fontNameArr = str.split(',')
-  let fontNameOutput = []
-  fontNameArr.map(e => {
-    fontNameOutput.push(`"${cssEscapeStr(e)}"`)
-  })
-  return fontNameOutput.join(',')
+export function fontsStrToArr(fontsStr) {
+  return fontsStr ? fontsStr.split(',') : []
 }
 
-export function cssEscapeStr(str) {
+export function fontsArrToStr(fontsArr) {
+  return fontsArr.join(',')
+}
+
+export function fontsStrToCss(fontsStr) {
+  let fontsArr = fontsStrToArr(fontsStr)
+  if (fontsArr.length === 0) {
+    return FALLBACK_FONTS_CSS
+  }
+  fontsArr = fontsArr.map(cssEscapeStr)
+  fontsArr.push(FALLBACK_FONTS_CSS)
+  return fontsArr.join(', ')
+}
+
+function cssEscapeStr(str) {
   let res = []
   for (let char of str) {
     res.push(cssEscapeChar(char))
   }
-  return res.join('')
+  return `"${res.join('')}"`
 }
 
 function cssEscapeChar(char) {
