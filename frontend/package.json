@@ -1,6 +1,6 @@
 {
   "name": "blivechat",
-  "version": "1.9.1-dev",
+  "version": "1.9.1-beta",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
