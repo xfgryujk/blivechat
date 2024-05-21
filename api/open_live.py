@@ -33,6 +33,8 @@ END_GAME_COMMON_SERVER_URL = COMMON_SERVER_BASE_URL + '/api/internal/open_live/e
 GAME_HEARTBEAT_COMMON_SERVER_URL = COMMON_SERVER_BASE_URL + '/api/internal/open_live/game_heartbeat'
 
 _error_auth_code_cache = cachetools.LRUCache(256)
+# 应B站要求，抓一下刷请求的人，不会用于其他用途
+auth_code_room_id_cache = cachetools.LRUCache(256)
 # 用于限制请求开放平台的频率
 _open_live_rate_limiter = utils.rate_limit.TokenBucket(8, 8)
 
@@ -210,14 +212,18 @@ class _StartGameMixin(_OpenLiveHandlerBase):
         if self.res is None:
             return
 
+        auth_code = self.json_args.get('code', None)
         try:
             room_id = self.res['data']['anchor_info']['room_id']
         except (TypeError, KeyError):
-            room_id = None
+            room_id = auth_code_room_id_cache.get(auth_code, None)
+        else:
+            auth_code_room_id_cache[auth_code] = room_id
         try:
             game_id = self.res['data']['game_info']['game_id']
         except (TypeError, KeyError):
             game_id = None
+
         code = self.res['code']
         logger.info(
             'client=%s room_id=%s start game res: %s %s, game_id=%s', self.request.remote_ip, room_id,
@@ -226,10 +232,7 @@ class _StartGameMixin(_OpenLiveHandlerBase):
         if code == 7007:
             # 身份码错误
             # 让我看看是哪个混蛋把房间ID、UID当做身份码
-            logger.info(
-                'client=%s auth code error! auth_code=%s', self.request.remote_ip,
-                self.json_args.get('code', None)
-            )
+            logger.info('client=%s auth code error! auth_code=%s', self.request.remote_ip, auth_code)
 
 
 class StartGamePublicHandler(_StartGameMixin, _PublicHandlerBase):

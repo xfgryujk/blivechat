@@ -266,7 +266,10 @@ class OpenLiveClient(blivedm.OpenLiveClient):
             logger.error('_start_game() failed')
             return False
         except api_open_live.BusinessError as e:
-            logger.warning('_start_game() failed')
+            logger.warning(
+                '_start_game() failed, room_id=%s',
+                api_open_live.auth_code_room_id_cache.get(self._room_owner_auth_code, None)
+            )
 
             if e.code == 7007:
                 # 身份码错误
@@ -288,7 +291,11 @@ class OpenLiveClient(blivedm.OpenLiveClient):
                     })
 
             return False
-        return self._parse_start_game(data['data'])
+
+        res = self._parse_start_game(data['data'])
+        if res:
+            api_open_live.auth_code_room_id_cache[self._room_owner_auth_code] = self.room_id
+        return res
 
     async def _end_game(self):
         if self._game_id in (None, ''):
