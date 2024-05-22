@@ -84,7 +84,7 @@ async def request_open_live(url, body: dict, *, ignore_rate_limit=False) -> dict
 
     # 频率限制，防止触发B站风控被下架
     if not _open_live_rate_limiter.try_decrease_token() and not ignore_rate_limit:
-        raise BusinessError({'code': 4009, 'message': '接口访问限制', 'request_id': '0', 'data': None})
+        raise BusinessError({'code': 4009, 'message': 'BLC接口访问限制', 'request_id': '0', 'data': None})
 
     body_bytes = json.dumps(body).encode('utf-8')
     headers = {
@@ -115,7 +115,12 @@ async def request_open_live(url, body: dict, *, ignore_rate_limit=False) -> dict
         logger.exception('Request open live failed:')
         raise
     except BusinessError as e:
-        logger.warning('Request open live failed: %s', e)
+        msg = str(e)
+        if e.code == 7010:
+            # 新版本日志可以截断，避免日志太长了
+            msg = msg[:30] + '...'
+        logger.warning('Request open live failed: %s', msg)
+
         if e.code == 7007:
             _error_auth_code_cache[auth_code] = True
         raise
@@ -128,6 +133,13 @@ async def _read_response(req_ctx_mgr: AsyncContextManager[aiohttp.ClientResponse
             data = await r.json()
             code = data['code']
             if code != 0:
+                if code == 7010:
+                    data['message'] += (
+                        '  解决方法：https://github.com/xfgryujk/blivechat/wiki/%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9%E5'
+                        '%92%8C%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98#%E6%8A%A5%E9%94%997010-%E8%B6%85%E8%BF%87%E4%B8%8'
+                        'A%E9%99%90%E5%90%8C%E4%B8%80%E4%B8%AA%E5%BA%94%E7%94%A8%E5%8D%95%E4%B8%AA%E7%9B%B4%E6%92%AD%'
+                        'E9%97%B4%E6%9C%80%E5%A4%9A%E5%90%8C%E6%97%B6%E6%89%93%E5%BC%805%E4%B8%AA'
+                    )
                 raise BusinessError(data)
             return data
     except (aiohttp.ClientError, asyncio.TimeoutError) as e:
@@ -142,7 +154,7 @@ def _validate_auth_code(auth_code):
     ):
         raise BusinessError({
             'code': 7007,
-            'message': 'oi！oi！oi！你的身份码错误了！别再重试了！！！！！！！！！！',
+            'message': 'CNM！你的身份码错误了！别再重试了！！！！！！！！！！',
             'request_id': '0',
             'data': None
         })
@@ -225,9 +237,13 @@ class _StartGameMixin(_OpenLiveHandlerBase):
             game_id = None
 
         code = self.res['code']
+        msg = self.res['message']
+        if code == 7010:
+            # 新版本日志可以截断，避免日志太长了
+            msg = msg[:10] + '...'
         logger.info(
             'client=%s room_id=%s start game res: %s %s, game_id=%s', self.request.remote_ip, room_id,
-            code, self.res['message'], game_id
+            code, msg, game_id
         )
         if code == 7007:
             # 身份码错误
