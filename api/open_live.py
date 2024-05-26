@@ -62,7 +62,7 @@ async def request_open_live_or_common_server(open_live_url, common_server_url, b
 
     try:
         req_ctx_mgr = utils.request.http_session.post(common_server_url, json=body)
-        return await _read_response(req_ctx_mgr)
+        return await _read_response(req_ctx_mgr, is_common_server=True)
     except TransportError:
         logger.exception('Request common server failed:')
         raise
@@ -126,14 +126,14 @@ async def request_open_live(url, body: dict, *, ignore_rate_limit=False) -> dict
         raise
 
 
-async def _read_response(req_ctx_mgr: AsyncContextManager[aiohttp.ClientResponse]) -> dict:
+async def _read_response(req_ctx_mgr: AsyncContextManager[aiohttp.ClientResponse], is_common_server=False) -> dict:
     try:
         async with req_ctx_mgr as r:
             r.raise_for_status()
             data = await r.json()
             code = data['code']
             if code != 0:
-                if code == 7010:
+                if code == 7010 and not is_common_server:
                     data['message'] += (
                         '  解决方法：https://github.com/xfgryujk/blivechat/wiki/%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9%E5'
                         '%92%8C%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98#%E6%8A%A5%E9%94%997010-%E8%B6%85%E8%BF%87%E4%B8%8'
