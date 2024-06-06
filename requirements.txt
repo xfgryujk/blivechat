@@ -2,4 +2,4 @@
 cachetools==5.3.1
 pycryptodome==3.19.1
 sqlalchemy==2.0.19
-tornado==6.3.3
+tornado==6.4.1
