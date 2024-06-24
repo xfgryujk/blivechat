@@ -73,6 +73,7 @@ def make_text_message_data(
     content_type: int = ContentType.TEXT,
     content_type_params: list = None,
     uid: str = '',
+    reply_uname: str = "",
     medal_name: str = '',
 ):
     # 为了节省带宽用list而不是dict
@@ -113,6 +114,8 @@ def make_text_message_data(
         uid,
         # 17: medalName
         medal_name,
+        # 18: replyUname
+        reply_uname,
     ]
 
 

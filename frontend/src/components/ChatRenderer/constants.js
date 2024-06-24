@@ -36,6 +36,7 @@ export const MESSAGE_TYPE_UPDATE = 5
 
 export const CONTENT_TYPE_TEXT = 0
 export const CONTENT_TYPE_IMAGE = 1
+export const CONTENT_TYPE_AT = 2
 
 // 美元 -> 人民币 汇率
 const EXCHANGE_RATE = 7
