@@ -443,6 +443,13 @@ export default {
         return richContent
       }
 
+      if (data.replyUname.length > 0) {
+        richContent.push({
+          type: constants.CONTENT_TYPE_AT,
+          uname: data.replyUname,
+        })
+      }
+
       // 没有文本表情，只能是纯文本
       if (this.config.emoticons.length === 0 && this.textEmoticons.length === 0) {
         richContent.push({

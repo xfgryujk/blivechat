@@ -564,6 +564,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             content_type_params=content_type_params,
             # 给插件用的字段
             uid=str(message.uid) if message.uid != 0 else message.uname,
+            reply_uname='' if len(message.reply_uname) == 0 else message.reply_uname,
             medal_name='' if message.medal_room_id != client.room_id else message.medal_name,
         )
         room.send_cmd_data(api.chat.Command.ADD_TEXT, data)

@@ -18,6 +18,7 @@ export class AddTextMsg {
     id = getUuid4Hex(),
     translation = '',
     emoticon = null,
+    replyUname = '',
   } = {}) {
     this.avatarUrl = avatarUrl
     this.timestamp = timestamp
@@ -33,6 +34,7 @@ export class AddTextMsg {
     this.id = id
     this.translation = translation
     this.emoticon = emoticon
+    this.replyUname = replyUname
   }
 }
 
