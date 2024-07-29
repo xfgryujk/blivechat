@@ -146,11 +146,13 @@ class AppConfig:
                     'type': type_,
                     'query_interval': section.getfloat('query_interval'),
                 }
-                if type_ == 'TencentTranslateFree':
-                    translator_config['source_language'] = section['source_language']
-                    translator_config['target_language'] = section['target_language']
-                elif type_ == 'BilibiliTranslateFree':
-                    pass
+                if type_ in ('TencentTranslateFree', 'BilibiliTranslateFree'):
+                    doc_url = (
+                        'https://github.com/xfgryujk/blivechat/wiki/%E9%85%8D%E7%BD%AE%E5%AE%98%E6%96%B9'
+                        '%E7%BF%BB%E8%AF%91%E6%8E%A5%E5%8F%A3'
+                    )
+                    logger.warning('%s is deprecated, please see %s', type_, doc_url)
+                    continue
                 elif type_ == 'TencentTranslate':
                     translator_config['source_language'] = section['source_language']
                     translator_config['target_language'] = section['target_language']
