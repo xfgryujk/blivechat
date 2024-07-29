@@ -8,7 +8,7 @@ WORKDIR "${BASE_PATH}/frontend"
 
 # 前端依赖
 COPY frontend/package.json ./
-RUN npm i
+RUN npm i --registry=https://registry.npmmirror.com
 
 # 编译前端
 COPY frontend ./
