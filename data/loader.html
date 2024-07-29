@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>blivechat</title>
+  </head>
+
+  <body>
+    <p>Loading... Please run blivechat</p>
+
+    <script>
+      function main() {
+        let params = new URLSearchParams(window.location.search)
+        let url = params.get('url')
+        if (!url) {
+          let element = document.createElement('p')
+          element.innerText = 'No url specified'
+          document.body.appendChild(element)
+          return
+        }
+
+        let timerId = null
+        function poll() {
+          window.fetch(url, {mode: 'no-cors'}).then(
+            () => {
+              window.clearInterval(timerId)
+              window.location.href = url
+            },
+            () => {}
+          )
+        }
+        timerId = window.setInterval(poll, 1000)
+        poll()
+      }
+
+      main()
+    </script>
+  </body>
+</html>

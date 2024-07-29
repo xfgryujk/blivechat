@@ -20,6 +20,7 @@ plugins/
 # runtime data
 data/*
 !data/config.example.ini
+!data/loader.html
 !data/custom_public/
 data/custom_public/*
 !data/custom_public/README.txt

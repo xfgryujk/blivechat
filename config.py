@@ -113,6 +113,8 @@ class AppConfig:
         self.database_url = app_section.get('database_url', self.database_url)
         self.tornado_xheaders = app_section.getboolean('tornado_xheaders', self.tornado_xheaders)
         self.loader_url = app_section.get('loader_url', self.loader_url)
+        if self.loader_url == '{local_loader}':
+            self.loader_url = self._get_local_loader_url()
         self.open_browser_at_startup = app_section.getboolean('open_browser_at_startup', self.open_browser_at_startup)
         self.enable_upload_file = app_section.getboolean('enable_upload_file', self.enable_upload_file)
         self.enable_admin_plugins = app_section.getboolean('enable_admin_plugins', self.enable_admin_plugins)
@@ -132,6 +134,15 @@ class AppConfig:
         self.allow_translate_rooms = _str_to_list(app_section.get('allow_translate_rooms', ''), int, set)
         self.translate_max_queue_size = app_section.getint('translate_max_queue_size', self.translate_max_queue_size)
         self.translation_cache_size = app_section.getint('translation_cache_size', self.translation_cache_size)
+
+    @staticmethod
+    def _get_local_loader_url():
+        url = os.path.abspath(os.path.join(DATA_PATH, 'loader.html'))
+        url = url.replace('\\', '/')
+        if not url.startswith('/'):  # Windows
+            url = '/' + url
+        url = 'file://' + url
+        return url
 
     def _load_translator_configs(self, config: configparser.ConfigParser):
         app_section = config['app']
