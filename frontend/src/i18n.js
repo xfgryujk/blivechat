@@ -1,9 +1,12 @@
+import Vue from 'vue'
 import VueI18n from 'vue-i18n'
 
 import zh from '@/lang/zh'
 
 let lastSetLocale = 'zh'
 let loadedLocales = ['zh']
+
+Vue.use(VueI18n)
 
 export async function setLocale(locale) {
   lastSetLocale = locale

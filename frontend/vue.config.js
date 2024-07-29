@@ -27,13 +27,13 @@ module.exports = {
         return args
       })
 
-    config.externals({
-      'element-ui': 'ELEMENT',
-      lodash: '_',
-      pako: 'pako',
-      vue: 'Vue',
-      'vue-router': 'VueRouter',
-      'vue-i18n': 'VueI18n',
-    })
+    // config.externals({
+    //   'element-ui': 'ELEMENT',
+    //   lodash: '_',
+    //   pako: 'pako',
+    //   vue: 'Vue',
+    //   'vue-router': 'VueRouter',
+    //   'vue-i18n': 'VueI18n',
+    // })
   }
 }
