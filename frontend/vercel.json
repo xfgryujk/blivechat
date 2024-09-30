@@ -1,0 +1,31 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "headers": [
+    {
+      "source": "/((?!api/)[^.]*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=180"
+        }
+      ]
+    },
+    {
+      "source": "/((?!api/).+\\.\\w+)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/((?!api/)[^.]+)",
+      "destination": "/"
+    }
+  ]
+}
