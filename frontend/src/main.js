@@ -2,7 +2,9 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import axios from 'axios'
 import ElementUI from 'element-ui'
-import 'element-ui/lib/theme-chalk/index.css'
+if (!process.env.LIB_USE_CDN) {
+  import('element-ui/lib/theme-chalk/index.css')
+}
 
 import * as i18n from './i18n'
 import App from './App'
@@ -10,8 +12,10 @@ import NotFound from './views/NotFound'
 
 axios.defaults.timeout = 10 * 1000
 
-Vue.use(VueRouter)
-Vue.use(ElementUI)
+if (!process.env.LIB_USE_CDN) {
+  Vue.use(VueRouter)
+  Vue.use(ElementUI)
+}
 
 Vue.config.ignoredElements = [
   /^yt-/

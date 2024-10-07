@@ -11,23 +11,29 @@
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
     <title>blivechat</title>
 
-    <!-- <% if (process.env.NODE_ENV === 'production') { %>
-      <script src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
-      <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.7.14/vue.runtime.min.js"></script>
-      <script src="https://cdn.bootcdn.net/ajax/libs/vue-router/3.6.5/vue-router.min.js"></script>
-      <script src="https://cdn.bootcdn.net/ajax/libs/vue-i18n/8.28.2/vue-i18n.min.js"></script>
-      <link href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.13/theme-chalk/index.min.css" rel="stylesheet">
-      <script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.13/index.min.js"></script>
-      <script src="https://cdn.bootcdn.net/ajax/libs/pako/2.1.0/pako_inflate.min.js"></script>
+    <%
+    if (process.env.LIB_USE_CDN) {
+      if (process.env.NODE_ENV === 'production') {
+    %>
+      <script src="https://s4.zstatic.net/ajax/libs/lodash.js/4.17.21/lodash.min.js" integrity="sha384-H6KKS1H1WwuERMSm+54dYLzjg0fKqRK5ZRyASdbrI/lwrCc6bXEmtGYr5SwvP1pZ" crossorigin="anonymous"></script>
+      <script src="https://s4.zstatic.net/ajax/libs/vue/2.7.14/vue.runtime.min.js" integrity="sha384-OuPzRFb9+YLr+ulVAQiUKWAYfQdbHQI3IvQ86+ApeLgPgTI2EJ/ySfV9UjvFFhxN" crossorigin="anonymous"></script>
+      <script src="https://s4.zstatic.net/ajax/libs/vue-router/3.6.5/vue-router.min.js" integrity="sha384-/NExOjjk+Jjk5ZvMGKDUq/QxHVEJxhJXBBEb9AVSjc1zeQUYhG9cLvz1pY1/QrQF" crossorigin="anonymous"></script>
+      <script src="https://s4.zstatic.net/ajax/libs/vue-i18n/8.28.2/vue-i18n.min.js" integrity="sha384-hcSOWoIpDyRLasgG/oDA+pDX1b7k6FX+8BkVxPvKXZ/w1ntszakmyGEJXgMeuWCU" crossorigin="anonymous"></script>
+      <link rel="stylesheet" href="https://s4.zstatic.net/ajax/libs/element-ui/2.15.13/theme-chalk/index.min.css" integrity="sha384-I0kZgnELdQIeth/GMZEO2WQ1Po7jSQEkkqnh7bT+ofoJ9FVqFDhxeu7I10K5DyuV" crossorigin="anonymous">
+      <script src="https://s4.zstatic.net/ajax/libs/element-ui/2.15.13/index.min.js" integrity="sha384-Wzk9c33au7LnMJ233iNheTpEpVPeseLtoqnJElShswILwuk4JaiHjpj6fKD2yhoV" crossorigin="anonymous"></script>
+      <script src="https://s4.zstatic.net/ajax/libs/pako/2.1.0/pako_inflate.min.js" integrity="sha384-taEjHL+GUvC8IhXeCaTNUxz3O8ItsajGFLDFj4v/VJvM24HU36qP/6sRpuAGGfeT" crossorigin="anonymous"></script>
     <% } else { %>
-      <script src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.21/lodash.js"></script>
-      <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.7.14/vue.runtime.js"></script>
-      <script src="https://cdn.bootcdn.net/ajax/libs/vue-router/3.6.5/vue-router.js"></script>
-      <script src="https://cdn.bootcdn.net/ajax/libs/vue-i18n/8.28.2/vue-i18n.js"></script>
-      <link href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.13/theme-chalk/index.css" rel="stylesheet">
-      <script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.13/index.js"></script>
-      <script src="https://cdn.bootcdn.net/ajax/libs/pako/2.1.0/pako_inflate.js"></script>
-    <% } %> -->
+      <script src="https://s4.zstatic.net/ajax/libs/lodash.js/4.17.21/lodash.js" integrity="sha384-l3ZPesZ3gDMDOrzjEodAMRyQlQnAR6KFZN2hnIr+h8Y80fuKlD1jsjdxJpKr9XgP" crossorigin="anonymous"></script>
+      <script src="https://s4.zstatic.net/ajax/libs/vue/2.7.14/vue.runtime.js" integrity="sha384-7Eh7MYtBZnl23Wa8pdx0AXtu35xsvTaEW6ZXBaFGIND87X3ZvFyqUffgUXa2D+HM" crossorigin="anonymous"></script>
+      <script src="https://s4.zstatic.net/ajax/libs/vue-router/3.6.5/vue-router.js" integrity="sha384-IkMvPbEBTaZXtDP8XKR0vzQv6h12mn1Tsm0YRzlJ5yZQtQ0b0fI2upc3EB5erSWp" crossorigin="anonymous"></script>
+      <script src="https://s4.zstatic.net/ajax/libs/vue-i18n/8.28.2/vue-i18n.js" integrity="sha384-6JdClPjeS6N/byLmSMRUkfj8qIW6PR8InDu0hwcpUGithNg6/3+h6QpYNqB9LXXD" crossorigin="anonymous"></script>
+      <link rel="stylesheet" href="https://s4.zstatic.net/ajax/libs/element-ui/2.15.13/theme-chalk/index.css" integrity="sha384-i3Zi0wHs7p1SlIuNOWAJupwQHyh8Vg54HE50dXe6SiJwHglCpbLr5Nd9wiswohGS" crossorigin="anonymous">
+      <script src="https://s4.zstatic.net/ajax/libs/element-ui/2.15.13/index.js" integrity="sha384-xJNO3hLLbOGPVKrsu1WIty+KkzNuJKdRr4blB8iY29iXAqkeGJWBtHZ0DGCYi/OE" crossorigin="anonymous"></script>
+      <script src="https://s4.zstatic.net/ajax/libs/pako/2.1.0/pako_inflate.js" integrity="sha384-uHURdoyk6Dqn/gSq38WU6iUc3W0A1rnHIKEp5sjIz8w4yz1eKIM8N7WvNwKMzALi" crossorigin="anonymous"></script>
+    <%
+      }
+    }
+    %>
   </head>
   <body>
     <noscript>

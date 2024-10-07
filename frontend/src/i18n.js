@@ -6,7 +6,9 @@ import zh from '@/lang/zh'
 let lastSetLocale = 'zh'
 let loadedLocales = ['zh']
 
-Vue.use(VueI18n)
+if (!process.env.LIB_USE_CDN) {
+  Vue.use(VueI18n)
+}
 
 export async function setLocale(locale) {
   lastSetLocale = locale
