@@ -19,21 +19,29 @@ module.exports = {
   chainWebpack: config => {
     const APP_VERSION = `v${process.env.npm_package_version}`
 
+    const ENV = {
+      APP_VERSION,
+      LIB_USE_CDN: true,
+    }
     config.plugin('define')
       .tap(args => {
         let defineMap = args[0]
         let env = defineMap['process.env']
-        env['APP_VERSION'] = JSON.stringify(APP_VERSION)
+        for (let [name, value] of Object.entries(ENV)) {
+          env[name] = JSON.stringify(value)
+        }
         return args
       })
 
-    // config.externals({
-    //   'element-ui': 'ELEMENT',
-    //   lodash: '_',
-    //   pako: 'pako',
-    //   vue: 'Vue',
-    //   'vue-router': 'VueRouter',
-    //   'vue-i18n': 'VueI18n',
-    // })
+    if (ENV.LIB_USE_CDN) {
+      config.externals({
+        'element-ui': 'ELEMENT',
+        lodash: '_',
+        pako: 'pako',
+        vue: 'Vue',
+        'vue-router': 'VueRouter',
+        'vue-i18n': 'VueI18n',
+      })
+    }
   }
 }
