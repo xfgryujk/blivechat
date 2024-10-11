@@ -92,6 +92,31 @@
 
 2. 用浏览器打开[http://localhost:12450](http://localhost:12450)，以下略
 
+### 五、Docker compose（自建服务器）
+0. 由于使用了git子模块，clone时需要加上`--recursive`参数：
+
+    ```sh
+    git clone --recursive https://github.com/xfgryujk/blivechat.git
+    ```
+
+    如果已经clone，拉子模块的方法：
+
+    ```sh
+    git submodule update --init --recursive
+    ```
+1. 编译并运行容器：
+    ```sh
+    docker compose up --build --detach
+    ```
+2. 用浏览器打开[http://localhost:12450](http://localhost:12450)，以下略
+
+3. 移除容器：
+    ```sh
+    docker compose down
+    ```
+
+适合与 Docker desktop 一同使用
+
 ## 服务器配置
 
 服务器配置在`data/config.ini`，可以配置数据库和允许自动翻译等，编辑后要重启生效

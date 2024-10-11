@@ -1,0 +1,11 @@
+
+services:
+  blivechat:
+    build: .
+    container_name: blivechat
+    ports:
+      - 12450:12450
+    volumes:
+      - blivechat-data:/mnt/data
+volumes:
+  blivechat-data:
