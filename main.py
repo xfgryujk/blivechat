@@ -39,6 +39,7 @@ ROUTES = [
 
 server: Optional[tornado.httpserver.HTTPServer] = None
 
+cmd_args = None
 shut_down_event: Optional[asyncio.Event] = None
 
 
@@ -55,11 +56,12 @@ async def main():
 def init():
     init_signal_handlers()
 
-    args = parse_args()
+    global cmd_args
+    cmd_args = parse_args()
 
-    init_logging(args.debug)
+    init_logging(cmd_args.debug)
     logger.info('App started, initializing')
-    config.init(args)
+    config.init(cmd_args)
 
     utils.request.init()
     models.database.init()
@@ -83,19 +85,34 @@ def init_signal_handlers():
     global shut_down_event
     shut_down_event = asyncio.Event()
 
-    signums = (signal.SIGINT, signal.SIGTERM)
-    try:
-        loop = asyncio.get_running_loop()
-        for signum in signums:
-            loop.add_signal_handler(signum, on_shut_down_signal)
-    except NotImplementedError:
-        # 不太安全，但Windows只能用这个
-        for signum in signums:
-            signal.signal(signum, on_shut_down_signal)
+    is_win = sys.platform == 'win32'
+    loop = asyncio.get_running_loop()
+    if not is_win:
+        def add_signal_handler(signum, callback):
+            loop.add_signal_handler(signum, callback)
+    else:
+        def add_signal_handler(signum, callback):
+            # 不太安全，但Windows只能用这个
+            signal.signal(signum, lambda _signum, _frame: loop.call_soon(callback))
+
+    shut_down_signums = (signal.SIGINT, signal.SIGTERM)
+    if not is_win:
+        reload_signum = signal.SIGHUP
+    else:
+        reload_signum = signal.SIGBREAK
+
+    for shut_down_signum in shut_down_signums:
+        add_signal_handler(shut_down_signum, on_shut_down_signal)
+    add_signal_handler(reload_signum, on_reload_signal)
 
 
-def on_shut_down_signal(*_args):
+def on_shut_down_signal():
     shut_down_event.set()
+
+
+def on_reload_signal():
+    logger.info('Received reload signal')
+    config.reload(cmd_args)
 
 
 def parse_args():
