@@ -223,12 +223,13 @@ class ChatHandler(tornado.websocket.WebSocketHandler):
 
         self._refresh_receive_timeout_timer()
 
-    # 跨域测试用
     def check_origin(self, origin):
         cfg = config.get_config()
-        if cfg.debug:
-            return True
-        return super().check_origin(origin)
+        return (
+            cfg.debug  # 开发时前端localhost直连
+            or cfg.is_allowed_cors_origin(origin)
+            or super().check_origin(origin)  # 和Host相同
+        )
 
     @property
     def has_joined_room(self):

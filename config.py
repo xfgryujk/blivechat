@@ -2,6 +2,7 @@
 import configparser
 import logging
 import os
+import re
 from typing import *
 
 logger = logging.getLogger(__name__)
@@ -30,7 +31,7 @@ def init(cmd_args):
     _config = config
 
 
-def reload(cmd_args):
+def reload(cmd_args=None):
     config_path = ''
     for path in CONFIG_PATH_LIST:
         if os.path.exists(path):
@@ -73,12 +74,15 @@ class AppConfig:
         self.open_live_app_id = 0
 
         self.enable_translate = True
-        self.allow_translate_rooms = set()
+        self.allow_translate_rooms: Set[int] = set()
         self.translate_max_queue_size = 10
         self.translation_cache_size = 50000
-        self.translator_configs = []
+        self.translator_configs: List[dict] = []
 
-        self.text_emoticons = []
+        self.text_emoticons: List[dict] = []
+
+        self.registered_endpoints: List[str] = []
+        self.cors_origins: List[re.Pattern[str]] = []
 
     @property
     def is_open_live_configured(self):
@@ -86,7 +90,9 @@ class AppConfig:
             self.open_live_access_key_id != '' and self.open_live_access_key_secret != '' and self.open_live_app_id != 0
         )
 
-    def load_cmd_args(self, args):
+    def load_cmd_args(self, args=None):
+        if args is None:
+            return
         if args.host is not None:
             self.host = args.host
         if args.port is not None:
@@ -101,6 +107,8 @@ class AppConfig:
             self._load_app_config(config)
             self._load_translator_configs(config)
             self._load_text_emoticons(config)
+            self._load_registered_endpoints(config)
+            self._load_cors_origins(config)
         except Exception:  # noqa
             logger.exception('Failed to load config:')
             return False
@@ -145,7 +153,10 @@ class AppConfig:
         return url
 
     def _load_translator_configs(self, config: configparser.ConfigParser):
-        app_section = config['app']
+        try:
+            app_section = config['app']
+        except KeyError:
+            return
         section_names = _str_to_list(app_section.get('translator_configs', ''))
         translator_configs = []
         for section_name in section_names:
@@ -191,12 +202,40 @@ class AppConfig:
         self.translator_configs = translator_configs
 
     def _load_text_emoticons(self, config: configparser.ConfigParser):
-        mappings_section = config['text_emoticon_mappings']
+        try:
+            mappings_section = config['text_emoticon_mappings']
+        except KeyError:
+            return
         text_emoticons = []
         for value in mappings_section.values():
             keyword, _, url = value.partition(',')
             text_emoticons.append({'keyword': keyword, 'url': url})
         self.text_emoticons = text_emoticons
+
+    def _load_registered_endpoints(self, config: configparser.ConfigParser):
+        try:
+            registered_endpoints_section = config['registered_endpoints']
+        except KeyError:
+            return
+        registered_endpoints = list(registered_endpoints_section.values())
+        self.registered_endpoints = registered_endpoints
+
+    def _load_cors_origins(self, config: configparser.ConfigParser):
+        try:
+            cors_origins_section = config['cors_origins']
+        except KeyError:
+            return
+        cors_origins = [
+            re.compile(origin, re.IGNORECASE)
+            for origin in cors_origins_section.values()
+        ]
+        self.cors_origins = cors_origins
+
+    def is_allowed_cors_origin(self, origin):
+        return any(
+            pattern.fullmatch(origin) is not None
+            for pattern in self.cors_origins
+        )
 
 
 def _str_to_list(value, item_type: Type = str, container_type: Type = list):
@@ -206,5 +245,5 @@ def _str_to_list(value, item_type: Type = str, container_type: Type = list):
     items = value.split(',')
     items = map(lambda item: item.strip(), items)
     if item_type is not str:
-        items = map(lambda item: item_type(item), items)
+        items = map(item_type, items)
     return container_type(items)

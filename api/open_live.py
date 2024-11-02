@@ -169,6 +169,9 @@ class _OpenLiveHandlerBase(api.base.ApiHandler):
 
     def prepare(self):
         super().prepare()
+        if self.request.method == 'OPTIONS':
+            return
+
         if not isinstance(self.json_args, dict):
             raise tornado.web.MissingArgumentError('body')
 

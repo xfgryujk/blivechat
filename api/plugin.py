@@ -24,7 +24,8 @@ class _AdminHandlerBase(api.base.ApiHandler):
         if not cfg.enable_admin_plugins:
             raise tornado.web.HTTPError(403)
 
-        logger.info('client=%s requesting admin plugin, cls=%s', self.request.remote_ip, type(self).__name__)
+        if self.request.method != 'OPTIONS':
+            logger.info('client=%s requesting admin plugin, cls=%s', self.request.remote_ip, type(self).__name__)
 
         super().prepare()
 
