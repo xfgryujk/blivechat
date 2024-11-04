@@ -1,5 +1,6 @@
 -r blivedm/requirements.txt
 cachetools==5.3.1
+circuitbreaker==2.0.0
 pycryptodome==3.19.1
 sqlalchemy==2.0.19
 tornado==6.4.1

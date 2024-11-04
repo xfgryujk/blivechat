@@ -27,10 +27,9 @@ END_GAME_OPEN_LIVE_URL = OPEN_LIVE_BASE_URL + '/v2/app/end'
 GAME_HEARTBEAT_OPEN_LIVE_URL = OPEN_LIVE_BASE_URL + '/v2/app/heartbeat'
 GAME_BATCH_HEARTBEAT_OPEN_LIVE_URL = OPEN_LIVE_BASE_URL + '/v2/app/batchHeartbeat'
 
-COMMON_SERVER_BASE_URL = 'https://chat.bilisc.com'
-START_GAME_COMMON_SERVER_URL = COMMON_SERVER_BASE_URL + '/api/internal/open_live/start_game'
-END_GAME_COMMON_SERVER_URL = COMMON_SERVER_BASE_URL + '/api/internal/open_live/end_game'
-GAME_HEARTBEAT_COMMON_SERVER_URL = COMMON_SERVER_BASE_URL + '/api/internal/open_live/game_heartbeat'
+START_GAME_COMMON_SERVER_URL = '/api/internal/open_live/start_game'
+END_GAME_COMMON_SERVER_URL = '/api/internal/open_live/end_game'
+GAME_HEARTBEAT_COMMON_SERVER_URL = '/api/internal/open_live/game_heartbeat'
 
 _error_auth_code_cache = cachetools.LRUCache(256)
 # 应B站要求，抓一下刷请求的人，不会用于其他用途
@@ -54,24 +53,15 @@ class BusinessError(Exception):
         return self.data['code']
 
 
-async def request_open_live_or_common_server(open_live_url, common_server_url, body: dict) -> dict:
+async def request_open_live_or_common_server(open_live_url, common_server_url, body: dict, **kwargs) -> dict:
     """如果配置了开放平台，则直接请求，否则转发请求到公共服务器的内部接口"""
     cfg = config.get_config()
     if cfg.is_open_live_configured:
-        return await request_open_live(open_live_url, body)
-
-    try:
-        req_ctx_mgr = utils.request.http_session.post(common_server_url, json=body)
-        return await _read_response(req_ctx_mgr, is_common_server=True)
-    except TransportError:
-        logger.exception('Request common server failed:')
-        raise
-    except BusinessError as e:
-        logger.warning('Request common server failed: %s', e)
-        raise
+        return await request_open_live(open_live_url, body, **kwargs)
+    return await request_common_server(common_server_url, body, **kwargs)
 
 
-async def request_open_live(url, body: dict, *, ignore_rate_limit=False) -> dict:
+async def request_open_live(url, body: dict, *, ignore_rate_limit=False, **kwargs) -> dict:
     cfg = config.get_config()
     assert cfg.is_open_live_configured
 
@@ -109,7 +99,7 @@ async def request_open_live(url, body: dict, *, ignore_rate_limit=False) -> dict
     headers['Accept'] = 'application/json'
 
     try:
-        req_ctx_mgr = utils.request.http_session.post(url, headers=headers, data=body_bytes)
+        req_ctx_mgr = utils.request.http_session.post(url, headers=headers, data=body_bytes, **kwargs)
         return await _read_response(req_ctx_mgr)
     except TransportError:
         logger.exception('Request open live failed:')
@@ -124,6 +114,25 @@ async def request_open_live(url, body: dict, *, ignore_rate_limit=False) -> dict
         if e.code == 7007:
             _error_auth_code_cache[auth_code] = True
         raise
+
+
+async def request_common_server(rel_url, body: dict, **kwargs) -> dict:
+    base_url, breaker = utils.request.get_common_server_base_url_and_circuit_breaker()
+    if base_url is None:
+        logger.error('No available common server endpoint')
+        raise TransportError('No available common server endpoint')
+    url = base_url + rel_url
+
+    with breaker:
+        try:
+            req_ctx_mgr = utils.request.http_session.post(url, json=body, **kwargs)
+            return await _read_response(req_ctx_mgr, is_common_server=True)
+        except TransportError:
+            logger.exception('Request common server failed:')
+            raise
+        except BusinessError as e:
+            logger.warning('Request common server failed: %s', e)
+            raise
 
 
 async def _read_response(req_ctx_mgr: AsyncContextManager[aiohttp.ClientResponse], is_common_server=False) -> dict:
@@ -298,9 +307,8 @@ async def send_game_heartbeat_by_service_or_common_server(game_id):
     cfg = config.get_config()
     if cfg.is_open_live_configured:
         return await services.open_live.send_game_heartbeat(game_id)
-    # 这里GAME_HEARTBEAT_OPEN_LIVE_URL没用，因为一定是请求公共服务器
-    return await request_open_live_or_common_server(
-        GAME_HEARTBEAT_OPEN_LIVE_URL, GAME_HEARTBEAT_COMMON_SERVER_URL, {'game_id': game_id}
+    return await request_common_server(
+        GAME_HEARTBEAT_COMMON_SERVER_URL, {'game_id': game_id}, timeout=aiohttp.ClientTimeout(total=15)
     )
 
 
