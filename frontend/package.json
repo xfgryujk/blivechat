@@ -1,6 +1,6 @@
 {
   "name": "blivechat",
-  "version": "1.9.2",
+  "version": "1.9.3-dev",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -15,6 +15,7 @@
     "downloadjs": "^1.4.7",
     "element-ui": "^2.15.13",
     "lodash": "^4.17.21",
+    "opossum": "^8.3.0",
     "pako": "^2.1.0",
     "vue": "^2.7.14",
     "vue-i18n": "^8.28.2",

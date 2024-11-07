@@ -33,6 +33,7 @@ module.exports = defineConfig({
     const ENV = {
       APP_VERSION,
       LIB_USE_CDN,
+      BACKEND_DISCOVERY: toBool(process.env.BACKEND_DISCOVERY),
     }
     config.plugin('define')
       .tap(args => {

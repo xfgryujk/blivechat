@@ -1,5 +1,6 @@
-import axios from 'axios'
 import MD5 from 'crypto-js/md5'
+
+import { apiClient as axios } from '@/api/base'
 
 export function getDefaultMsgHandler() {
   let dummyFunc = () => {}

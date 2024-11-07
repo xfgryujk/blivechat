@@ -1,5 +1,4 @@
-import axios from 'axios'
-
+import { apiClient as axios } from '@/api/base'
 import * as chat from '.'
 import * as chatModels from './models'
 import * as base from './ChatClientOfficialBase'
