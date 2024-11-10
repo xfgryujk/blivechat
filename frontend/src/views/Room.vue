@@ -142,6 +142,8 @@ export default {
         message: 'Loaded',
         duration: 500
       })
+
+      this.sendMessageToStylegen('stylegenExampleRoomLoad')
     },
     initConfig() {
       let locale = this.strConfig.lang
@@ -220,8 +222,18 @@ export default {
       this.textEmoticons = await chat.getTextEmoticons()
     },
 
+    sendMessageToStylegen(type, data = null) {
+      if (window.parent === window) {
+        return
+      }
+      let msg = { type, data }
+      window.parent.postMessage(msg, window.location.origin)
+    },
     // 处理样式生成器发送的消息
     onWindowMessage(event) {
+      if (event.source !== window.parent) {
+        return
+      }
       if (event.origin !== window.location.origin) {
         console.warn(`消息origin错误，${event.origin} != ${window.location.origin}`)
         return

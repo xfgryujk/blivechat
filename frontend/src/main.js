@@ -5,6 +5,7 @@ if (!process.env.LIB_USE_CDN) {
   import('element-ui/lib/theme-chalk/index.css')
 }
 
+import * as apiBase from './api/base'
 import * as i18n from './i18n'
 import App from './App'
 import NotFound from './views/NotFound'
@@ -59,6 +60,8 @@ const router = new VueRouter({
     { path: '*', component: NotFound }
   ]
 })
+
+await apiBase.init()
 
 new Vue({
   render: h => h(App),

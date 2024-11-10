@@ -8,8 +8,11 @@ export const apiClient = axios.create({
   timeout: 10 * 1000,
 })
 
+export let init
 export let getBaseUrl
 if (!process.env.BACKEND_DISCOVERY) {
+  init = async function() {}
+
   const onRequest = config => {
     config.baseURL = getBaseUrl()
     return config
@@ -24,7 +27,12 @@ if (!process.env.BACKEND_DISCOVERY) {
   getBaseUrl = function() {
     return window.location.origin
   }
+
 } else {
+  init = async function() {
+    return updateBaseUrls()
+  }
+
   const onRequest = config => {
     let baseUrl = getBaseUrl()
     if (baseUrl === null) {
@@ -160,6 +168,4 @@ if (!process.env.BACKEND_DISCOVERY) {
     }
     return breaker
   }
-
-  await updateBaseUrls()
 }

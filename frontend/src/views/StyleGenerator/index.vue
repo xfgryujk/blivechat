@@ -38,9 +38,7 @@
           </el-form-item>
         </el-form>
         <div id="example-container" :class="{ light: exampleBgLight }">
-          <iframe id="example-room-iframe" ref="exampleRoomIframe"
-            :src="exampleRoomUrl" frameborder="0" @load="onExampleRoomLoad"
-          ></iframe>
+          <iframe id="example-room-iframe" ref="exampleRoomIframe" :src="exampleRoomUrl" frameborder="0"></iframe>
         </div>
       </div>
     </el-col>
@@ -96,21 +94,41 @@ export default {
   },
   mounted() {
     this.debounceResult = this.inputResult = this.subComponentResult
+
+    window.addEventListener('message', this.onWindowMessage)
+  },
+  beforeDestroy() {
+    window.removeEventListener('message', this.onWindowMessage)
   },
   methods: {
-    onExampleRoomLoad() {
-      this.setExampleRoomCustomCss(this.debounceResult)
-      this.setExampleRoomClientStart(this.playAnimation)
+    sendMessageToExampleRoom(type, data = null) {
+      let msg = { type, data }
+      this.$refs.exampleRoomIframe.contentWindow.postMessage(msg, window.location.origin)
     },
+    // 处理房间发送的消息
+    onWindowMessage(event) {
+      if (event.source !== this.$refs.exampleRoomIframe.contentWindow) {
+        return
+      }
+      if (event.origin !== window.location.origin) {
+        console.warn(`消息origin错误，${event.origin} != ${window.location.origin}`)
+        return
+      }
+
+      let { type } = event.data
+      switch (type) {
+      case 'stylegenExampleRoomLoad':
+        this.setExampleRoomCustomCss(this.debounceResult)
+        this.setExampleRoomClientStart(this.playAnimation)
+        break
+      }
+    },
+
     setExampleRoomCustomCss(css) {
       this.sendMessageToExampleRoom('roomSetCustomStyle', { css })
     },
     setExampleRoomClientStart(isStart) {
       this.sendMessageToExampleRoom(isStart ? 'roomStartClient' : 'roomStopClient')
-    },
-    sendMessageToExampleRoom(type, data = null) {
-      let msg = { type, data }
-      this.$refs.exampleRoomIframe.contentWindow.postMessage(msg, window.location.origin)
     },
 
     copyResult() {
