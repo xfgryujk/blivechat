@@ -107,7 +107,7 @@ async def _do_update_common_server_base_urls():
 
     async def test_endpoint(base_url):
         try:
-            url = base_url + '/api/server_info'
+            url = base_url + '/api/ping'
             async with http_session.get(url, timeout=aiohttp.ClientTimeout(total=3)) as res:
                 res.raise_for_status()
                 sorted_common_server_base_urls.append(base_url)

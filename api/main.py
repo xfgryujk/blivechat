@@ -17,7 +17,7 @@ EMOTICON_BASE_URL = '/emoticons'
 CUSTOM_PUBLIC_PATH = os.path.join(config.DATA_PATH, 'custom_public')
 
 
-class MainHandler(tornado.web.StaticFileHandler):
+class StaticHandler(tornado.web.StaticFileHandler):
     """为了使用Vue Router的history模式，把不存在的文件请求转发到index.html"""
     async def get(self, path, include_body=True):
         if path == '':
@@ -58,6 +58,11 @@ class ServiceDiscoveryHandler(api.base.ApiHandler):
         self.write({
             'endpoints': cfg.registered_endpoints,
         })
+
+
+class PingHandler(api.base.ApiHandler):
+    async def get(self):
+        self.set_status(204)
 
 
 class UploadEmoticonHandler(api.base.ApiHandler):
@@ -103,6 +108,7 @@ class NoCacheStaticFileHandler(tornado.web.StaticFileHandler):
 ROUTES = [
     (r'/api/server_info', ServerInfoHandler),
     (r'/api/endpoints', ServiceDiscoveryHandler),
+    (r'/api/ping', PingHandler),
     (r'/api/emoticon', UploadEmoticonHandler),
 ]
 # 通配的放在最后
@@ -110,5 +116,5 @@ LAST_ROUTES = [
     (rf'{EMOTICON_BASE_URL}/(.*)', tornado.web.StaticFileHandler, {'path': EMOTICON_UPLOAD_PATH}),
     # 这个目录不保证文件内容不会变，还是不用缓存了
     (r'/custom_public/(.*)', NoCacheStaticFileHandler, {'path': CUSTOM_PUBLIC_PATH}),
-    (r'/(.*)', MainHandler, {'path': config.WEB_ROOT}),
+    (r'/(.*)', StaticHandler, {'path': config.WEB_ROOT}),
 ]

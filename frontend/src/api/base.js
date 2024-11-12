@@ -112,7 +112,7 @@ if (!process.env.BACKEND_DISCOVERY) {
 
     async function testEndpoint(baseUrl) {
       try {
-        let url = `${baseUrl}/api/server_info`
+        let url = `${baseUrl}/api/ping`
         await axios.get(url, { timeout: 3 * 1000 })
         sortedBaseUrls.push(baseUrl)
       } catch {
