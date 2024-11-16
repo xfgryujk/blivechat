@@ -24,28 +24,30 @@
 
 以下几种方式任选一种即可。**正式使用之前记得看[注意事项](https://github.com/xfgryujk/blivechat/wiki/%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9%E5%92%8C%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98)**
 
-推荐的方式：如果你需要使用插件、翻译等高级特性，则在本地使用；否则推荐直接通过公共服务器在线使用。因为本地使用时不会自动升级版本，有时候出了问题不能及时解决；但公共服务器会禁用部分高级特性，如果你有需要，只能本地使用了
+推荐的方式：如果你需要使用插件、翻译等高级特性，则在本地使用；否则推荐直接通过公共服务器在线使用。因为本地使用时不会自动升级版本，有时候出了问题不能及时解决；但在线使用时会禁用部分高级特性，如果你有需要，只能本地使用了
 
-### 一、本地使用
+### 一、在线使用
+
+1. 这些是作者维护的公共服务器，根据情况随便选一个，直接用浏览器打开
+
+    * [blive.chat](https://blive.chat/)：自动节点，一般等于cn.blive.chat，如果不可用了会进行切换，但切换需要一段时间
+    * [cn.blive.chat](https://cn.blive.chat/)：墙内专用节点，不容易被墙，但如果受到攻击会变得不可用
+    * [cloudflare.blive.chat](https://cloudflare.blive.chat/)：Cloudflare美国节点，不容易被攻击，但容易被墙
+    * [vercel.blive.chat](https://vercel.blive.chat/)：Vercel美国节点，不容易被攻击，但容易被墙
+
+2. 输入主播在开始直播时获得的身份码，复制房间URL
+3. 用样式生成器生成样式，复制CSS
+4. 在OBS中添加浏览器源，输入URL和自定义CSS
+
+### 二、本地使用
 
 1. 下载[本地分发版](https://github.com/xfgryujk/blivechat/releases)（仅提供x64 Windows版）。也可以在[B站商店](https://play-live.bilibili.com/details/1694397161340)下载
-2. 双击`blivechat.exe`运行服务器。或者用命令行可以指定host和端口号：
+2. 双击`blivechat.exe`（或者`start.exe`）运行服务器
+3. 用浏览器打开[http://localhost:12450](http://localhost:12450)，剩下的步骤和在线使用时是一样的
 
-    ```sh
-    blivechat.exe --host 127.0.0.1 --port 12450
-    ```
+### 三、从源码运行
 
-   或者也可以在配置文件里指定host和端口号
-
-3. 用浏览器打开[http://localhost:12450](http://localhost:12450)，输入主播在开始直播时获得的身份码，复制房间URL
-4. 用样式生成器生成样式，复制CSS
-5. 在OBS中添加浏览器源，输入URL和自定义CSS
-
-### 二、公共服务器
-
-直接用浏览器打开[公共服务器](http://chat.bilisc.com/)，剩下的步骤和本地使用时是一样的
-
-### 三、源代码版（自建服务器或在Windows以外平台）
+此方式适用于自建服务器或者在Windows以外的平台运行
 
 0. 由于使用了git子模块，clone时需要加上`--recursive`参数：
 
@@ -67,22 +69,29 @@
     npm run build
     ```
 
-2. 运行服务器（需要Python3.8以上版本）：
+2. 安装服务器依赖（需要Python 3.8以上版本）：
 
     ```sh
-    pip3 install -r requirements.txt
-    python3 main.py
+    pip install -r requirements.txt
+    ```
+
+3. 运行服务器：
+
+    ```sh
+    python main.py
     ```
 
     或者可以指定host和端口号：
 
     ```sh
-    python3 main.py --host 127.0.0.1 --port 12450
+    python main.py --host 127.0.0.1 --port 12450
     ```
 
-3. 用浏览器打开[http://localhost:12450](http://localhost:12450)，以下略
+4. 用浏览器打开[http://localhost:12450](http://localhost:12450)，以下略
 
-### 四、Docker（自建服务器）
+### 四、Docker
+
+此方式适用于自建服务器。示例的运行参数只是最基本的，可以根据需要修改
 
 1.  ```sh
     docker run --name blivechat -d -p 12450:12450 \
@@ -94,9 +103,9 @@
 
 ## 服务器配置
 
-服务器配置在`data/config.ini`，可以配置数据库和允许自动翻译等，编辑后要重启生效
+服务器配置文件在`data/config.ini`，可以配置数据库和允许自动翻译等，编辑后要重启生效
 
-**自建服务器时强烈建议不使用加载器**，否则可能因为混合HTTP和HTTPS等原因加载不出来
+**自建服务器时强烈建议不使用加载器**，否则可能因为各种原因加载不出来
 
 ## 常用链接
 
