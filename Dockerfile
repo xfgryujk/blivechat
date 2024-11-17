@@ -18,7 +18,7 @@ RUN npm run build
 # 准备后端
 #
 
-FROM python:3.8.12-bullseye
+FROM python:3.12.7-bookworm
 ARG BASE_PATH='/root/blivechat'
 ARG EXT_DATA_PATH='/mnt/data'
 WORKDIR "${BASE_PATH}"

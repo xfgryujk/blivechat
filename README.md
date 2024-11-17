@@ -69,7 +69,7 @@
     npm run build
     ```
 
-2. 安装服务器依赖（需要Python 3.8以上版本）：
+2. 安装服务器依赖（需要Python 3.12以上版本）：
 
     ```sh
     pip install -r requirements.txt
