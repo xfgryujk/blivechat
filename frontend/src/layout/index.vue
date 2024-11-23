@@ -12,7 +12,7 @@
       <sidebar></sidebar>
     </el-aside>
     <el-main>
-      <el-button v-show="isMobile" class="menu-button" icon="el-icon-s-unfold" @click="hideSidebar = false"></el-button>
+      <el-button v-show="isMobile" icon="el-icon-s-unfold" @click="hideSidebar = false"></el-button>
       <keep-alive>
         <router-view></router-view>
       </keep-alive>
@@ -51,8 +51,8 @@ export default {
 }
 </script>
 
-<style>
-.app-wrapper, .sidebar-container {
+<style scoped>
+.app-wrapper {
   height: 100%;
 }
 
@@ -67,11 +67,12 @@ export default {
 }
 
 .sidebar-container {
+  height: 100%;
   background-color: #304156;
   overflow: hidden;
 }
 
-.app-wrapper.mobile .sidebar-container {
+.mobile .sidebar-container {
   position: fixed;
   top: 0;
   left: 0;
@@ -79,13 +80,13 @@ export default {
   z-index: 1001;
 }
 
-.app-wrapper.mobile .sidebar-container.hide-sidebar {
+.mobile .sidebar-container.hide-sidebar {
   pointer-events: none;
   transition-duration: 0.3s;
   transform: translate3d(-230px, 0, 0);
 }
 
-.sidebar-container .logo-container {
+.logo-container {
   width: 100%;
   height: 50px;
   line-height: 50px;
@@ -93,14 +94,14 @@ export default {
   text-align: center;
 }
 
-.sidebar-container .logo-container .sidebar-logo {
+.sidebar-logo {
   width: 32px;
   height: 32px;
   vertical-align: middle;
   margin-right: 12px;
 }
 
-.sidebar-container .logo-container .sidebar-title {
+.sidebar-title {
   display: inline-block;
   margin: 0;
   color: #fff;
@@ -111,7 +112,7 @@ export default {
   vertical-align: middle;
 }
 
-.sidebar-container .version {
+.version {
   height: 30px;
   background: #2b2f3a;
   color: #aaa;
@@ -120,9 +121,5 @@ export default {
   font-size: 14px;
   vertical-align: middle;
   text-align: center;
-}
-
-.sidebar-container .is-horizontal {
-  display: none;
 }
 </style>

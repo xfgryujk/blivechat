@@ -84,12 +84,12 @@ export default {
 }
 </script>
 
-<style>
-yt-live-chat-text-message-renderer>#content>#message>.el-badge {
+<style scoped>
+#message >>> .el-badge {
   margin-left: 10px;
 }
 
-yt-live-chat-text-message-renderer>#content>#message>.el-badge .el-badge__content {
+#message >>> .el-badge__content {
   font-size: 12px !important;
   line-height: 18px !important;
   text-shadow: none !important;

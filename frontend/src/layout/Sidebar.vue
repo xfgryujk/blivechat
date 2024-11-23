@@ -83,16 +83,20 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .el-scrollbar {
   height: 100%;
 }
 
-.scrollbar-wrapper {
+.el-scrollbar >>> .scrollbar-wrapper {
   overflow-x: hidden !important;
 }
 
-.scrollbar-wrapper .el-menu {
+.el-scrollbar >>> .el-menu {
   border: none;
+}
+
+.el-scrollbar >>> .is-horizontal {
+  display: none;
 }
 </style>
