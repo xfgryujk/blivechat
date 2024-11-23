@@ -1,3 +1,5 @@
+@layer yt {
+
 canvas.yt-live-chat-ticker-renderer, caption.yt-live-chat-ticker-renderer, center.yt-live-chat-ticker-renderer, cite.yt-live-chat-ticker-renderer, code.yt-live-chat-ticker-renderer, dd.yt-live-chat-ticker-renderer, del.yt-live-chat-ticker-renderer, dfn.yt-live-chat-ticker-renderer, div.yt-live-chat-ticker-renderer, dl.yt-live-chat-ticker-renderer, dt.yt-live-chat-ticker-renderer, em.yt-live-chat-ticker-renderer, embed.yt-live-chat-ticker-renderer, fieldset.yt-live-chat-ticker-renderer, font.yt-live-chat-ticker-renderer, form.yt-live-chat-ticker-renderer, h1.yt-live-chat-ticker-renderer, h2.yt-live-chat-ticker-renderer, h3.yt-live-chat-ticker-renderer, h4.yt-live-chat-ticker-renderer, h5.yt-live-chat-ticker-renderer, h6.yt-live-chat-ticker-renderer, hr.yt-live-chat-ticker-renderer, i.yt-live-chat-ticker-renderer, iframe.yt-live-chat-ticker-renderer, img.yt-live-chat-ticker-renderer, ins.yt-live-chat-ticker-renderer, kbd.yt-live-chat-ticker-renderer, label.yt-live-chat-ticker-renderer, legend.yt-live-chat-ticker-renderer, li.yt-live-chat-ticker-renderer, menu.yt-live-chat-ticker-renderer, object.yt-live-chat-ticker-renderer, ol.yt-live-chat-ticker-renderer, p.yt-live-chat-ticker-renderer, pre.yt-live-chat-ticker-renderer, q.yt-live-chat-ticker-renderer, s.yt-live-chat-ticker-renderer, samp.yt-live-chat-ticker-renderer, small.yt-live-chat-ticker-renderer, span.yt-live-chat-ticker-renderer, strike.yt-live-chat-ticker-renderer, strong.yt-live-chat-ticker-renderer, sub.yt-live-chat-ticker-renderer, sup.yt-live-chat-ticker-renderer, table.yt-live-chat-ticker-renderer, tbody.yt-live-chat-ticker-renderer, td.yt-live-chat-ticker-renderer, tfoot.yt-live-chat-ticker-renderer, th.yt-live-chat-ticker-renderer, thead.yt-live-chat-ticker-renderer, tr.yt-live-chat-ticker-renderer, tt.yt-live-chat-ticker-renderer, u.yt-live-chat-ticker-renderer, ul.yt-live-chat-ticker-renderer, var.yt-live-chat-ticker-renderer {
   margin: 0;
   padding: 0;
@@ -62,4 +64,6 @@ yt-icon.yt-live-chat-ticker-renderer {
   height: 24px;
   padding: 4px;
   width: 24px;
+}
+
 }

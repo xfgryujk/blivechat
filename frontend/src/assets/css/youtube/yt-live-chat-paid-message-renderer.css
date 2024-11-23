@@ -1,3 +1,5 @@
+@layer yt {
+
 canvas.yt-live-chat-paid-message-renderer, caption.yt-live-chat-paid-message-renderer, center.yt-live-chat-paid-message-renderer, cite.yt-live-chat-paid-message-renderer, code.yt-live-chat-paid-message-renderer, dd.yt-live-chat-paid-message-renderer, del.yt-live-chat-paid-message-renderer, dfn.yt-live-chat-paid-message-renderer, div.yt-live-chat-paid-message-renderer, dl.yt-live-chat-paid-message-renderer, dt.yt-live-chat-paid-message-renderer, em.yt-live-chat-paid-message-renderer, embed.yt-live-chat-paid-message-renderer, fieldset.yt-live-chat-paid-message-renderer, font.yt-live-chat-paid-message-renderer, form.yt-live-chat-paid-message-renderer, h1.yt-live-chat-paid-message-renderer, h2.yt-live-chat-paid-message-renderer, h3.yt-live-chat-paid-message-renderer, h4.yt-live-chat-paid-message-renderer, h5.yt-live-chat-paid-message-renderer, h6.yt-live-chat-paid-message-renderer, hr.yt-live-chat-paid-message-renderer, i.yt-live-chat-paid-message-renderer, iframe.yt-live-chat-paid-message-renderer, img.yt-live-chat-paid-message-renderer, ins.yt-live-chat-paid-message-renderer, kbd.yt-live-chat-paid-message-renderer, label.yt-live-chat-paid-message-renderer, legend.yt-live-chat-paid-message-renderer, li.yt-live-chat-paid-message-renderer, menu.yt-live-chat-paid-message-renderer, object.yt-live-chat-paid-message-renderer, ol.yt-live-chat-paid-message-renderer, p.yt-live-chat-paid-message-renderer, pre.yt-live-chat-paid-message-renderer, q.yt-live-chat-paid-message-renderer, s.yt-live-chat-paid-message-renderer, samp.yt-live-chat-paid-message-renderer, small.yt-live-chat-paid-message-renderer, span.yt-live-chat-paid-message-renderer, strike.yt-live-chat-paid-message-renderer, strong.yt-live-chat-paid-message-renderer, sub.yt-live-chat-paid-message-renderer, sup.yt-live-chat-paid-message-renderer, table.yt-live-chat-paid-message-renderer, tbody.yt-live-chat-paid-message-renderer, td.yt-live-chat-paid-message-renderer, tfoot.yt-live-chat-paid-message-renderer, th.yt-live-chat-paid-message-renderer, thead.yt-live-chat-paid-message-renderer, tr.yt-live-chat-paid-message-renderer, tt.yt-live-chat-paid-message-renderer, u.yt-live-chat-paid-message-renderer, ul.yt-live-chat-paid-message-renderer, var.yt-live-chat-paid-message-renderer {
   margin: 0;
   padding: 0;
@@ -377,4 +379,6 @@ yt-live-chat-paid-message-renderer[show-footer-divider] #footer.yt-live-chat-pai
 
 yt-live-chat-paid-message-renderer[is-user-editable] #footer.yt-live-chat-paid-message-renderer:not(:empty) {
   padding-top: 8px;
+}
+
 }

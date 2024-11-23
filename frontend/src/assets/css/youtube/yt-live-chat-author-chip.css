@@ -1,3 +1,5 @@
+@layer yt {
+
 canvas.yt-live-chat-author-chip, caption.yt-live-chat-author-chip, center.yt-live-chat-author-chip, cite.yt-live-chat-author-chip, code.yt-live-chat-author-chip, dd.yt-live-chat-author-chip, del.yt-live-chat-author-chip, dfn.yt-live-chat-author-chip, div.yt-live-chat-author-chip, dl.yt-live-chat-author-chip, dt.yt-live-chat-author-chip, em.yt-live-chat-author-chip, embed.yt-live-chat-author-chip, fieldset.yt-live-chat-author-chip, font.yt-live-chat-author-chip, form.yt-live-chat-author-chip, h1.yt-live-chat-author-chip, h2.yt-live-chat-author-chip, h3.yt-live-chat-author-chip, h4.yt-live-chat-author-chip, h5.yt-live-chat-author-chip, h6.yt-live-chat-author-chip, hr.yt-live-chat-author-chip, i.yt-live-chat-author-chip, iframe.yt-live-chat-author-chip, img.yt-live-chat-author-chip, ins.yt-live-chat-author-chip, kbd.yt-live-chat-author-chip, label.yt-live-chat-author-chip, legend.yt-live-chat-author-chip, li.yt-live-chat-author-chip, menu.yt-live-chat-author-chip, object.yt-live-chat-author-chip, ol.yt-live-chat-author-chip, p.yt-live-chat-author-chip, pre.yt-live-chat-author-chip, q.yt-live-chat-author-chip, s.yt-live-chat-author-chip, samp.yt-live-chat-author-chip, small.yt-live-chat-author-chip, span.yt-live-chat-author-chip, strike.yt-live-chat-author-chip, strong.yt-live-chat-author-chip, sub.yt-live-chat-author-chip, sup.yt-live-chat-author-chip, table.yt-live-chat-author-chip, tbody.yt-live-chat-author-chip, td.yt-live-chat-author-chip, tfoot.yt-live-chat-author-chip, th.yt-live-chat-author-chip, thead.yt-live-chat-author-chip, tr.yt-live-chat-author-chip, tt.yt-live-chat-author-chip, u.yt-live-chat-author-chip, ul.yt-live-chat-author-chip, var.yt-live-chat-author-chip {
   margin: 0;
   padding: 0;
@@ -61,4 +63,6 @@ yt-live-chat-author-chip[is-highlighted] #chip-badges.yt-live-chat-author-chip y
 
 #chip-badges.yt-live-chat-author-chip yt-live-chat-author-badge-renderer.yt-live-chat-author-chip:last-of-type {
   margin-right: -2px;
+}
+
 }

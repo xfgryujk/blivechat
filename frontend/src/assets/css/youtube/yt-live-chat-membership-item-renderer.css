@@ -1,3 +1,5 @@
+@layer yt {
+
 #timestamp.yt-live-chat-membership-item-renderer {
   display: var(--yt-live-chat-item-timestamp-display, inline);
   margin: var(--yt-live-chat-item-timestamp-margin, 0 8px 0 0);
@@ -359,4 +361,6 @@ yt-live-chat-membership-item-renderer[show-only-header] #menu.yt-live-chat-membe
 yt-live-chat-membership-item-renderer[dashboard-money-feed] #menu.yt-live-chat-membership-item-renderer {
   margin-top: 8px;
   background: linear-gradient(to right, transparent, var(--yt-live-chat-background-color) 40%);
+}
+
 }

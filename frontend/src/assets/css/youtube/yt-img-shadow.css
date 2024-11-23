@@ -1,3 +1,5 @@
+@layer yt {
+
 canvas.yt-img-shadow, caption.yt-img-shadow, center.yt-img-shadow, cite.yt-img-shadow, code.yt-img-shadow, dd.yt-img-shadow, del.yt-img-shadow, dfn.yt-img-shadow, div.yt-img-shadow, dl.yt-img-shadow, dt.yt-img-shadow, em.yt-img-shadow, embed.yt-img-shadow, fieldset.yt-img-shadow, font.yt-img-shadow, form.yt-img-shadow, h1.yt-img-shadow, h2.yt-img-shadow, h3.yt-img-shadow, h4.yt-img-shadow, h5.yt-img-shadow, h6.yt-img-shadow, hr.yt-img-shadow, i.yt-img-shadow, iframe.yt-img-shadow, img.yt-img-shadow, ins.yt-img-shadow, kbd.yt-img-shadow, label.yt-img-shadow, legend.yt-img-shadow, li.yt-img-shadow, menu.yt-img-shadow, object.yt-img-shadow, ol.yt-img-shadow, p.yt-img-shadow, pre.yt-img-shadow, q.yt-img-shadow, s.yt-img-shadow, samp.yt-img-shadow, small.yt-img-shadow, span.yt-img-shadow, strike.yt-img-shadow, strong.yt-img-shadow, sub.yt-img-shadow, sup.yt-img-shadow, table.yt-img-shadow, tbody.yt-img-shadow, td.yt-img-shadow, tfoot.yt-img-shadow, th.yt-img-shadow, thead.yt-img-shadow, tr.yt-img-shadow, tt.yt-img-shadow, u.yt-img-shadow, ul.yt-img-shadow, var.yt-img-shadow {
   margin: 0;
   padding: 0;
@@ -65,4 +67,6 @@ img.yt-img-shadow {
   max-height: none;
   max-width: 100%;
   border-radius: none;
+}
+
 }

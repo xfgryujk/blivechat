@@ -1,3 +1,5 @@
+@layer yt {
+
 yt-live-chat-renderer, yt-live-chat-item-list-renderer #item-scroller {
   height: 100%;
 }
@@ -249,4 +251,6 @@ yt-live-chat-renderer[collapsed] .hide-on-collapse.yt-live-chat-renderer {
   100% {
     background-color: rgba(0, 0, 0, 0.60);
   }
+}
+
 }

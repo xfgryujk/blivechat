@@ -1,3 +1,5 @@
+@layer yt {
+
 canvas.yt-live-chat-item-list-renderer, caption.yt-live-chat-item-list-renderer, center.yt-live-chat-item-list-renderer, cite.yt-live-chat-item-list-renderer, code.yt-live-chat-item-list-renderer, dd.yt-live-chat-item-list-renderer, del.yt-live-chat-item-list-renderer, dfn.yt-live-chat-item-list-renderer, div.yt-live-chat-item-list-renderer, dl.yt-live-chat-item-list-renderer, dt.yt-live-chat-item-list-renderer, em.yt-live-chat-item-list-renderer, embed.yt-live-chat-item-list-renderer, fieldset.yt-live-chat-item-list-renderer, font.yt-live-chat-item-list-renderer, form.yt-live-chat-item-list-renderer, h1.yt-live-chat-item-list-renderer, h2.yt-live-chat-item-list-renderer, h3.yt-live-chat-item-list-renderer, h4.yt-live-chat-item-list-renderer, h5.yt-live-chat-item-list-renderer, h6.yt-live-chat-item-list-renderer, hr.yt-live-chat-item-list-renderer, i.yt-live-chat-item-list-renderer, iframe.yt-live-chat-item-list-renderer, img.yt-live-chat-item-list-renderer, ins.yt-live-chat-item-list-renderer, kbd.yt-live-chat-item-list-renderer, label.yt-live-chat-item-list-renderer, legend.yt-live-chat-item-list-renderer, li.yt-live-chat-item-list-renderer, menu.yt-live-chat-item-list-renderer, object.yt-live-chat-item-list-renderer, ol.yt-live-chat-item-list-renderer, p.yt-live-chat-item-list-renderer, pre.yt-live-chat-item-list-renderer, q.yt-live-chat-item-list-renderer, s.yt-live-chat-item-list-renderer, samp.yt-live-chat-item-list-renderer, small.yt-live-chat-item-list-renderer, span.yt-live-chat-item-list-renderer, strike.yt-live-chat-item-list-renderer, strong.yt-live-chat-item-list-renderer, sub.yt-live-chat-item-list-renderer, sup.yt-live-chat-item-list-renderer, table.yt-live-chat-item-list-renderer, tbody.yt-live-chat-item-list-renderer, td.yt-live-chat-item-list-renderer, tfoot.yt-live-chat-item-list-renderer, th.yt-live-chat-item-list-renderer, thead.yt-live-chat-item-list-renderer, tr.yt-live-chat-item-list-renderer, tt.yt-live-chat-item-list-renderer, u.yt-live-chat-item-list-renderer, ul.yt-live-chat-item-list-renderer, var.yt-live-chat-item-list-renderer {
   margin: 0;
   padding: 0;
@@ -137,4 +139,6 @@ yt-live-chat-paid-sticker-renderer.yt-live-chat-item-list-renderer {
 
 yt-live-chat-paid-sticker-renderer.yt-live-chat-item-list-renderer[dashboard-money-feed] {
   padding: 8px 16px;
+}
+
 }

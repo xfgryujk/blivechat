@@ -1,3 +1,5 @@
+@layer yt {
+
 canvas.yt-live-chat-text-message-renderer, caption.yt-live-chat-text-message-renderer, center.yt-live-chat-text-message-renderer, cite.yt-live-chat-text-message-renderer, code.yt-live-chat-text-message-renderer, dd.yt-live-chat-text-message-renderer, del.yt-live-chat-text-message-renderer, dfn.yt-live-chat-text-message-renderer, div.yt-live-chat-text-message-renderer, dl.yt-live-chat-text-message-renderer, dt.yt-live-chat-text-message-renderer, em.yt-live-chat-text-message-renderer, embed.yt-live-chat-text-message-renderer, fieldset.yt-live-chat-text-message-renderer, font.yt-live-chat-text-message-renderer, form.yt-live-chat-text-message-renderer, h1.yt-live-chat-text-message-renderer, h2.yt-live-chat-text-message-renderer, h3.yt-live-chat-text-message-renderer, h4.yt-live-chat-text-message-renderer, h5.yt-live-chat-text-message-renderer, h6.yt-live-chat-text-message-renderer, hr.yt-live-chat-text-message-renderer, i.yt-live-chat-text-message-renderer, iframe.yt-live-chat-text-message-renderer, img.yt-live-chat-text-message-renderer, ins.yt-live-chat-text-message-renderer, kbd.yt-live-chat-text-message-renderer, label.yt-live-chat-text-message-renderer, legend.yt-live-chat-text-message-renderer, li.yt-live-chat-text-message-renderer, menu.yt-live-chat-text-message-renderer, object.yt-live-chat-text-message-renderer, ol.yt-live-chat-text-message-renderer, p.yt-live-chat-text-message-renderer, pre.yt-live-chat-text-message-renderer, q.yt-live-chat-text-message-renderer, s.yt-live-chat-text-message-renderer, samp.yt-live-chat-text-message-renderer, small.yt-live-chat-text-message-renderer, span.yt-live-chat-text-message-renderer, strike.yt-live-chat-text-message-renderer, strong.yt-live-chat-text-message-renderer, sub.yt-live-chat-text-message-renderer, sup.yt-live-chat-text-message-renderer, table.yt-live-chat-text-message-renderer, tbody.yt-live-chat-text-message-renderer, td.yt-live-chat-text-message-renderer, tfoot.yt-live-chat-text-message-renderer, th.yt-live-chat-text-message-renderer, thead.yt-live-chat-text-message-renderer, tr.yt-live-chat-text-message-renderer, tt.yt-live-chat-text-message-renderer, u.yt-live-chat-text-message-renderer, ul.yt-live-chat-text-message-renderer, var.yt-live-chat-text-message-renderer {
   margin: 0;
   padding: 0;
@@ -229,4 +231,6 @@ yt-live-chat-text-message-renderer[is-dimmed] #message.yt-live-chat-text-message
 
 yt-live-chat-text-message-renderer[is-dimmed]::before {
   background: var(--yt-live-chat-error-message-color, #f44336);
+}
+
 }

@@ -1,3 +1,5 @@
+@layer yt {
+
 html:not(.style-scope) {
   --yt-live-chat-background-color: hsl(0, 0%, 100%);
   --yt-live-chat-action-panel-background-color: hsla(0, 0%, 93.3%, .4);
@@ -359,4 +361,6 @@ html:not(.style-scope) {
   --layout-fixed-left_-_bottom: 0;
   --layout-fixed-left_-_left: 0;
   ;
+}
+
 }
