@@ -242,7 +242,7 @@ export default {
       let { type, data } = event.data
       switch (type) {
       case 'roomSetCustomStyle':
-        this.customStyleElement.innerText = data.css
+        this.customStyleElement.textContent = data.css
         break
       case 'roomStartClient':
         if (this.chatClient) {
