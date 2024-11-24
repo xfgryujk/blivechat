@@ -1,6 +1,6 @@
 <template>
   <yt-live-chat-ticker-renderer :hidden="showMessages.length === 0">
-    <div id="container" dir="ltr" class="style-scope yt-live-chat-ticker-renderer">
+    <el-scrollbar ref="scrollbar" id="container" dir="ltr" class="style-scope yt-live-chat-ticker-renderer">
       <transition-group tag="div" :css="false" @enter="onTickerItemEnter" @leave="onTickerItemLeave"
         id="items" class="style-scope yt-live-chat-ticker-renderer"
       >
@@ -22,7 +22,7 @@
           </div>
         </yt-live-chat-ticker-paid-message-item-renderer>
       </transition-group>
-    </div>
+    </el-scrollbar>
     <template v-if="pinnedMessage">
       <membership-item :key="pinnedMessage.id" v-if="pinnedMessage.type === MESSAGE_TYPE_MEMBER"
         class="style-scope yt-live-chat-ticker-renderer"
@@ -110,7 +110,11 @@ export default {
       el.style.width = 0
       await this.$nextTick()
       el.style.width = `${width}px`
-      window.setTimeout(done, 200)
+      window.setTimeout(() => {
+        done()
+        // 因为el-scrollbar监听不到事件，这里必须手动调update
+        this.$refs.scrollbar.update()
+      }, 200)
     },
     onTickerItemLeave(el, done) {
       el.classList.add('sliding-down')
@@ -122,6 +126,8 @@ export default {
           el.classList.remove('collapsing')
           el.style.width = 'auto'
           done()
+          // 因为el-scrollbar监听不到事件，这里必须手动调update
+          this.$refs.scrollbar.update()
         }, 200)
       }, 200)
     },

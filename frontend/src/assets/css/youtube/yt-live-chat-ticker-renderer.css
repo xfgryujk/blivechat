@@ -22,7 +22,9 @@ yt-live-chat-ticker-renderer {
 
 #items.yt-live-chat-ticker-renderer {
   height: 32px;
-  overflow: hidden;
+  /* 为了支持滚动 */
+  /* overflow: hidden; */
+  overflow: visible;
   white-space: nowrap;
   padding: 0 24px 8px 24px;
 }
