@@ -79,8 +79,8 @@ export default {
     legacy: '经典',
     lineLike: '仿微信',
 
-    light: '明亮',
-    dark: '黑暗',
+    light: '亮色',
+    dark: '暗色',
 
     outlines: '描边',
     showOutlines: '显示描边',
@@ -150,7 +150,7 @@ export default {
     fadeOutTime: '淡出时间（毫秒）',
     slide: '滑动',
     reverseSlide: '反向滑动',
-    playAnimation: '播放动画',
+    playAnimation: '生成消息',
 
     result: '结果',
     copy: '复制',

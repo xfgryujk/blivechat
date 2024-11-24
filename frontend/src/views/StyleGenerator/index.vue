@@ -2,11 +2,11 @@
   <el-row :gutter="20">
     <el-col :sm="24" :md="16">
       <el-tabs v-model="activeTab">
-        <el-tab-pane :label="$t('stylegen.legacy')" name="legacy">
-          <legacy ref="legacy" v-model="subComponentResults.legacy"></legacy>
-        </el-tab-pane>
         <el-tab-pane :label="$t('stylegen.lineLike')" name="lineLike">
           <line-like ref="lineLike" v-model="subComponentResults.lineLike"></line-like>
+        </el-tab-pane>
+        <el-tab-pane :label="$t('stylegen.legacy')" name="legacy">
+          <legacy ref="legacy" v-model="subComponentResults.legacy"></legacy>
         </el-tab-pane>
       </el-tabs>
 
@@ -64,14 +64,14 @@ export default {
         legacy: '',
         lineLike: ''
       },
-      activeTab: 'legacy',
+      activeTab: 'lineLike',
       // 输入框的结果
       inputResult: '',
       // 防抖后延迟变化的结果
       debounceResult: '',
 
       playAnimation: true,
-      exampleBgLight: false
+      exampleBgLight: true,
     }
   },
   computed: {
