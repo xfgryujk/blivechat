@@ -1,4 +1,4 @@
-import { apiClient as axios } from '@/api/base'
+import { apiClient as axios, getBaseUrl } from '@/api/base'
 import * as chat from '.'
 import * as chatModels from './models'
 import * as base from './ChatClientOfficialBase'
@@ -13,6 +13,8 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
 
     this.roomOwnerAuthCode = roomOwnerAuthCode
 
+    this.boundEndGameBeforeUnload = this.endGameBeforeUnload.bind(this)
+
     // 调用initRoom后初始化
     this.roomOwnerOpenId = null
     this.hostServerUrlList = []
@@ -22,7 +24,15 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
     this.gameHeartbeatTimerId = null
   }
 
+  start() {
+    super.start()
+
+    window.addEventListener('beforeunload', this.boundEndGameBeforeUnload)
+  }
+
   stop() {
+    window.removeEventListener('beforeunload', this.boundEndGameBeforeUnload)
+
     this.endGame()
 
     super.stop()
@@ -97,6 +107,29 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
       return false
     }
     return true
+  }
+
+  endGameBeforeUnload() {
+    let baseUrl = getBaseUrl()
+    if (baseUrl === null) {
+      return
+    }
+
+    this.needInitRoom = true
+    if (!this.gameId) {
+      return
+    }
+    let gameId = this.gameId
+    // 直接丢弃将要关闭的gameId
+    this.gameId = null
+
+    let url = `${baseUrl}/api/open_live/end_game`
+    let body = {
+      app_id: 0,
+      game_id: gameId
+    }
+    body = new Blob([JSON.stringify(body)], { type: 'application/json' })
+    window.navigator.sendBeacon(url, body)
   }
 
   onSendGameHeartbeat() {
