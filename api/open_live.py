@@ -275,6 +275,17 @@ class EndGamePublicHandler(_PublicHandlerBase):
     _OPEN_LIVE_URL = END_GAME_OPEN_LIVE_URL
     _COMMON_SERVER_URL = END_GAME_COMMON_SERVER_URL
 
+    def set_default_headers(self):
+        super().set_default_headers()
+
+        if self._headers.get('Access-Control-Allow-Origin', None) is None:
+            return
+
+        # 前端sendBeacon跨域发送JSON时会带凭证
+        self.set_header('Access-Control-Allow-Credentials', 'true')
+        self.set_header('Access-Control-Allow-Methods', 'POST')
+        self.set_header('Access-Control-Allow-Headers', 'Content-Type')
+
 
 class EndGamePrivateHandler(_PrivateHandlerBase):
     _OPEN_LIVE_URL = END_GAME_OPEN_LIVE_URL
