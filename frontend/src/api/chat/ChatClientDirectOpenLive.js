@@ -214,7 +214,20 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
     super.delayReconnect()
   }
 
-  async dmCallback(command) {
+  interactionEndCallback(command) {
+    if (command.data.game_id !== this.gameId) {
+      return
+    }
+    // 服务器主动停止推送，可能是心跳超时，需要重新开启项目
+    console.error(`Open Live session end by server, gameId=${this.gameId}`)
+    this.addDebugMsg('Open Live session end by server')
+
+    this.gameId = null
+    this.needInitRoom = true
+    this.discardWebsocket()
+  }
+
+  dmCallback(command) {
     let data = command.data
 
     let authorType
@@ -262,7 +275,7 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
     this.msgHandler.onAddGift(data)
   }
 
-  async guardCallback(command) {
+  guardCallback(command) {
     let data = command.data
     data = new chatModels.AddMemberMsg({
       id: data.msg_id,
@@ -298,6 +311,7 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
 }
 
 const CMD_CALLBACK_MAP = {
+  LIVE_OPEN_PLATFORM_INTERACTION_END: ChatClientDirectOpenLive.prototype.interactionEndCallback,
   LIVE_OPEN_PLATFORM_DM: ChatClientDirectOpenLive.prototype.dmCallback,
   LIVE_OPEN_PLATFORM_SEND_GIFT: ChatClientDirectOpenLive.prototype.sendGiftCallback,
   LIVE_OPEN_PLATFORM_GUARD: ChatClientDirectOpenLive.prototype.guardCallback,
