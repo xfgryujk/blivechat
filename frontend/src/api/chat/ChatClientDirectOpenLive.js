@@ -261,7 +261,7 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
 
   sendGiftCallback(command) {
     let data = command.data
-    let totalCoin = data.price * data.gift_num
+    let totalCoin = data.r_price * data.gift_num
     data = new chatModels.AddGiftMsg({
       id: data.msg_id,
       avatarUrl: chat.processAvatarUrl(data.uface),
