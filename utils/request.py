@@ -2,6 +2,8 @@
 import asyncio
 import datetime
 import logging
+import os
+import pickle
 from typing import *
 
 import aiohttp
@@ -12,6 +14,8 @@ import config
 import utils.async_io
 
 logger = logging.getLogger(__name__)
+
+COOKIE_JAR_PATH = os.path.join(config.DATA_PATH, 'cookie_jar.pickle')
 
 # 不带这堆头部有时候也能成功请求，但是带上后成功的概率更高
 BILIBILI_COMMON_HEADERS = {
@@ -37,10 +41,17 @@ _common_server_base_url_to_circuit_breaker: Dict[str, circuitbreaker.CircuitBrea
 
 
 def init():
+    try:
+        cookie_jar = aiohttp.CookieJar()
+        cookie_jar.load(COOKIE_JAR_PATH)
+    except (OSError, pickle.PickleError):
+        cookie_jar = None
+
     global http_session
     http_session = aiohttp.ClientSession(
         response_class=CustomClientResponse,
         timeout=aiohttp.ClientTimeout(total=10),
+        cookie_jar=cookie_jar,
     )
 
     cfg = config.get_config()
