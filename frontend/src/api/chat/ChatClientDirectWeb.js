@@ -98,14 +98,30 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
       authorType = 0
     }
 
-    let authorName = info[2][1]
+    let extra
+    try {
+      extra = modeInfo.extra
+      if (typeof extra !== 'object') {
+        extra = JSON.parse(extra)
+      }
+    } catch {
+      extra = {}
+    }
+
     let content = info[1]
+    let replyUname = extra.reply_uname ?? ''
+    let showContent = content
+    if (replyUname !== '') {
+      showContent = `@${replyUname} ${showContent}`
+    }
+
+    let authorName = info[2][1]
     let data = new chatModels.AddTextMsg({
       avatarUrl: avatarUrl,
       timestamp: info[0][4] / 1000,
       authorName: authorName,
       authorType: authorType,
-      content: content,
+      content: showContent,
       privilegeType: privilegeType,
       isGiftDanmaku: Boolean(info[0][9]) || chat.isGiftDanmakuByContent(content),
       authorLevel: info[4][0],

@@ -524,6 +524,11 @@ class LiveMsgHandler(blivedm.BaseHandler):
         else:
             author_type = 0
 
+        show_content = message.msg
+        reply_uname = message.extra_dict.get('reply_uname', '')
+        if reply_uname != '':
+            show_content = f'@{reply_uname} {show_content}'
+
         if message.dm_type == 1:
             content_type = api.chat.ContentType.EMOTICON
             content_type_params = api.chat.make_emoticon_params(
@@ -552,7 +557,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             timestamp=int(message.timestamp / 1000),
             author_name=message.uname,
             author_type=author_type,
-            content=message.msg,
+            content=show_content,
             privilege_type=message.privilege_type,
             is_gift_danmaku=bool(message.msg_type),
             author_level=message.user_level,
@@ -736,10 +741,16 @@ class LiveMsgHandler(blivedm.BaseHandler):
 
         if message.open_id == client.room_owner_open_id:
             author_type = 3  # 主播
+        elif message.is_admin:
+            author_type = 2  # 房管
         elif message.guard_level != 0:  # 1总督，2提督，3舰长
             author_type = 1  # 舰队
         else:
             author_type = 0
+
+        show_content = message.msg
+        if message.reply_uname != '':
+            show_content = f'@{message.reply_uname} {show_content}'
 
         if message.dm_type == 1:
             content_type = api.chat.ContentType.EMOTICON
@@ -766,7 +777,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             timestamp=message.timestamp,
             author_name=message.uname,
             author_type=author_type,
-            content=message.msg,
+            content=show_content,
             privilege_type=message.guard_level,
             medal_level=0 if not message.fans_medal_wearing_status else message.fans_medal_level,
             id_=message.msg_id,
