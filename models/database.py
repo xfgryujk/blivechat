@@ -6,6 +6,9 @@ import os
 import config
 import logging
 
+# 配置日志记录
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 # 定义全局的数据库引擎对象
 _engine: Optional[sqlalchemy.Engine] = None
 
@@ -31,12 +34,11 @@ def init():
 
     # 处理 PostgreSQL 数据库 URL，支持 postgres:// 和 postgresql://
     if database_url.startswith("postgres://") or database_url.startswith("postgresql://"):
-    print("使用 PostgreSQL 数据库")
-    # 替换为 psycopg3 的驱动 URL
-    database_url = database_url.replace("postgres://", "postgresql+psycopg://").replace(
-        "postgresql://", "postgresql+psycopg://"
-    )
-    logging.info("使用 PostgreSQL 数据库")
+        # 替换为 psycopg3 的驱动 URL
+        database_url = database_url.replace("postgres://", "postgresql+psycopg://").replace(
+            "postgresql://", "postgresql+psycopg://"
+        )
+        logging.info("使用 PostgreSQL 数据库")
     elif database_url.startswith("sqlite"):
         logging.info("使用 SQLite 数据库")
     else:
