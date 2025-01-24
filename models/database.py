@@ -29,13 +29,15 @@ def init():
     if not database_url:
         raise ValueError("数据库未配置。请通过环境变量 DATABASE_URL 或配置文件提供数据库连接 URL。")
 
-    # 验证支持的数据库 URL 前缀
-    if database_url.startswith("sqlite"):
+    # 处理 PostgreSQL 数据库 URL，支持 postgres:// 和 postgresql://
+    if database_url.startswith("postgres"):
+        if database_url.startswith("postgres://"):
+            print("使用 PostgreSQL 数据库（postgres://），正在转换为 postgresql://")
+            # 将 postgres:// 替换为 postgresql://
+            database_url = database_url.replace("postgres://", "postgresql://")
+        print("使用 PostgreSQL 数据库（postgresql://）")
+    elif database_url.startswith("sqlite"):
         print("使用 SQLite 数据库")
-        logging.info("使用 SQLite 数据库")
-    elif database_url.startswith("postgresql"):
-        print("使用 PostgreSQL 数据库")
-        logging.info("使用 PostgreSQL 数据库")
     else:
         raise ValueError(f"不支持的数据库 URL: {database_url}")
 
