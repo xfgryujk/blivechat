@@ -30,14 +30,15 @@ def init():
         raise ValueError("数据库未配置。请通过环境变量 DATABASE_URL 或配置文件提供数据库连接 URL。")
 
     # 处理 PostgreSQL 数据库 URL，支持 postgres:// 和 postgresql://
-    if database_url.startswith("postgres"):
-        if database_url.startswith("postgres://"):
-            print("使用 PostgreSQL 数据库（postgres://），正在转换为 postgresql://")
-            # 将 postgres:// 替换为 postgresql://
-            database_url = database_url.replace("postgres://", "postgresql://")
-        print("使用 PostgreSQL 数据库（postgresql://）")
+    if database_url.startswith("postgres://") or database_url.startswith("postgresql://"):
+    print("使用 PostgreSQL 数据库")
+    # 替换为 psycopg3 的驱动 URL
+    database_url = database_url.replace("postgres://", "postgresql+psycopg://").replace(
+        "postgresql://", "postgresql+psycopg://"
+    )
+    logging.info("使用 PostgreSQL 数据库")
     elif database_url.startswith("sqlite"):
-        print("使用 SQLite 数据库")
+        logging.info("使用 SQLite 数据库")
     else:
         raise ValueError(f"不支持的数据库 URL: {database_url}")
 
@@ -53,7 +54,7 @@ def init():
 
     # 创建数据库表
     OrmBase.metadata.create_all(_engine)
-    print("数据库初始化完成")
+    logging.info("数据库初始化完成")
 
 
 def get_session() -> sqlalchemy.orm.Session:
