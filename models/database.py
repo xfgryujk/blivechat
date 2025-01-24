@@ -4,6 +4,7 @@ import sqlalchemy
 import sqlalchemy.orm
 import os
 import config
+import logging
 
 # 定义全局的数据库引擎对象
 _engine: Optional[sqlalchemy.Engine] = None
@@ -31,8 +32,10 @@ def init():
     # 验证支持的数据库 URL 前缀
     if database_url.startswith("sqlite"):
         print("使用 SQLite 数据库")
+        logging.info("使用 SQLite 数据库")
     elif database_url.startswith("postgresql"):
         print("使用 PostgreSQL 数据库")
+        logging.info("使用 PostgreSQL 数据库")
     else:
         raise ValueError(f"不支持的数据库 URL: {database_url}")
 
