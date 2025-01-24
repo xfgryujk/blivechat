@@ -34,7 +34,11 @@
     * [cn.blive.chat](https://cn.blive.chat/)：墙内专用节点，不容易被墙，但如果受到攻击会变得不可用
     * [cloudflare.blive.chat](https://cloudflare.blive.chat/)：Cloudflare美国节点，不容易被攻击，但容易被墙
     * [vercel.blive.chat](https://vercel.blive.chat/)：Vercel美国节点，不容易被攻击，但容易被墙
-
+    * [huggingface]
+(https://asfag654-b.hf.space)：报脸服务器，中国大部分能裸连，但听说移动网可能连不上
+ #### 报脸快速部署
+  [点这里](https://huggingface.co/spaces/asfag654/b?duplicate=true&visibility=public)
+  没有自己的数据库就~~乱填~~留空
 2. 输入主播在开始直播时获得的身份码，复制房间URL
 3. 用样式生成器生成样式，复制CSS
 4. 在OBS中添加浏览器源，输入URL和自定义CSS
