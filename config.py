@@ -174,7 +174,6 @@ class AppConfig:
                         '%E7%BF%BB%E8%AF%91%E6%8E%A5%E5%8F%A3'
                     )
                     logger.warning('%s is deprecated, please see %s', type_, doc_url)
-                    continue
                 elif type_ == 'TencentTranslate':
                     translator_config['source_language'] = section['source_language']
                     translator_config['target_language'] = section['target_language']
@@ -187,11 +186,16 @@ class AppConfig:
                     translator_config['app_id'] = section['app_id']
                     translator_config['secret'] = section['secret']
                 elif type_ == 'GeminiTranslate':
-                    translator_config['proxy'] = section['proxy']
+                    logger.warning('%s is deprecated, please migrate to OpenAiApi', type_)
+                elif type_ == 'OpenAiApi':
                     translator_config['api_key'] = section['api_key']
-                    translator_config['model_code'] = section['model_code']
+                    translator_config['base_url'] = section['base_url']
+                    translator_config['proxy'] = section['proxy']
+                    translator_config['model'] = section['model']
                     translator_config['prompt'] = section['prompt'].replace('\n', ' ').replace('\\n', '\n')
+                    translator_config['max_tokens'] = section.getint('max_tokens')
                     translator_config['temperature'] = section.getfloat('temperature')
+                    translator_config['top_p'] = section.getfloat('top_p')
                 else:
                     raise ValueError(f'Invalid translator type: {type_}')
             except Exception:  # noqa

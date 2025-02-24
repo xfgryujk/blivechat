@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import asyncio
+import copy
 import dataclasses
 import datetime
 import enum
@@ -15,6 +16,7 @@ import Crypto.Cipher.AES as cry_aes  # noqa
 import Crypto.Util.Padding as cry_pad  # noqa
 import aiohttp
 import cachetools
+import circuitbreaker
 
 import config
 import utils.async_io
@@ -79,10 +81,10 @@ def create_translate_provider(cfg):
             cfg['query_interval'], cfg['source_language'], cfg['target_language'],
             cfg['app_id'], cfg['secret']
         )
-    elif type_ == 'GeminiTranslate':
-        return GeminiTranslate(            
-            cfg['query_interval'], cfg['proxy'], cfg['api_key'], cfg['model_code'],
-            cfg['prompt'], cfg['temperature']
+    elif type_ == 'OpenAiApi':
+        return OpenAiApi(
+            cfg['query_interval'], cfg['api_key'], cfg['base_url'], cfg['proxy'], cfg['model'],
+            cfg['prompt'], cfg['max_tokens'], cfg['temperature'], cfg['top_p']
         )
     return None
 
@@ -255,8 +257,10 @@ class TranslateProvider:
                     logger.info('%s became available', cls_name)
 
                 task = await _pop_task()
-                # 为了简化代码，约定只会在_translate_wrapper里变成不可用，所以获取task之后这里还是可用的
-                assert self.is_available
+                if not self.is_available:
+                    if not _push_task(task):
+                        task.future.set_result(None)
+                    continue
 
                 start_time = datetime.datetime.now()
                 await self._translate_wrapper(task)
@@ -267,7 +271,7 @@ class TranslateProvider:
             except Exception:  # noqa
                 logger.exception('%s error:', cls_name)
 
-    async def _translate_wrapper(self, task: TranslateTask) -> Optional[str]:
+    async def _translate_wrapper(self, task: TranslateTask):
         try:
             exc = None
             task.remain_retry_count -= 1
@@ -277,7 +281,7 @@ class TranslateProvider:
             res = None
         if res is not None:
             task.future.set_result(res)
-            return res
+            return
 
         if task.remain_retry_count > 0:
             # 还可以重试则放回队列
@@ -289,7 +293,6 @@ class TranslateProvider:
                 task.future.set_exception(exc)
             else:
                 task.future.set_result(None)
-        return None
 
     async def _do_translate(self, text) -> Optional[str]:
         raise NotImplementedError
@@ -345,8 +348,9 @@ class TencentTranslate(TranslateProvider):
         hashed_request_payload = hashlib.sha256(body_bytes).hexdigest()
         canonical_request = f'POST\n/\n\n{canonical_headers}\n{signed_headers}\n{hashed_request_payload}'
 
-        request_timestamp = int(datetime.datetime.now().timestamp())
-        date = datetime.datetime.utcfromtimestamp(request_timestamp).strftime('%Y-%m-%d')
+        cur_time_utc = datetime.datetime.now(datetime.UTC)
+        request_timestamp = int(cur_time_utc.timestamp())
+        date = cur_time_utc.strftime('%Y-%m-%d')
         credential_scope = f'{date}/tmt/tc3_request'
         hashed_canonical_request = hashlib.sha256(canonical_request.encode('utf-8')).hexdigest()
         string_to_sign = f'TC3-HMAC-SHA256\n{request_timestamp}\n{credential_scope}\n{hashed_canonical_request}'
@@ -470,96 +474,96 @@ class BaiduTranslate(TranslateProvider):
         self._on_availability_change()
 
 
-class GeminiTranslate(TranslateProvider):
-    def __init__(self, query_interval, proxy, api_key, model_code, prompt, temperature):
+class _OpenAiApiExpectedError(Exception):
+    pass
+
+
+class OpenAiApi(TranslateProvider):
+    def __init__(self, query_interval, api_key, base_url, proxy, model, prompt, max_tokens, temperature, top_p):
         super().__init__(query_interval)
+        self._url = base_url + '/chat/completions'
         self._proxy = proxy or None
-        self._api_key = api_key
-        self._url = f'https://generativelanguage.googleapis.com/v1beta/{model_code}:generateContent'
-        self._prompt = prompt
+        self._headers = {
+            'Authorization': 'Bearer ' + api_key
+        }
         self._body = {
-            'contents': [
-                {
-                    # 'role': 'user',
-                    'parts': [{'text': ''}]
-                }
+            'model': model,
+            'messages': [
+                {'role': 'system', 'content': prompt},
+                {'role': 'user', 'content': ''},
             ],
-            'safetySettings': [
-                {
-                    'category': 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-                    'threshold': 'BLOCK_NONE'
-                },
-                {
-                    'category': 'HARM_CATEGORY_HATE_SPEECH',
-                    'threshold': 'BLOCK_NONE'
-                },
-                {
-                    'category': 'HARM_CATEGORY_HARASSMENT',
-                    'threshold': 'BLOCK_NONE'
-                },
-                {
-                    'category': 'HARM_CATEGORY_DANGEROUS_CONTENT',
-                    'threshold': 'BLOCK_NONE'
-                }
-            ],
-            'generationConfig': {
-                'temperature': temperature,
-                'topP': 1,
-                'topK': 32,
-                'candidateCount': 1,
-                'maxOutputTokens': 8192
-            }
+            'stream': False,
+            'max_tokens': max_tokens,
+            'temperature': temperature,
+            'top_p': top_p,
         }
 
+        self._breaker = circuitbreaker.CircuitBreaker(
+            failure_threshold=5,
+            recovery_timeout=60,
+        )
         self._cool_down_timer_handle = None
 
     @property
     def is_available(self):
-        return self._cool_down_timer_handle is None and super().is_available
+        return self._breaker.state != circuitbreaker.STATE_OPEN and super().is_available
+
+    async def _translate_wrapper(self, task: TranslateTask):
+        # 并发请求，不然太慢了
+        utils.async_io.create_task_with_ref(super()._translate_wrapper(task))
 
     async def _do_translate(self, text) -> Optional[str]:
-        input_text = self._prompt.format(original_text=text)
-        self._body['contents'][0]['parts'][0]['text'] = input_text
+        data = None
         try:
-            async with utils.request.http_session.post(
-                self._url,
-                params={'key': self._api_key},
-                json=self._body,
-                proxy=self._proxy,
-            ) as r:
-                if r.status != 200:
-                    logger.warning('GeminiTranslate request failed: status=%d %s', r.status, r.reason)
-                    self._on_fail(r.status)
-                    return None
-                data = await r.json()
+            with self._breaker:
+                body = copy.deepcopy(self._body)
+                body['messages'][-1]['content'] = text
+                async with utils.request.http_session.post(
+                    self._url,
+                    headers=self._headers,
+                    json=body,
+                    proxy=self._proxy,
+                    timeout=aiohttp.ClientTimeout(total=30),
+                ) as r:
+                    if r.status != 200:
+                        rsp_body = await r.text()
+                        logger.warning(
+                            'OpenAiApi request failed: status=%d %s, body=%s', r.status, r.reason, rsp_body
+                        )
+                        raise _OpenAiApiExpectedError('OpenAiApi request failed')
+                    data = await r.json()
+                return data['choices'][0]['message']['content']
+
+        except (_OpenAiApiExpectedError, circuitbreaker.CircuitBreakerError):
+            pass
         except (aiohttp.ClientConnectionError, asyncio.TimeoutError) as e:
-            logger.warning('GeminiTranslate request failed, %s: %s', type(e).__name__, e)
-            return None
-
-        try:
-            candidates = data['candidates']
-            if not candidates:
-                block_reason = data['promptFeedback'].get('blockReason', '')
-                logger.warning('GeminiTranslate no candidate, block_reason=%s, text=%s', block_reason, text)
-                return None
-
-            first_content_parts = candidates[0]['content']['parts']
-            return ''.join(part.get('text', '') for part in first_content_parts)
+            logger.warning('OpenAiApi request failed, %s: %s', type(e).__name__, e)
         except (KeyError, IndexError):
-            logger.warning('GeminiTranslate failed to parse response: %s', data)
-            return None
+            if data is not None:
+                logger.warning('OpenAiApi failed to parse response: %s', data)
+            else:
+                logger.exception('OpenAiApi unknown exception:')
 
-    def _on_fail(self, code):
+        if self._breaker.state == circuitbreaker.STATE_OPEN:
+            self._on_breaker_open()
+
+        return None
+
+    def _on_breaker_open(self):
         if self._cool_down_timer_handle is not None:
             return
 
-        if code in (401, 403):
-            # API密钥无效，没有权限，或者不在有效地区。需要手动处理，等5分钟
-            self._cool_down_timer_handle = asyncio.get_running_loop().call_later(
-                5 * 60, self._on_cool_down_timeout
-            )
-            self._on_availability_change()
+        self._cool_down_timer_handle = asyncio.get_running_loop().call_later(
+            self._breaker.open_remaining, self._on_cool_down_timeout
+        )
+        self._on_availability_change()
 
     def _on_cool_down_timeout(self):
         self._cool_down_timer_handle = None
+        if self._breaker.state == circuitbreaker.STATE_OPEN:
+            self._cool_down_timer_handle = asyncio.get_running_loop().call_later(
+                self._breaker.open_remaining, self._on_cool_down_timeout
+            )
+            return
+
         self._on_availability_change()
