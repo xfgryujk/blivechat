@@ -600,11 +600,11 @@ class LiveMsgHandler(blivedm.BaseHandler):
             'num': message.num,
             # 给插件用的字段
             'giftId': message.gift_id,
-            'giftIconUrl': '',
+            'giftIconUrl': message.gift_img_basic,
             'uid': str(message.uid) if message.uid != 0 else message.uname,
             'privilegeType': message.guard_level,
-            'medalLevel': 0,
-            'medalName': '',
+            'medalLevel': 0 if message.medal_ruid != client.room_owner_uid else message.medal_level,
+            'medalName': '' if message.medal_ruid != client.room_owner_uid else message.medal_name,
         }
         room.send_cmd_data(api.chat.Command.ADD_GIFT, data)
         services.plugin.broadcast_cmd_data(
@@ -673,8 +673,8 @@ class LiveMsgHandler(blivedm.BaseHandler):
             # 给插件用的字段
             'uid': str(message.uid) if message.uid != 0 else message.uname,
             'privilegeType': message.guard_level,
-            'medalLevel': 0,
-            'medalName': '',
+            'medalLevel': 0 if message.medal_room_id != client.room_id else message.medal_level,
+            'medalName': '' if message.medal_room_id != client.room_id else message.medal_name,
         }
         room.send_cmd_data(api.chat.Command.ADD_SUPER_CHAT, data)
         services.plugin.broadcast_cmd_data(
