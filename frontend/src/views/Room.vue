@@ -1,5 +1,8 @@
 <template>
-  <chat-renderer ref="renderer" :maxNumber="config.maxNumber" :showGiftName="config.showGiftName"></chat-renderer>
+  <chat-renderer v-if="!useCustomTemplate" ref="renderer" :maxNumber="config.maxNumber" :showGiftName="config.showGiftName"></chat-renderer>
+  <div v-else class="template-container">
+    <iframe ref="templateIframe" :src="config.templateUrl" class="template-iframe" frameborder="0"></iframe>
+  </div>
 </template>
 
 <script>
@@ -12,6 +15,39 @@ import * as chat from '@/api/chat'
 import * as chatModels from '@/api/chat/models'
 import ChatRenderer from '@/components/ChatRenderer'
 import * as constants from '@/components/ChatRenderer/constants'
+
+class CustomTemplateRenderer {
+  constructor(templateIframe) {
+    this.templateIframe = templateIframe
+  }
+
+  addMessage(message) {
+    this.sendMessageToTemplate('blcAddMsg', message)
+  }
+
+  delMessages(ids) {
+    let data = { ids }
+    this.sendMessageToTemplate('blcDelMsgs', data)
+  }
+
+  updateMessage(id, newValuesObj) {
+    let data = { id, newValuesObj }
+    this.sendMessageToTemplate('blcUpdateMsg', data)
+  }
+
+  mergeSimilarText() {
+    return false
+  }
+
+  mergeSimilarGift() {
+    return false
+  }
+
+  sendMessageToTemplate(cmd, data) {
+    let msg = { cmd, data }
+    this.templateIframe.contentWindow.postMessage(msg, '*')
+  }
+}
 
 export default {
   name: 'Room',
@@ -44,6 +80,8 @@ export default {
 
       customStyleElement, // 仅用于样式生成器中预览样式
       presetCssLinkElement: null,
+
+      renderer: null,
     }
   },
   computed: {
@@ -72,9 +110,22 @@ export default {
         }
       }
       return res
+    },
+    useCustomTemplate() {
+      return this.config.templateUrl !== ''
+    },
+  },
+  beforeMount() {
+    this.initConfig()
+
+    // 主框架改成透明背景，防止影响到模板
+    if (this.useCustomTemplate) {
+      this.customStyleElement.textContent = 'body { background-color: transparent; }'
     }
   },
   mounted() {
+    this.renderer = !this.useCustomTemplate ? this.$refs.renderer : new CustomTemplateRenderer(this.$refs.templateIframe)
+
     if (document.visibilityState === 'visible') {
       if (this.roomKeyValue === null) {
         this.init()
@@ -111,8 +162,6 @@ export default {
       this.init()
     },
     async init() {
-      this.initConfig()
-
       let initChatClientPromise = this.initChatClient()
       this.initTextEmoticons()
       if (this.config.giftUsernamePronunciation !== '') {
@@ -280,7 +329,7 @@ export default {
         repeated: 1,
         translation: data.translation
       }
-      this.$refs.renderer.addMessage(message)
+      this.renderer.addMessage(message)
     },
     /** @param {chatModels.AddGiftMsg} data */
     onAddGift(data) {
@@ -306,7 +355,7 @@ export default {
         giftName: data.giftName,
         num: data.num
       }
-      this.$refs.renderer.addMessage(message)
+      this.renderer.addMessage(message)
     },
     /** @param {chatModels.AddMemberMsg} data */
     onAddMember(data) {
@@ -323,7 +372,7 @@ export default {
         privilegeType: data.privilegeType,
         title: this.$t('chat.membershipTitle')
       }
-      this.$refs.renderer.addMessage(message)
+      this.renderer.addMessage(message)
     },
     /** @param {chatModels.AddSuperChatMsg} data */
     onAddSuperChat(data) {
@@ -344,18 +393,18 @@ export default {
         content: data.content.trim(),
         translation: data.translation
       }
-      this.$refs.renderer.addMessage(message)
+      this.renderer.addMessage(message)
     },
     /** @param {chatModels.DelSuperChatMsg} data */
     onDelSuperChat(data) {
-      this.$refs.renderer.delMessages(data.ids)
+      this.renderer.delMessages(data.ids)
     },
     /** @param {chatModels.UpdateTranslationMsg} data */
     onUpdateTranslation(data) {
       if (!this.config.autoTranslate) {
         return
       }
-      this.$refs.renderer.updateMessage(data.id, { translation: data.translation })
+      this.renderer.updateMessage(data.id, { translation: data.translation })
     },
     /** @param {chatModels.ChatClientFatalError} error */
     onFatalError(error) {
@@ -425,13 +474,13 @@ export default {
       if (!this.config.mergeSimilarDanmaku) {
         return false
       }
-      return this.$refs.renderer.mergeSimilarText(content)
+      return this.renderer.mergeSimilarText(content)
     },
     mergeSimilarGift(authorName, price, freePrice, giftName, num) {
       if (!this.config.mergeGift) {
         return false
       }
-      return this.$refs.renderer.mergeSimilarGift(authorName, price, freePrice, giftName, num)
+      return this.renderer.mergeSimilarGift(authorName, price, freePrice, giftName, num)
     },
     getPronunciation(text) {
       if (this.pronunciationConverter === null) {
@@ -550,3 +599,16 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.template-container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.template-iframe {
+  width: 100%;
+  height: 100%;
+}
+</style>
