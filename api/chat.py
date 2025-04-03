@@ -375,8 +375,8 @@ class RoomInfoHandler(api.base.ApiHandler):
             logger.warning('room=%d _get_room_info failed: %s', room_id, data['message'])
             return room_id, 0
 
-        room_info = data['data']['room_info']
-        return room_info['room_id'], room_info['uid']
+        data = data['data']
+        return data['room_id'], data['uid']
 
     async def _get_server_host_list_and_token(self, room_id) -> Tuple[dict, Optional[str]]:
         try:
