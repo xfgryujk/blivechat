@@ -24,6 +24,8 @@ data/*
 !data/custom_public/
 data/custom_public/*
 !data/custom_public/README.txt
+!data/custom_public/templates/
+data/custom_public/templates/*
 !data/emoticons/
 data/emoticons/*
 !data/plugins/

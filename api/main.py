@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 import asyncio
 import hashlib
+import json
 import logging
 import os
 
+import cachetools
 import tornado.web
+import yarl
 
 import api.base
 import config
@@ -15,6 +18,10 @@ logger = logging.getLogger(__name__)
 EMOTICON_UPLOAD_PATH = os.path.join(config.DATA_PATH, 'emoticons')
 EMOTICON_BASE_URL = '/emoticons'
 CUSTOM_PUBLIC_PATH = os.path.join(config.DATA_PATH, 'custom_public')
+TEMPLATE_PATH = os.path.join(CUSTOM_PUBLIC_PATH, 'templates')
+TEMPLATE_BASE_URL = '/custom_public/templates'
+
+_templates_cache = cachetools.TTLCache(1, 10)
 
 
 class StaticHandler(tornado.web.StaticFileHandler):
@@ -100,6 +107,61 @@ class UploadEmoticonHandler(api.base.ApiHandler):
         return f'{EMOTICON_BASE_URL}/{filename}'
 
 
+class TemplatesHandler(api.base.ApiHandler):
+    async def get(self):
+        templates = _templates_cache.get('templates', None)
+        if templates is None:
+            templates = await asyncio.get_running_loop().run_in_executor(None, self._get_templates)
+            _templates_cache['templates'] = templates
+
+        self.set_header('Cache-Control', 'private, max-age=10')
+        self.write({'templates': templates})
+
+    @staticmethod
+    def _get_templates():
+        template_ids = []
+        try:
+            with os.scandir(TEMPLATE_PATH) as it:
+                for entry in it:
+                    if entry.is_dir() and os.path.isfile(os.path.join(entry.path, 'template.json')):
+                        template_ids.append(entry.name)
+        except OSError:
+            logger.exception('Failed to discover templates:')
+            return []
+        if not template_ids:
+            return []
+
+        templates = []
+        for template_id in template_ids:
+            try:
+                config_path = os.path.join(TEMPLATE_PATH, template_id, 'template.json')
+                with open(config_path, encoding='utf-8') as f:
+                    cfg = json.load(f)
+                if not isinstance(cfg, dict):
+                    raise TypeError(f'Config type error, type={type(cfg)}')
+
+                url_str = str(cfg.get('url', ''))
+                url = yarl.URL(url_str)
+                if not url.absolute:
+                    # 相对于模板目录
+                    base_url = yarl.URL(f'{TEMPLATE_BASE_URL}/{template_id}/')
+                    url = base_url.join(url)
+                url_str = str(url)
+
+                template = {
+                    'id': template_id,
+                    'name': str(cfg.get('name', '')),
+                    'version': str(cfg.get('version', '')),
+                    'author': str(cfg.get('author', '')),
+                    'description': str(cfg.get('description', '')),
+                    'url': url_str,
+                }
+                templates.append(template)
+            except (OSError, json.JSONDecodeError, TypeError, ValueError):
+                logger.exception('template_id=%s failed to load config:', template_id)
+        return templates
+
+
 class NoCacheStaticFileHandler(tornado.web.StaticFileHandler):
     def set_extra_headers(self, path):
         self.set_header('Cache-Control', 'no-cache')
@@ -110,6 +172,7 @@ ROUTES = [
     (r'/api/endpoints', ServiceDiscoveryHandler),
     (r'/api/ping', PingHandler),
     (r'/api/emoticon', UploadEmoticonHandler),
+    (r'/api/templates', TemplatesHandler),
 ]
 # 通配的放在最后
 LAST_ROUTES = [
