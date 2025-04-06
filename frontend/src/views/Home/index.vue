@@ -217,6 +217,10 @@
               <el-button type="primary" icon="el-icon-plus" @click="addEmoticon">{{$t('home.addEmoticon')}}</el-button>
             </p>
           </el-tab-pane>
+
+          <el-tab-pane :label="$t('home.template')" lazy>
+            <template-select v-model="form.templateUrl"></template-select>
+          </el-tab-pane>
         </el-tabs>
       </el-form>
     </p>
@@ -249,12 +253,14 @@
 import _ from 'lodash'
 import download from 'downloadjs'
 
+import TemplateSelect from './TemplateSelect'
 import { mergeConfig } from '@/utils'
 import * as mainApi from '@/api/main'
 import * as chatConfig from '@/api/chatConfig'
 
 export default {
   name: 'Home',
+  components: { TemplateSelect },
   data() {
     return {
       serverConfig: {

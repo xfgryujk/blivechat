@@ -65,6 +65,13 @@ export default {
     addEmoticon: 'Add emote',
     emoticonFileTooLarge: 'File size is too large. Max size is 1MB',
 
+    template: 'Custom HTML Templates',
+    templateDefaultTitle: 'Default',
+    templateDefaultDescription: 'A YouTube-style template that can be styled with custom CSS. Choose this if you are unfamiliar with custom HTML templates, otherwise your custom CSS will not take effect',
+    templateCustomUrlTitle: 'Enter template URL',
+    templateCustomUrlDescription: 'For templates not listed, you can manually enter the URL provided by the author here',
+    author: 'Author: ',
+
     urlTooLong: 'The room URL is too long, and will be truncated by Livehime (but not by OBS)',
     roomUrlUpdated: 'The room URL is updated. Remember to copy it again',
     roomUrl: 'Room URL',

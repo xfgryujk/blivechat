@@ -65,6 +65,13 @@ export default {
     addEmoticon: '添加表情',
     emoticonFileTooLarge: '文件尺寸太大，最大1MB',
 
+    template: '自定义HTML模板',
+    templateDefaultTitle: '默认',
+    templateDefaultDescription: '仿YouTube风格的模板，可以用自定义CSS修改样式。如果你不了解自定义HTML模板的功能，就选择这个，否则自定义CSS不会生效',
+    templateCustomUrlTitle: '输入模板URL',
+    templateCustomUrlDescription: '没有列出的模板，也可以在这里手动输入作者提供的URL',
+    author: '作者：',
+
     urlTooLong: '房间URL太长了，会被直播姬截断（OBS不会）',
     roomUrlUpdated: '房间URL已更新，记得重新复制',
     roomUrl: '房间URL',

@@ -65,6 +65,13 @@ export default {
     addEmoticon: 'スタンプを追加',
     emoticonFileTooLarge: 'ファイルサイズが大きすぎます。最大サイズは1MBです',
 
+    template: 'カスタムHTMLテンプレート',
+    templateDefaultTitle: 'デフォルト',
+    templateDefaultDescription: 'YouTube風のテンプレートで、カスタムCSSでスタイルを変更できます。カスタムHTMLテンプレートの機能に慣れていない場合はこれを選択してください。そうでない場合、カスタムCSSが適用されない',
+    templateCustomUrlTitle: 'テンプレートURLを入力',
+    templateCustomUrlDescription: 'リストにないテンプレートは、作者が提供するURLをここで手動で入力できます',
+    author: '作者：',
+
     urlTooLong: 'ルームのURLが長すぎて、直播姬によって切り詰められます（ただし、OBSでは切り詰められません）',
     roomUrlUpdated: 'ルームのURLが更新されました。再度コピーすることをお忘れなく',
     roomUrl: 'ルームのURL',
