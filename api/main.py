@@ -117,8 +117,7 @@ class TemplatesHandler(api.base.ApiHandler):
         self.set_header('Cache-Control', 'private, max-age=10')
         self.write({'templates': templates})
 
-    @staticmethod
-    def _get_templates():
+    def _get_templates(self):
         template_ids = []
         try:
             with os.scandir(TEMPLATE_PATH) as it:
@@ -134,32 +133,47 @@ class TemplatesHandler(api.base.ApiHandler):
         templates = []
         for template_id in template_ids:
             try:
-                config_path = os.path.join(TEMPLATE_PATH, template_id, 'template.json')
-                with open(config_path, encoding='utf-8') as f:
-                    cfg = json.load(f)
-                if not isinstance(cfg, dict):
-                    raise TypeError(f'Config type error, type={type(cfg)}')
-
-                url_str = str(cfg.get('url', ''))
-                url = yarl.URL(url_str)
-                if not url.absolute:
-                    # 相对于模板目录
-                    base_url = yarl.URL(f'{TEMPLATE_BASE_URL}/{template_id}/')
-                    url = base_url.join(url)
-                url_str = str(url)
-
-                template = {
-                    'id': template_id,
-                    'name': str(cfg.get('name', '')),
-                    'version': str(cfg.get('version', '')),
-                    'author': str(cfg.get('author', '')),
-                    'description': str(cfg.get('description', '')),
-                    'url': url_str,
-                }
+                template = self._load_template_config(template_id)
                 templates.append(template)
             except (OSError, json.JSONDecodeError, TypeError, ValueError):
                 logger.exception('template_id=%s failed to load config:', template_id)
         return templates
+
+    @staticmethod
+    def _load_template_config(template_id):
+        config_path = os.path.join(TEMPLATE_PATH, template_id, 'template.json')
+        with open(config_path, encoding='utf-8') as f:
+            cfg = json.load(f)
+        if not isinstance(cfg, dict):
+            raise TypeError(f'Config type error, type={type(cfg)}')
+
+        # 相对于模板目录
+        base_url = yarl.URL(f'{TEMPLATE_BASE_URL}/{template_id}/')
+
+        def ensure_abs_url(url_str_):
+            url_ = yarl.URL(url_str_)
+            if not url_.absolute:
+                url_ = base_url.join(url_)
+            url_str_ = str(url_)
+            return url_str_
+
+        thumbnail_url_str = str(cfg.get('thumbnail', ''))
+        if thumbnail_url_str != '':
+            thumbnail_url_str = ensure_abs_url(thumbnail_url_str)
+
+        url_str = str(cfg.get('url', ''))
+        url_str = ensure_abs_url(url_str)
+
+        template = {
+            'id': template_id,
+            'name': str(cfg.get('name', '')),
+            'version': str(cfg.get('version', '')),
+            'author': str(cfg.get('author', '')),
+            'description': str(cfg.get('description', '')),
+            'thumbnail': thumbnail_url_str,
+            'url': url_str,
+        }
+        return template
 
 
 class NoCacheStaticFileHandler(tornado.web.StaticFileHandler):

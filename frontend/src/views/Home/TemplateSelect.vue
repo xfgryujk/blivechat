@@ -6,7 +6,11 @@
           <div class="title-line">
             <h3 class="name">{{ $t('home.templateDefaultTitle') }}</h3>
           </div>
-          <div class="description">{{ $t('home.templateDefaultDescription') }}</div>
+          <div class="description-line">
+            <div class="description">
+              <p>{{ $t('home.templateDefaultDescription') }}</p>
+            </div>
+          </div>
         </div>
       </el-radio>
 
@@ -15,7 +19,11 @@
           <div class="title-line">
             <h3 class="name">{{ $t('home.templateCustomUrlTitle') }}</h3>
           </div>
-          <div class="description">{{ $t('home.templateCustomUrlDescription') }}</div>
+          <div class="description-line">
+            <div class="description">
+              <p>{{ $t('home.templateCustomUrlDescription') }}</p>
+            </div>
+          </div>
           <div>
             <el-input v-model="customUrl" placeholder="https://example.com/path/to/you/template/index.html"></el-input>
           </div>
@@ -29,8 +37,13 @@
             <span class="version">{{ template.version }}</span>
             <span class="author push-inline-end">{{ $t('home.author') }}{{ template.author }}</span>
           </div>
-          <div v-if="template.description !== ''" class="description">{{ template.description }}</div>
-          <div>URL: {{ template.url }}</div>
+          <div class="description-line">
+            <el-image v-if="template.thumbnail !== ''" class="thumbnail" lazy fit="cover" :src="template.thumbnail"></el-image>
+            <div class="description">
+              <p v-if="template.description !== ''">{{ template.description }}</p>
+              <p>URL: {{ template.url }}</p>
+            </div>
+          </div>
         </div>
       </el-radio>
     </el-radio-group>
@@ -140,13 +153,12 @@ export default {
 }
 
 .card-body {
-  max-height: 200px;
   display: flex;
   flex-flow: column nowrap;
+  gap: 1em;
 }
 
 .title-line {
-  margin-block-end: 1em;
   flex: none;
   display: flex;
   flex-flow: row nowrap;
@@ -168,10 +180,35 @@ export default {
   color: #606266;
 }
 
+.description-line {
+  flex: none;
+  display: flex;
+  flex-flow: row nowrap;
+  gap: 1em;
+  max-height: 300px;
+}
+
+.thumbnail {
+  flex: none;
+  width: 400px;
+  height: 300px;
+}
+
 .description {
-  margin-block-end: 1em;
   flex: auto;
   overflow-y: auto;
   text-wrap: wrap;
+  word-wrap: break-word;
+}
+
+@media only screen and (max-width: 992px) {
+  .description-line {
+    flex-wrap: wrap;
+    max-height: unset;
+  }
+
+  .thumbnail {
+    max-width: 100%;
+  }
 }
 </style>
