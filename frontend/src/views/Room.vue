@@ -15,6 +15,7 @@ import * as chat from '@/api/chat'
 import * as chatModels from '@/api/chat/models'
 import ChatRenderer from '@/components/ChatRenderer'
 import * as constants from '@/components/ChatRenderer/constants'
+/** @import * as blcsdk from '@/blcsdk' */
 
 class DefaultRenderer {
   constructor(rendererVm) {
@@ -385,6 +386,7 @@ export default {
       if (this.mergeSimilarText(data.content)) {
         return
       }
+      /** @type {typeof blcsdk.TextMsg} */
       let message = {
         id: data.id,
         type: constants.MESSAGE_TYPE_TEXT,
@@ -416,6 +418,7 @@ export default {
       if (price < this.config.minGiftPrice) { // 丢人
         return
       }
+      /** @type {typeof blcsdk.GiftMsg} */
       let message = {
         id: data.id,
         type: constants.MESSAGE_TYPE_GIFT,
@@ -442,6 +445,7 @@ export default {
       if (!this.config.showGift || !this.filterNewMemberMessage(data)) {
         return
       }
+      /** @type {typeof blcsdk.MemberMsg} */
       let message = {
         id: data.id,
         type: constants.MESSAGE_TYPE_MEMBER,
@@ -469,6 +473,7 @@ export default {
       if (data.price < this.config.minGiftPrice) { // 丢人
         return
       }
+      /** @type {typeof blcsdk.SuperChatMsg} */
       let message = {
         id: data.id,
         type: constants.MESSAGE_TYPE_SUPER_CHAT,

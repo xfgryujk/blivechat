@@ -14,7 +14,10 @@
    * 取SDK版本
    * @returns {string} "1.0.0"
    */
-  exports.getVersion = () => VERSION
+  function getVersion() {
+    return VERSION
+  }
+  exports.getVersion = getVersion
 
   // 初始化消息的Promise {promise, resolve, reject}
   let initPromise = null
@@ -40,7 +43,7 @@
   /**
    * 初始化SDK
    * 
-   * 在调用除了setMsgHandler以外的其他接口之前必须先调用这个
+   * 在调用除了{@link setMsgHandler}以外的其他接口之前必须先调用这个
    */
   async function init(
     /** @type {?InitOptions} */
@@ -96,7 +99,7 @@
   exports.getBlcVersion = getBlcVersion
 
   /**
-   * 取blivechat前端用的SDK版本。是父窗口用的版本，不是这个包的getVersion返回值"
+   * 取blivechat前端用的SDK版本。是父窗口用的版本，不是这个包的{@link getVersion}返回值
    * @returns {string} "1.0.0"
    */
   function getBlcSdkVersion() {
@@ -161,7 +164,7 @@
   class MsgHandler {
     /**
      * 添加消息
-     * @param {Object} msg
+     * @param {AnyDisplayMsg} msg
      */
     addMsg(msg) {}
 
@@ -307,6 +310,174 @@
       this._emitSmoothedMsgTimerId = window.setTimeout(this._boundEmitSmoothedMsgs, sleepTime)
     }
   }
+
+  /**
+   * 消息类型
+   * @enum {number}
+   */
+  const MsgType = Object.freeze({
+    /** 评论 @see TextMsg */
+    TEXT: 0,
+    /** 礼物 @see GiftMsg */
+    GIFT: 1,
+    /** 上舰 @see MemberMsg */
+    MEMBER: 2,
+    /** 醒目留言 @see SuperChatMsg */
+    SUPER_CHAT: 3,
+  })
+  exports.MsgType = MsgType
+
+  /**
+   * 作者类型
+   * @enum {number}
+   */
+  const AuthorType = Object.freeze({
+    NORMAL: 0,
+    /** 舰队 */
+    MEMBER: 1,
+    /** 房管 */
+    ADMIN: 2,
+    /** 主播 */
+    OWNER: 3,
+  })
+  exports.AuthorType = AuthorType
+
+  /**
+   * 舰队等级。因为历史原因，消息里的字段名叫`privilegeType`
+   * @enum {number}
+   */
+  const GuardLevel = Object.freeze({
+    NONE: 0,
+    /** 总督 */
+    LV3: 1,
+    /** 提督 */
+    LV2: 2,
+    /** 舰长 */
+    LV1: 3,
+  })
+  exports.GuardLevel = GuardLevel
+
+  /**
+   * 一段内容的类型
+   * @enum {number}
+   */
+  const ContentPartType = Object.freeze({
+    /** 文本 */
+    TEXT: 0,
+    /** 图片 */
+    IMAGE: 1,
+  })
+  exports.ContentPartType = ContentPartType
+
+  //
+  // 以下只用于类型注解，运行时没什么用
+  //
+
+  /**
+   * 用于显示的消息
+   * @typedef {TextMsg | GiftMsg | MemberMsg | SuperChatMsg} AnyDisplayMsg
+   */
+
+  /**
+   * 评论消息。因为历史原因叫TextMsg，实际上会包含表情图片
+   * @typedef TextMsg
+   * @property {string} id 消息ID
+   * @property {MsgType} type 消息类型
+   * @property {string} avatarUrl 用户头像URL
+   * @property {Date} time 时间
+   * @property {string} authorName 用户名
+   * @property {AuthorType} authorType 用户类型
+   * @property {string} content 纯文本表示的内容
+   * @property {AnyContentPart[]} contentParts 解析后的内容，包括文本、图片
+   * @property {GuardLevel} privilegeType 舰队等级
+   * @property {string} translation 内容的翻译，刚添加时一般是空的，之后通过更新消息赋值
+   * @property {string} uid 用户Open ID或ID，使用房间ID连接时不保证是唯一的
+   * @property {number} medalLevel 勋章等级，如果没戴当前房间勋章则为0
+   * @property {string} medalName 勋章名，如果没戴当前房间勋章则为空字符串
+   */
+  exports.TextMsg = /** @type {TextMsg} */ (undefined)
+
+  /**
+   * 一段内容
+   * @typedef {TextContentPart | ImageContentPart} AnyContentPart
+   */
+  /**
+
+  * 一段文本内容
+   * @typedef TextContentPart
+   * @property {ContentPartType} type 内容类型
+   * @property {string} text 内容
+   */
+
+  /**
+   * 一段图片内容
+   * @typedef ImageContentPart
+   * @property {ContentPartType} type 内容类型
+   * @property {string} text 纯文本表示的内容
+   * @property {string} url 图片URL
+   * @property {number} width 宽度，加载失败则为0
+   * @property {number} height 高度，加载失败则为0
+   */
+
+  /**
+   * 礼物消息
+   * @typedef GiftMsg
+   * @property {string} id 消息ID
+   * @property {MsgType} type 消息类型
+   * @property {string} avatarUrl 用户头像URL
+   * @property {Date} time 时间
+   * @property {string} authorName 用户名
+   * @property {string} authorNamePronunciation 用户名读音
+   * @property {number} price 总价（元），免费礼物则为0
+   * @property {string} giftName 礼物名
+   * @property {number} num 数量
+   * @property {number} totalFreeCoin 免费礼物总价（银瓜子数），付费礼物则为0
+   * @property {number} giftId 礼物ID
+   * @property {string} giftIconUrl 礼物图标URL
+   * @property {string} uid 用户Open ID或ID，使用房间ID连接时不保证是唯一的
+   * @property {GuardLevel} privilegeType 舰队等级
+   * @property {number} medalLevel 勋章等级，如果没戴当前房间勋章则为0
+   * @property {string} medalName 勋章名，如果没戴当前房间勋章则为空字符串
+   */
+  exports.GiftMsg = /** @type {GiftMsg} */ (undefined)
+
+  /**
+   * 上舰消息
+   * @typedef MemberMsg
+   * @property {string} id 消息ID
+   * @property {MsgType} type 消息类型
+   * @property {string} avatarUrl 用户头像URL
+   * @property {Date} time 时间
+   * @property {string} authorName 用户名
+   * @property {string} authorNamePronunciation 用户名读音
+   * @property {GuardLevel} privilegeType 舰队等级
+   * @property {number} num 数量
+   * @property {string} unit 单位（"月"）
+   * @property {number} price 总价（元）
+   * @property {string} uid 用户Open ID或ID，使用房间ID连接时不保证是唯一的
+   * @property {number} medalLevel 勋章等级，如果没戴当前房间勋章则为0
+   * @property {string} medalName 勋章名，如果没戴当前房间勋章则为空字符串
+   */
+  exports.MemberMsg = /** @type {MemberMsg} */ (undefined)
+
+  /**
+   * 醒目留言消息
+   * @typedef SuperChatMsg
+   * @property {string} id 消息ID
+   * @property {MsgType} type 消息类型
+   * @property {string} avatarUrl 用户头像URL
+   * @property {Date} time 时间
+   * @property {string} authorName 用户名
+   * @property {string} authorNamePronunciation 用户名读音
+   * @property {number} price 价格（元）
+   * @property {string} content 内容
+   * @property {string} translation 内容的翻译，刚添加时一般是空的，之后通过更新消息赋值
+   * @property {string} uid 用户Open ID或ID，使用房间ID连接时不保证是唯一的
+   * @property {GuardLevel} privilegeType 舰队等级
+   * @property {number} medalLevel 勋章等级，如果没戴当前房间勋章则为0
+   * @property {string} medalName 勋章名，如果没戴当前房间勋章则为空字符串
+   */
+  exports.SuperChatMsg = /** @type {SuperChatMsg} */ (undefined)
 
   return exports
 }))
