@@ -76,12 +76,14 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
       avatarUrl = await chat.getAvatarUrl(uid, authorName)
     }
 
-    let roomId, medalLevel
+    let medalRoomId, medalLevel, medalName
     if (info[3]) {
-      roomId = info[3][3]
+      medalRoomId = info[3][3]
       medalLevel = info[3][0]
+      medalName = info[3][1]
     } else {
-      roomId = medalLevel = 0
+      medalRoomId = medalLevel = 0
+      medalName = ''
     }
 
     let uid = info[2][0]
@@ -127,8 +129,11 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
       authorLevel: info[4][0],
       isNewbie: info[2][5] < 10000,
       isMobileVerified: Boolean(info[2][6]),
-      medalLevel: roomId === this.roomId ? medalLevel : 0,
+      medalLevel: medalRoomId === this.roomId ? medalLevel : 0,
       emoticon: info[0][13].url || null,
+      // 给模板用的字段
+      uid: info[2][0] ? info[2][0].toString() : authorName,
+      medalName: medalRoomId === this.roomId ? medalName : '',
     })
     this.msgHandler.onAddText(data)
   }
@@ -136,6 +141,17 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
   sendGiftCallback(command) {
     let data = command.data
     let isPaidGift = data.coin_type === 'gold'
+
+    let medalRuid, medalLevel, medalName
+    if (data.medal_info) {
+      medalRuid = data.medal_info.target_id
+      medalLevel = data.medal_info.medal_level
+      medalName = data.medal_info.medal_name
+    } else {
+      medalRuid = medalLevel = 0
+      medalName = ''
+    }
+
     data = new chatModels.AddGiftMsg({
       avatarUrl: chat.processAvatarUrl(data.face),
       timestamp: data.timestamp,
@@ -143,7 +159,14 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
       totalCoin: isPaidGift ? data.total_coin : 0,
       totalFreeCoin: !isPaidGift ? data.total_coin : 0,
       giftName: data.giftName,
-      num: data.num
+      num: data.num,
+      // 给模板用的字段
+      giftId: data.giftId,
+      giftIconUrl: data.gift_info.img_basic,
+      uid: data.uid ? data.uid.toString() : data.uname,
+      privilegeType: data.guard_level,
+      medalLevel: medalRuid === this.roomOwnerUid ? medalLevel : 0,
+      medalName: medalRuid === this.roomOwnerUid ? medalName : '',
     })
     this.msgHandler.onAddGift(data)
   }
@@ -161,18 +184,41 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
         start_time: timestamp,
         guard_level: guardLevel,
       },
+      pay_info: {
+        num,
+        unit,
+        price,
+      },
     } = data
     data = new chatModels.AddMemberMsg({
       avatarUrl: await chat.getAvatarUrl(uid, username),
       timestamp: timestamp,
       authorName: username,
       privilegeType: guardLevel,
+      // 给模板用的字段
+      num: num,
+      unit: unit,
+      total_coin: price * num,
+      uid: uid ? uid.toString() : username,
+      medalLevel: 0,
+      medalName: '',
     })
     this.msgHandler.onAddMember(data)
   }
 
   superChatMessageCallback(command) {
     let data = command.data
+
+    let medalRoomId, medalLevel, medalName
+    if (data.medal_info) {
+      medalRoomId = data.medal_info.anchor_roomid
+      medalLevel = data.medal_info.medal_level
+      medalName = data.medal_info.medal_name
+    } else {
+      medalRoomId = medalLevel = 0
+      medalName = ''
+    }
+
     data = new chatModels.AddSuperChatMsg({
       id: data.id.toString(),
       avatarUrl: chat.processAvatarUrl(data.user_info.face),
@@ -180,6 +226,11 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
       authorName: data.user_info.uname,
       price: data.price,
       content: data.message,
+      // 给模板用的字段
+      uid: data.uid ? data.uid.toString() : data.user_info.uname,
+      privilegeType: data.user_info.guard_level,
+      medalLevel: medalRoomId === this.roomId ? medalLevel : 0,
+      medalName: medalRoomId === this.roomId ? medalName : '',
     })
     this.msgHandler.onAddSuperChat(data)
   }

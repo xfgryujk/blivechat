@@ -396,7 +396,11 @@ export default {
         contentParts: contentParts,
         privilegeType: data.privilegeType,
         repeated: 1,
-        translation: data.translation
+        translation: data.translation,
+        // 给模板用的字段
+        uid: data.uid,
+        medalLevel: data.medalLevel,
+        medalName: data.medalName,
       }
       this.renderer.addMessage(message)
     },
@@ -420,9 +424,16 @@ export default {
         authorName: data.authorName,
         authorNamePronunciation: this.getPronunciation(data.authorName),
         price: price,
-        // freePrice: data.totalFreeCoin, // 暂时没用到
         giftName: data.giftName,
-        num: data.num
+        num: data.num,
+        // 给模板用的字段
+        totalFreeCoin: data.totalFreeCoin,
+        giftId: data.giftId,
+        giftIconUrl: data.giftIconUrl,
+        uid: data.uid,
+        privilegeType: data.privilegeType,
+        medalLevel: data.medalLevel,
+        medalName: data.medalName,
       }
       this.renderer.addMessage(message)
     },
@@ -439,7 +450,14 @@ export default {
         authorName: data.authorName,
         authorNamePronunciation: this.getPronunciation(data.authorName),
         privilegeType: data.privilegeType,
-        title: this.$t('chat.membershipTitle')
+        title: this.$t('chat.membershipTitle'),
+        // 给模板用的字段
+        num: data.num,
+        unit: data.unit,
+        price: data.totalCoin / 1000,
+        uid: data.uid,
+        medalLevel: data.medalLevel,
+        medalName: data.medalName,
       }
       this.renderer.addMessage(message)
     },
@@ -460,7 +478,12 @@ export default {
         price: data.price,
         time: new Date(data.timestamp * 1000),
         content: data.content.trim(),
-        translation: data.translation
+        translation: data.translation,
+        // 给模板用的字段
+        uid: data.uid,
+        privilegeType: data.privilegeType,
+        medalLevel: data.medalLevel,
+        medalName: data.medalName,
       }
       this.renderer.addMessage(message)
     },

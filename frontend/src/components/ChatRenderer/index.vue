@@ -192,7 +192,7 @@ export default {
       }
       return false
     },
-    mergeSimilarGift(authorName, price, _freePrice, giftName, num) {
+    mergeSimilarGift(authorName, price, _totalFreeCoin, giftName, num) {
       for (let message of this.iterRecentMessages(5)) {
         if (
           message.type === constants.MESSAGE_TYPE_GIFT
@@ -201,7 +201,7 @@ export default {
         ) {
           this.updateMessage(message.id, { $add: {
             price: price,
-            // freePrice: freePrice, // 暂时没用到
+            // totalFreeCoin: totalFreeCoin, // 暂时没用到
             num: num
           } })
           return true

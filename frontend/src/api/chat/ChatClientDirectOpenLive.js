@@ -262,6 +262,9 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
       medalLevel: data.fans_medal_wearing_status ? data.fans_medal_level : 0,
       id: data.msg_id,
       emoticon: emoticon,
+      // 给模板用的字段
+      uid: data.open_id,
+      medalName: data.fans_medal_wearing_status ? data.fans_medal_name : '',
     })
     this.msgHandler.onAddText(data)
   }
@@ -277,7 +280,14 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
       totalCoin: data.paid ? totalCoin : 0,
       totalFreeCoin: !data.paid ? totalCoin : 0,
       giftName: data.gift_name,
-      num: data.gift_num
+      num: data.gift_num,
+      // 给模板用的字段
+      giftId: data.gift_id,
+      giftIconUrl: data.gift_icon,
+      uid: data.open_id,
+      privilegeType: data.guard_level,
+      medalLevel: data.fans_medal_wearing_status ? data.fans_medal_level : 0,
+      medalName: data.fans_medal_wearing_status ? data.fans_medal_name : '',
     })
     this.msgHandler.onAddGift(data)
   }
@@ -289,7 +299,14 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
       avatarUrl: chat.processAvatarUrl(data.user_info.uface),
       timestamp: data.timestamp,
       authorName: data.user_info.uname,
-      privilegeType: data.guard_level
+      privilegeType: data.guard_level,
+      // 给模板用的字段
+      num: data.guard_num,
+      unit: data.guard_unit,
+      total_coin: data.price * data.guard_num,
+      uid: data.user_info.open_id,
+      medalLevel: data.fans_medal_wearing_status ? data.fans_medal_level : 0,
+      medalName: data.fans_medal_wearing_status ? data.fans_medal_name : '',
     })
     this.msgHandler.onAddMember(data)
   }
@@ -303,6 +320,11 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
       authorName: data.uname,
       price: data.rmb,
       content: data.message,
+      // 给模板用的字段
+      uid: data.open_id,
+      privilegeType: data.guard_level,
+      medalLevel: data.fans_medal_wearing_status ? data.fans_medal_level : 0,
+      medalName: data.fans_medal_wearing_status ? data.fans_medal_name : '',
     })
     this.msgHandler.onAddSuperChat(data)
   }

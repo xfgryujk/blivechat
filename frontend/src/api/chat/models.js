@@ -18,6 +18,9 @@ export class AddTextMsg {
     id = getUuid4Hex(),
     translation = '',
     emoticon = null,
+    // 给模板用的字段
+    uid = '',
+    medalName = '',
   } = {}) {
     this.avatarUrl = avatarUrl
     this.timestamp = timestamp
@@ -33,6 +36,9 @@ export class AddTextMsg {
     this.id = id
     this.translation = translation
     this.emoticon = emoticon
+    // 给模板用的字段
+    this.uid = uid
+    this.medalName = medalName
   }
 }
 
@@ -46,6 +52,13 @@ export class AddGiftMsg {
     totalFreeCoin = 0,
     giftName = '',
     num = 1,
+    // 给模板用的字段
+    giftId = 0,
+    giftIconUrl = '',
+    uid = '',
+    privilegeType = 0,
+    medalLevel = 0,
+    medalName = '',
   } = {}) {
     this.id = id
     this.avatarUrl = avatarUrl
@@ -55,6 +68,13 @@ export class AddGiftMsg {
     this.totalFreeCoin = totalFreeCoin
     this.giftName = giftName
     this.num = num
+    // 给模板用的字段
+    this.giftId = giftId
+    this.giftIconUrl = giftIconUrl
+    this.uid = uid
+    this.privilegeType = privilegeType
+    this.medalLevel = medalLevel
+    this.medalName = medalName
   }
 }
 
@@ -65,12 +85,26 @@ export class AddMemberMsg {
     timestamp = new Date().getTime() / 1000,
     authorName = '',
     privilegeType = 1,
+    // 给模板用的字段
+    num = 1,
+    unit = '月',
+    total_coin = 0,
+    uid = '',
+    medalLevel = 0,
+    medalName = '',
   } = {}) {
     this.id = id
     this.avatarUrl = avatarUrl
     this.timestamp = timestamp
     this.authorName = authorName
     this.privilegeType = privilegeType
+    // 给模板用的字段
+    this.num = num
+    this.unit = unit
+    this.totalCoin = total_coin
+    this.uid = uid
+    this.medalLevel = medalLevel
+    this.medalName = medalName
   }
 }
 
@@ -83,6 +117,11 @@ export class AddSuperChatMsg {
     price = 0,
     content = '',
     translation = '',
+    // 给模板用的字段
+    uid = '',
+    privilegeType = 0,
+    medalLevel = 0,
+    medalName = '',
   } = {}) {
     this.id = id
     this.avatarUrl = avatarUrl
@@ -91,6 +130,11 @@ export class AddSuperChatMsg {
     this.price = price
     this.content = content
     this.translation = translation
+    // 给模板用的字段
+    this.uid = uid
+    this.privilegeType = privilegeType
+    this.medalLevel = medalLevel
+    this.medalName = medalName
   }
 }
 
