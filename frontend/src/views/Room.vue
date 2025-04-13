@@ -380,7 +380,7 @@ export default {
       if (!this.config.showDanmaku || !this.filterTextMessage(data)) {
         return
       }
-      let richContent = await this.getRichContent(data)
+      let contentParts = await this.parseContentParts(data)
       // 合并要放在异步调用后面，因为异步调用后可能有新的消息，会漏合并
       if (this.mergeSimilarText(data.content)) {
         return
@@ -393,7 +393,7 @@ export default {
         authorName: data.authorName,
         authorType: data.authorType,
         content: data.content,
-        richContent: richContent,
+        contentParts: contentParts,
         privilegeType: data.privilegeType,
         repeated: 1,
         translation: data.translation
@@ -557,29 +557,29 @@ export default {
       }
       return this.pronunciationConverter.getPronunciation(text)
     },
-    async getRichContent(data) {
-      let richContent = []
+    async parseContentParts(data) {
+      let contentParts = []
 
       // 官方的非文本表情
       if (data.emoticon !== null) {
-        richContent.push({
-          type: constants.CONTENT_TYPE_IMAGE,
+        contentParts.push({
+          type: constants.CONTENT_PART_TYPE_IMAGE,
           text: data.content,
           url: data.emoticon,
           width: 0,
           height: 0
         })
-        await this.fillImageContentSizes(richContent)
-        return richContent
+        await this.fillImageContentSizes(contentParts)
+        return contentParts
       }
 
       // 没有文本表情，只能是纯文本
       if (this.config.emoticons.length === 0 && this.textEmoticons.length === 0) {
-        richContent.push({
-          type: constants.CONTENT_TYPE_TEXT,
+        contentParts.push({
+          type: constants.CONTENT_PART_TYPE_TEXT,
           text: data.content
         })
-        return richContent
+        return contentParts
       }
 
       // 可能含有文本表情，需要解析
@@ -596,15 +596,15 @@ export default {
 
         // 加入之前的文本
         if (pos !== startPos) {
-          richContent.push({
-            type: constants.CONTENT_TYPE_TEXT,
+          contentParts.push({
+            type: constants.CONTENT_PART_TYPE_TEXT,
             text: data.content.slice(startPos, pos)
           })
         }
 
         // 加入表情
-        richContent.push({
-          type: constants.CONTENT_TYPE_IMAGE,
+        contentParts.push({
+          type: constants.CONTENT_PART_TYPE_IMAGE,
           text: matchEmoticon.keyword,
           url: matchEmoticon.url,
           width: 0,
@@ -615,19 +615,19 @@ export default {
       }
       // 加入尾部的文本
       if (pos !== startPos) {
-        richContent.push({
-          type: constants.CONTENT_TYPE_TEXT,
+        contentParts.push({
+          type: constants.CONTENT_PART_TYPE_TEXT,
           text: data.content.slice(startPos, pos)
         })
       }
 
-      await this.fillImageContentSizes(richContent)
-      return richContent
+      await this.fillImageContentSizes(contentParts)
+      return contentParts
     },
-    async fillImageContentSizes(richContent) {
+    async fillImageContentSizes(contentParts) {
       let urlSizeMap = new Map()
-      for (let content of richContent) {
-        if (content.type === constants.CONTENT_TYPE_IMAGE) {
+      for (let content of contentParts) {
+        if (content.type === constants.CONTENT_PART_TYPE_IMAGE) {
           urlSizeMap.set(content.url, { width: 0, height: 0 })
         }
       }
@@ -657,8 +657,8 @@ export default {
       }
       await Promise.all(promises)
 
-      for (let content of richContent) {
-        if (content.type === constants.CONTENT_TYPE_IMAGE) {
+      for (let content of contentParts) {
+        if (content.type === constants.CONTENT_PART_TYPE_IMAGE) {
           let size = urlSizeMap.get(content.url)
           content.width = size.width
           content.height = size.height

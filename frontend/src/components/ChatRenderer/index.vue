@@ -17,7 +17,7 @@
                 :authorName="message.authorName"
                 :authorType="message.authorType"
                 :privilegeType="message.privilegeType"
-                :richContent="getShowRichContent(message)"
+                :contentParts="getShowContentParts(message)"
                 :repeated="message.repeated"
               ></text-message>
               <paid-message :key="message.id" v-else-if="message.type === MESSAGE_TYPE_GIFT"
@@ -153,7 +153,7 @@ export default {
     },
     getGiftShowNameAndNum: constants.getGiftShowNameAndNum,
     getShowContent: constants.getShowContent,
-    getShowRichContent: constants.getShowRichContent,
+    getShowContentParts: constants.getShowContentParts,
     getShowAuthorName: constants.getShowAuthorName,
 
     addMessage(message) {

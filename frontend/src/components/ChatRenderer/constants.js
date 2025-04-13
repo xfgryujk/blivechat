@@ -34,8 +34,8 @@ export const MESSAGE_TYPE_SUPER_CHAT = 3
 export const MESSAGE_TYPE_DEL = 4
 export const MESSAGE_TYPE_UPDATE = 5
 
-export const CONTENT_TYPE_TEXT = 0
-export const CONTENT_TYPE_IMAGE = 1
+export const CONTENT_PART_TYPE_TEXT = 0
+export const CONTENT_PART_TYPE_IMAGE = 1
 
 // 美元 -> 人民币 汇率
 const EXCHANGE_RATE = 7
@@ -173,15 +173,15 @@ export function getShowContent(message) {
   return message.content
 }
 
-export function getShowRichContent(message) {
-  let richContent = [...message.richContent]
+export function getShowContentParts(message) {
+  let contentParts = [...message.contentParts]
   if (message.translation) {
-    richContent.push({
-      type: CONTENT_TYPE_TEXT,
+    contentParts.push({
+      type: CONTENT_PART_TYPE_TEXT,
       text: `（${message.translation}）`
     })
   }
-  return richContent
+  return contentParts
 }
 
 export function getGiftShowContent(message, showGiftName) {
