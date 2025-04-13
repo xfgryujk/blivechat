@@ -16,23 +16,62 @@ import * as chatModels from '@/api/chat/models'
 import ChatRenderer from '@/components/ChatRenderer'
 import * as constants from '@/components/ChatRenderer/constants'
 
+class DefaultRenderer {
+  constructor(rendererVm) {
+    this.addMessage = rendererVm.addMessage
+    this.delMessages = rendererVm.delMessages
+    this.updateMessage = rendererVm.updateMessage
+    this.mergeSimilarText = rendererVm.mergeSimilarText
+    this.mergeSimilarGift = rendererVm.mergeSimilarGift
+  }
+
+  destroy() {
+    let dummyFunc = () => {}
+    this.addMessage = dummyFunc
+    this.delMessages = dummyFunc
+    this.updateMessage = dummyFunc
+    this.mergeSimilarText = dummyFunc
+    this.mergeSimilarGift = dummyFunc
+  }
+}
+
+const BLC_SDK_VERSION = '1.0.0'
+
 class CustomTemplateRenderer {
-  constructor(templateIframe) {
-    this.templateIframe = templateIframe
+  constructor(templateIframe, config) {
+    this._templateIframe = templateIframe
+    this._config = config
+
+    this._enabledSendMessageToTemplate = (type, data) => {
+      let msg = { type, data }
+      templateIframe.contentWindow.postMessage(msg, '*')
+    }
+    this._sendMessageToTemplate = () => {}
+
+    this._boundOnWindowMessage = this._onWindowMessage.bind(this)
+    window.addEventListener('message', this._boundOnWindowMessage)
+  }
+
+  destroy() {
+    window.removeEventListener('message', this._boundOnWindowMessage)
+
+    let dummyFunc = () => {}
+    this._enabledSendMessageToTemplate = dummyFunc
+    this._sendMessageToTemplate = dummyFunc
   }
 
   addMessage(message) {
-    this.sendMessageToTemplate('blcAddMsg', message)
+    this._sendMessageToTemplate('blcAddMsg', message)
   }
 
   delMessages(ids) {
     let data = { ids }
-    this.sendMessageToTemplate('blcDelMsgs', data)
+    this._sendMessageToTemplate('blcDelMsgs', data)
   }
 
   updateMessage(id, newValuesObj) {
     let data = { id, newValuesObj }
-    this.sendMessageToTemplate('blcUpdateMsg', data)
+    this._sendMessageToTemplate('blcUpdateMsg', data)
   }
 
   mergeSimilarText() {
@@ -43,9 +82,31 @@ class CustomTemplateRenderer {
     return false
   }
 
-  sendMessageToTemplate(cmd, data) {
-    let msg = { cmd, data }
-    this.templateIframe.contentWindow.postMessage(msg, '*')
+  _onWindowMessage(event) {
+    if (event.source !== this._templateIframe.contentWindow) {
+      return
+    }
+
+    let { type } = event.data
+    switch (type) {
+    case 'blcTemplateConnect': {
+      this._sendMessageToTemplate = this._enabledSendMessageToTemplate
+
+      // 发送初始化消息
+      let initData = {
+        blcVersion: process.env.APP_VERSION,
+        sdkVersion: BLC_SDK_VERSION,
+        config: {
+          showGiftName: this._config.showGiftName,
+          mergeSimilarDanmaku: this._config.mergeSimilarDanmaku,
+          mergeGift: this._config.mergeGift,
+          maxNumber: this._config.maxNumber,
+        }
+      }
+      this._sendMessageToTemplate('blcInit', initData)
+      break
+    }
+    }
   }
 }
 
@@ -78,7 +139,7 @@ export default {
       textEmoticons: [], // 官方的文本表情（后端配置的）
       pronunciationConverter: null,
 
-      customStyleElement, // 仅用于样式生成器中预览样式
+      customStyleElement, // 仅用于样式生成器中预览样式和使用自定义模板时
       presetCssLinkElement: null,
 
       renderer: null,
@@ -124,7 +185,11 @@ export default {
     }
   },
   mounted() {
-    this.renderer = !this.useCustomTemplate ? this.$refs.renderer : new CustomTemplateRenderer(this.$refs.templateIframe)
+    if (this.useCustomTemplate) {
+      this.renderer = new CustomTemplateRenderer(this.$refs.templateIframe, this.config)
+    } else {
+      this.renderer = new DefaultRenderer(this.$refs.renderer)
+    }
 
     if (document.visibilityState === 'visible') {
       if (this.roomKeyValue === null) {
@@ -151,6 +216,10 @@ export default {
     document.head.removeChild(this.customStyleElement)
     if (this.presetCssLinkElement) {
       document.head.removeChild(this.presetCssLinkElement)
+    }
+
+    if (this.renderer) {
+      this.renderer.destroy()
     }
   },
   methods: {
