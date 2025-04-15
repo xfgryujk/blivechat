@@ -190,8 +190,8 @@ export default {
 
 .thumbnail {
   flex: none;
-  width: 400px;
-  height: 300px;
+  width: 190px;
+  height: 105px;
 }
 
 .description {

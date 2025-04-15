@@ -398,7 +398,7 @@ export default {
         contentParts: contentParts,
         privilegeType: data.privilegeType,
         repeated: 1,
-        translation: data.translation,
+        translation: this.config.autoTranslate ? data.translation : '',
         // 给模板用的字段
         uid: data.uid,
         medalLevel: data.medalLevel,
@@ -483,7 +483,7 @@ export default {
         price: data.price,
         time: new Date(data.timestamp * 1000),
         content: data.content.trim(),
-        translation: data.translation,
+        translation: this.config.autoTranslate ? data.translation : '',
         // 给模板用的字段
         uid: data.uid,
         privilegeType: data.privilegeType,
