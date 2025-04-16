@@ -390,7 +390,8 @@ export default {
     getUnvalidatedRoomUrl(isTestRoom) {
       // 重要的字段放在前面，因为如果被截断就连接不了房间了
       let frontFields = {
-        roomKeyType: this.form.roomKeyType
+        roomKeyType: this.form.roomKeyType,
+        templateUrl: this.form.templateUrl,
       }
       let backFields = {
         lang: this.$i18n.locale,

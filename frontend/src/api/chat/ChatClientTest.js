@@ -35,6 +35,7 @@ const CONTENTS = [
   '让我看看',
   '卑鄙的外乡人',
   '我不做人了，JOJO',
+  '想吃广东菜✋😭✋',
   '已经没有什么好怕的了',
   '你这猴子，真令我欢喜',
   '[dog]文本[比心]表情[喝彩]',
@@ -55,6 +56,8 @@ const CONTENTS = [
   'DU↗DU→DU↗DU↓ Max Verstappen',
   'Farewell, ashen one. May the flame guide thee',
   'Hey Vergil, your portal opening days are over. Give me the Yamato',
+  '<script>alert("CHECK YOUR CODE")</script>',
+  '<img src=1 onerror="alert(\'CHECK YOUR CODE\')">',
 ]
 
 const EMOTICONS = [
