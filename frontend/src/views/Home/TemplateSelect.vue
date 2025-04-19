@@ -1,5 +1,12 @@
 <template>
   <div>
+    <p>
+      <el-button round icon="el-icon-question" @click="isHelpVisible = true">{{$t('home.templateHelp')}}</el-button>
+      <el-dialog :title="$t('home.templateHelp')" :visible.sync="isHelpVisible">
+        <div style="word-break: initial;" v-html="$t('home.templateHelpContent')"></div>
+      </el-dialog>
+    </p>
+
     <el-radio-group :value="selectedIndex" @input="onSelect">
       <el-radio :label="INDEX_DEFAULT" border>
         <div class="card-body">
@@ -66,6 +73,7 @@ export default {
       INDEX_DEFAULT,
       INDEX_CUSTOM,
 
+      isHelpVisible: false,
       templates: [],
       customUrl: '',
     }

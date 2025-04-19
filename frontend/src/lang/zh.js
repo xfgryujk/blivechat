@@ -66,8 +66,18 @@ export default {
     emoticonFileTooLarge: '文件尺寸太大，最大1MB',
 
     template: '自定义HTML模板',
+    templateHelp: '帮助',
+    templateHelpContent: `\
+<p>自定义HTML模板可以完全自定义房间页面，包括DOM结构、CSS样式。模板可能由第三方作者开发，其安全性和质量由模板作者负责。
+  你可以在<a target="_blank" href="https://github.com/xfgryujk/blivechat/discussions/categories/%E8%87%AA%E5%AE%9A%E4%B9%89html%E6%A8%A1%E6%9D%BF"
+  >GitHub Discussions</a>获取一些已发布的模板</p>
+<p>模板安装方法：把解压后的模板目录放到“data/custom_public/templates”目录，然后等待约10秒后刷新网页。
+  另外你也可以直接输入模板URL来使用在线模板</p>
+<p>注意：修改自定义模板设置后，OBS中的自定义CSS将不会生效</p>
+<p><a target="_blank" href="https://github.com/xfgryujk/blivechat/wiki/%E8%87%AA%E5%AE%9A%E4%B9%89HTML%E6%A8%A1%E6%9D%BF">模板开发文档</a></p>
+`,
     templateDefaultTitle: '默认',
-    templateDefaultDescription: '仿YouTube风格的模板，可以用自定义CSS修改样式。如果你不了解自定义HTML模板的功能，就选择这个，否则自定义CSS不会生效',
+    templateDefaultDescription: '仿YouTube风格的模板，可以用自定义CSS修改样式。如果你不了解自定义HTML模板的功能，就选择这个，否则OBS中的自定义CSS不会生效',
     templateCustomUrlTitle: '输入模板URL',
     templateCustomUrlDescription: '没有列出的模板，也可以在这里手动输入作者提供的URL',
     author: '作者：',
@@ -193,7 +203,7 @@ export default {
   你可以在<a target="_blank" href="https://github.com/xfgryujk/blivechat/discussions/categories/%E6%8F%92%E4%BB%B6"
   >GitHub Discussions</a>获取一些已发布的插件</p>
 <p>插件安装方法：把解压后的插件目录放到“data/plugins”目录，然后重启blivechat</p>
-<p>注意事项：大部分插件需要开启“通过服务器转发消息”，并且连接到房间，才能接收消息</p>
+<p>注意：大部分插件需要开启“通过服务器转发消息”，并且连接到房间，才能接收消息</p>
 <p><a target="_blank" href="https://www.bilibili.com/video/BV1nZ42187TX/">介绍视频</a></p>
 <p><a target="_blank" href="https://github.com/xfgryujk/blivechat/wiki/%E6%8F%92%E4%BB%B6%E7%B3%BB%E7%BB%9F">插件开发文档</a></p>
 `,

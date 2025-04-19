@@ -66,8 +66,20 @@ export default {
     emoticonFileTooLarge: 'ファイルサイズが大きすぎます。最大サイズは1MBです',
 
     template: 'カスタムHTMLテンプレート',
+    templateHelp: 'ヘルプ',
+    templateHelpContent: `\
+<p>カスタムHTMLテンプレートを使用すると、DOM構造やCSSスタイルを含むフロントエンドページを完全にカスタマイズできます。
+  テンプレートはサードパーティの作者によって開発される場合があり、そのセキュリティと品質はテンプレート作者の責任となります。
+  公開されているテンプレートは<a target="_blank" href="https://github.com/xfgryujk/blivechat/discussions/categories/%E8%87%AA%E5%AE%9A%E4%B9%89html%E6%A8%A1%E6%9D%BF"
+  >GitHub Discussions</a>で入手できます</p>
+<p>テンプレートのインストール方法：解凍したテンプレートディレクトリを「data/custom_public/templates」フォルダに配置し、
+  約10秒待ってからウェブページを更新してください。また、テンプレートURLを直接入力してオンラインテンプレートを使用することもできます</p>
+<p>注意：カスタムテンプレートを変更した場合、OBS内のカスタムCSSは反映されません</p>
+<p><a target="_blank" href="https://github.com/xfgryujk/blivechat/wiki/%E8%87%AA%E5%AE%9A%E4%B9%89HTML%E6%A8%A1%E6%9D%BF"
+  >テンプレート開発ドキュメント</a></p>
+`,
     templateDefaultTitle: 'デフォルト',
-    templateDefaultDescription: 'YouTube風のテンプレートで、カスタムCSSでスタイルを変更できます。カスタムHTMLテンプレートの機能に慣れていない場合はこれを選択してください。そうでない場合、カスタムCSSが適用されない',
+    templateDefaultDescription: 'YouTube風のテンプレートで、カスタムCSSでスタイルを変更できます。カスタムHTMLテンプレートの機能に慣れていない場合はこれを選択してください。そうでない場合、OBS内のカスタムCSSは反映されません',
     templateCustomUrlTitle: 'テンプレートURLを入力',
     templateCustomUrlDescription: 'リストにないテンプレートは、作者が提供するURLをここで手動で入力できます',
     author: '作者：',

@@ -66,8 +66,20 @@ export default {
     emoticonFileTooLarge: 'File size is too large. Max size is 1MB',
 
     template: 'Custom HTML Templates',
+    templateHelp: 'Help',
+    templateHelpContent: `\
+<p>Custom HTML templates allow complete customization of the room page, including DOM structure and CSS styles.
+  Templates may be developed by third-party authors, and their security and quality are the responsibility of the template author.
+  You can find some published templates on <a target="_blank" href="https://github.com/xfgryujk/blivechat/discussions/categories/%E8%87%AA%E5%AE%9A%E4%B9%89html%E6%A8%A1%E6%9D%BF"
+  >GitHub Discussions</a></p>
+<p>To install a template: Put the extracted template directory into the "data/custom_public/templates" directory, then wait
+  about 10 seconds and refresh the webpage. Alternatively, you can directly enter the template URL to use an online template</p>
+<p>Note: After modifying the template setting, the custom CSS in OBS will not take effect</p>
+<p><a target="_blank" href="https://github.com/xfgryujk/blivechat/wiki/%E8%87%AA%E5%AE%9A%E4%B9%89HTML%E6%A8%A1%E6%9D%BF"
+  >Template Development Documentation</a></p>
+`,
     templateDefaultTitle: 'Default',
-    templateDefaultDescription: 'A YouTube-style template that can be styled with custom CSS. Choose this if you are unfamiliar with custom HTML templates, otherwise your custom CSS will not take effect',
+    templateDefaultDescription: 'A YouTube-style template that can be styled with custom CSS. Choose this if you are unfamiliar with custom HTML templates, otherwise your custom CSS in OBS will not take effect',
     templateCustomUrlTitle: 'Enter template URL',
     templateCustomUrlDescription: 'For templates not listed, you can manually enter the URL provided by the author here',
     author: 'Author: ',
@@ -193,12 +205,12 @@ export default {
   be developed by third-party authors, and the security and quality are the responsibility of the plugin author. You can
   find some published plugins in <a target="_blank" href="https://github.com/xfgryujk/blivechat/discussions/categories/%E6%8F%92%E4%BB%B6"
   >GitHub Discussions</a></p>
-<p>Plugin installation method: Put the extracted plugin directory into the "data/plugins" directory, then restart blivechat</p>
+<p>To install a plugin: Put the extracted plugin directory into the "data/plugins" directory, then restart blivechat</p>
 <p>Notes: Most plugins require enabling the "Relay messages by the server" option and connecting to the room
   in order to receive messages</p>
-<p><a target="_blank" href="https://www.bilibili.com/video/BV1nZ42187TX/">Introducing video</a></p>
-<p><a target="_blank" href="https://github.com/xfgryujk/blivechat/wiki/%E6%8F%92%E4%BB%B6%E7%B3%BB%E7%BB%9F">
-  Plugin development documentation</a></p>
+<p><a target="_blank" href="https://www.bilibili.com/video/BV1nZ42187TX/">Introducing Video</a></p>
+<p><a target="_blank" href="https://github.com/xfgryujk/blivechat/wiki/%E6%8F%92%E4%BB%B6%E7%B3%BB%E7%BB%9F"
+  >Plugin Development Documentation</a></p>
 `,
     author: 'Author: ',
     disabledByServer: 'Administration for plugins is disabled by the server',
