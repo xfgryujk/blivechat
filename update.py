@@ -6,7 +6,7 @@ import aiohttp
 import utils.async_io
 import utils.request
 
-VERSION = 'v1.9.3'
+VERSION = 'v1.10.0'
 
 
 def check_update():
