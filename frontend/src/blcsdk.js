@@ -9,7 +9,7 @@
 }(typeof self !== 'undefined' ? self : this, function() {
   const exports = {}
 
-  const VERSION = '1.0.0'
+  const VERSION = '1.0.1'
   /**
    * 取SDK版本
    * @returns {string} "1.0.0"
@@ -38,7 +38,12 @@
   /**
    * @typedef InitOptions
    * @property {boolean} noMsgDelay 去掉消息延迟，但会导致消息不平滑
+   * @property {boolean} noCssInjection 不注入OBS的自定义CSS和blivechat服务器预设CSS
    */
+
+  let initOptions = {
+    noCssInjection: false,
+  }
 
   /**
    * 初始化SDK
@@ -47,7 +52,7 @@
    */
   async function init(
     /** @type {?InitOptions} */
-    {noMsgDelay = false} = {}
+    {noMsgDelay = false, noCssInjection = false} = {}
   ) {
     if (initPromise) {
       throw new Error('Cannot call init() again')
@@ -64,6 +69,8 @@
       return initPromise.promise
     }
 
+    initOptions.noCssInjection = noCssInjection
+
     msgHandler = noMsgDelay ? new SdkMsgHandler() : new SmoothedSdkMsgHandler()
     window.addEventListener('message', onWindowMessage)
 
@@ -73,7 +80,7 @@
 
     // 等待初始化消息
     initMsg = await initPromise.promise
-    console.debug('blcsdk initialized, init_msg=', initMsg)
+    console.debug('blcsdk initialized, initMsg=', initMsg)
   }
   exports.init = init
 
@@ -145,18 +152,41 @@
 
     let { type, data } = event.data
     switch (type) {
-    case 'blcInit':
-      initPromise.resolve(data)
-      break
     case 'blcAddMsg':
       msgHandler.addMsg(data)
-      break
-    case 'blcDelMsgs':
-      msgHandler.delMsgs(data.ids)
       break
     case 'blcUpdateMsg':
       msgHandler.updateMsg(data.id, data.newValuesObj)
       break
+    case 'blcDelMsgs':
+      msgHandler.delMsgs(data.ids)
+      break
+
+    case 'blcInit':
+      initPromise.resolve(data)
+      break
+    case 'blcInjectCss':
+      injectCss(data)
+      break
+    }
+  }
+
+  function injectCss({injectCssUrls = [], injectCss = ''}) {
+    if (initOptions.noCssInjection) {
+      return
+    }
+
+    for (let url of injectCssUrls) {
+      let el = document.createElement('link')
+      el.rel = 'stylesheet'
+      el.href = url
+      document.head.appendChild(el)
+    }
+
+    if (injectCss !== '') {
+      let el = document.createElement('style')
+      el.textContent = injectCss
+      document.head.appendChild(el)
     }
   }
 
@@ -307,7 +337,7 @@
         // 按最快速度发
         sleepTime = MSG_MIN_INTERVAL
       }
-      this._emitSmoothedMsgTimerId = window.setTimeout(this._boundEmitSmoothedMsgs, sleepTime)
+      this._emitSmoothedMsgTimerId = setTimeout(this._boundEmitSmoothedMsgs, sleepTime)
     }
   }
 

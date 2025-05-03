@@ -36,7 +36,10 @@ class DefaultRenderer {
   }
 }
 
-const BLC_SDK_VERSION = '1.0.0'
+const BLC_SDK_VERSION = '1.0.1'
+const PRESET_CSS_URL = '/custom_public/preset.css'
+// 有这个特征字符串的style元素则注入到模板里
+const OBS_CSS_SIGN = 'blc-inject-into-template'
 
 class CustomTemplateRenderer {
   constructor(templateIframe, config) {
@@ -91,8 +94,6 @@ class CustomTemplateRenderer {
     let { type } = event.data
     switch (type) {
     case 'blcTemplateConnect': {
-      this._sendMessageToTemplate = this._enabledSendMessageToTemplate
-
       // 发送初始化消息
       let initData = {
         blcVersion: process.env.APP_VERSION,
@@ -104,9 +105,42 @@ class CustomTemplateRenderer {
           maxNumber: this._config.maxNumber,
         }
       }
+      this._sendMessageToTemplate = this._enabledSendMessageToTemplate
       this._sendMessageToTemplate('blcInit', initData)
+
+      this._injectCss()
       break
     }
+    }
+  }
+
+  async _injectCss() {
+    if (document.readyState !== 'complete') {
+      // OBS的自定义CSS在load事件之后注入
+      await new Promise(resolve => {
+        window.addEventListener('load', () => {
+          window.setTimeout(resolve, 100)
+        })
+      })
+    }
+
+    let injectCssUrls = []
+    if (this._config.importPresetCss) {
+      injectCssUrls.push(window.location.origin + PRESET_CSS_URL)
+    }
+
+    let injectCssArr = []
+    for (let el of document.querySelectorAll('style')) {
+      if (el.textContent.indexOf(OBS_CSS_SIGN) !== -1) {
+        injectCssArr.push(el.textContent)
+      }
+    }
+
+    if (injectCssUrls.length !== 0 || injectCssArr.length !== 0) {
+      this._sendMessageToTemplate('blcInjectCss', {
+        injectCssUrls: injectCssUrls,
+        injectCss: injectCssArr.join('\n\n'),
+      })
     }
   }
 }
@@ -238,10 +272,10 @@ export default {
         this.pronunciationConverter = new pronunciation.PronunciationConverter()
         this.pronunciationConverter.loadDict(this.config.giftUsernamePronunciation)
       }
-      if (this.config.importPresetCss) {
+      if (this.config.importPresetCss && !this.useCustomTemplate) {
         this.presetCssLinkElement = document.createElement('link')
         this.presetCssLinkElement.rel = 'stylesheet'
-        this.presetCssLinkElement.href = '/custom_public/preset.css'
+        this.presetCssLinkElement.href = PRESET_CSS_URL
         document.head.appendChild(this.presetCssLinkElement)
       }
 
