@@ -175,24 +175,24 @@
           <el-row :gutter="20">
             <el-col :xs="24" :sm="12">
               <el-form-item :label="$t('stylegen.messageBgColor')">
-                <el-color-picker v-model="form.messageBgColor" show-alpha></el-color-picker>
+                <el-color-picker v-model="form.messageBgColor"></el-color-picker>
               </el-form-item>
             </el-col>
             <el-col :xs="24" :sm="12">
               <el-form-item :label="$t('stylegen.memberMessageBgColor')">
-                <el-color-picker v-model="form.memberMessageBgColor" show-alpha></el-color-picker>
+                <el-color-picker v-model="form.memberMessageBgColor"></el-color-picker>
               </el-form-item>
             </el-col>
           </el-row>
           <el-row :gutter="20">
             <el-col :xs="24" :sm="12">
               <el-form-item :label="$t('stylegen.moderatorMessageBgColor')">
-                <el-color-picker v-model="form.moderatorMessageBgColor" show-alpha></el-color-picker>
+                <el-color-picker v-model="form.moderatorMessageBgColor"></el-color-picker>
               </el-form-item>
             </el-col>
             <el-col :xs="24" :sm="12">
               <el-form-item :label="$t('stylegen.ownerMessageBgColor')">
-                <el-color-picker v-model="form.ownerMessageBgColor" show-alpha></el-color-picker>
+                <el-color-picker v-model="form.ownerMessageBgColor"></el-color-picker>
               </el-form-item>
             </el-col>
           </el-row>
