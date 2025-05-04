@@ -54,9 +54,17 @@ class CustomTemplateRenderer {
 
     this._boundOnWindowMessage = this._onWindowMessage.bind(this)
     window.addEventListener('message', this._boundOnWindowMessage)
+
+    this._connected = false
+    this._styleObserver = null
   }
 
   destroy() {
+    if (this._styleObserver) {
+      this._styleObserver.disconnect()
+      this._styleObserver = null
+    }
+
     window.removeEventListener('message', this._boundOnWindowMessage)
 
     let dummyFunc = () => {}
@@ -94,6 +102,12 @@ class CustomTemplateRenderer {
     let { type } = event.data
     switch (type) {
     case 'blcTemplateConnect': {
+      if (this._connected) {
+        console.warn('模板重复连接')
+        break
+      }
+      this._connected = true
+
       // 发送初始化消息
       let initData = {
         blcVersion: process.env.APP_VERSION,
@@ -114,16 +128,7 @@ class CustomTemplateRenderer {
     }
   }
 
-  async _injectCss() {
-    if (document.readyState !== 'complete') {
-      // OBS的自定义CSS在load事件之后注入
-      await new Promise(resolve => {
-        window.addEventListener('load', () => {
-          window.setTimeout(resolve, 100)
-        })
-      })
-    }
-
+  _injectCss() {
     let injectCssUrls = []
     if (this._config.importPresetCss) {
       injectCssUrls.push(window.location.origin + PRESET_CSS_URL)
@@ -139,6 +144,40 @@ class CustomTemplateRenderer {
     if (injectCssUrls.length !== 0 || injectCssArr.length !== 0) {
       this._sendMessageToTemplate('blcInjectCss', {
         injectCssUrls: injectCssUrls,
+        injectCss: injectCssArr.join('\n\n'),
+      })
+    }
+
+    // OBS的自定义CSS可能在之后注入，再监听一段时间。OBS和直播姬都是注入到head的，如果有其他软件不是再改吧
+    this._styleObserver = new MutationObserver(this._onDomMutate.bind(this))
+    this._styleObserver.observe(document.head, { childList: true })
+    window.setTimeout(() => {
+      if (this._styleObserver) {
+        this._styleObserver.disconnect()
+        this._styleObserver = null
+      }
+    }, 30 * 1000)
+  }
+
+  _onDomMutate(mutations) {
+    let injectCssArr = []
+    for (let mutation of mutations) {
+      if (mutation.type !== 'childList') {
+        continue
+      }
+      for (let el of mutation.addedNodes) {
+        if (el.nodeName !== 'STYLE') {
+          continue
+        }
+        if (el.textContent.indexOf(OBS_CSS_SIGN) !== -1) {
+          injectCssArr.push(el.textContent)
+        }
+      }
+    }
+
+    if (injectCssArr.length !== 0) {
+      this._sendMessageToTemplate('blcInjectCss', {
+        injectCssUrls: [],
         injectCss: injectCssArr.join('\n\n'),
       })
     }
