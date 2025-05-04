@@ -117,6 +117,7 @@ export default {
     recentFonts: '最近のフォント',
     presetFonts: 'プリセットフォント',
     networkFonts: 'ネットワークフォント',
+    localFonts: 'ローカルフォント',
     fontSize: 'フォントサイズ',
     lineHeight: '行の高さ（0はデフォルト）',
     normalColor: 'ノーマルの色',

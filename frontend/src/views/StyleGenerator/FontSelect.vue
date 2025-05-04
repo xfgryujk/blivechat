@@ -1,6 +1,6 @@
 <template>
   <el-tooltip :content="$t('stylegen.fontSelectTip')">
-    <el-select :value="innerValue" @input="onInnerInput" @visible-change="updateRecentFonts"
+    <el-select :value="innerValue" @input="onInnerInput" @visible-change="onSelectVisibleChange"
       multiple filterable allow-create default-first-option popper-class="font-select-popper" style="position: relative;"
     >
       <el-option-group
@@ -27,6 +27,10 @@
       <el-option-group :label="$t('stylegen.networkFonts')">
         <el-option v-for="font in NETWORK_FONTS" :key="font" :value="font"></el-option>
       </el-option-group>
+
+      <el-option-group :label="$t('stylegen.localFonts')">
+        <el-option v-for="font in localFonts" :key="font" :value="font"></el-option>
+      </el-option-group>
     </el-select>
   </el-tooltip>
 </template>
@@ -45,6 +49,7 @@ export default {
       recentFonts: this.getRecentFonts(), // 这里只作为缓存，以localStorage为准
       PRESET_FONTS: fonts.PRESET_FONTS,
       NETWORK_FONTS: fonts.NETWORK_FONTS,
+      localFonts: [],
 
       innerValue: [],
     }
@@ -68,10 +73,21 @@ export default {
         this.addRecentFont(font)
       }
     },
+    onSelectVisibleChange(visible) {
+      if (!visible) {
+        return
+      }
+      this.updateRecentFonts()
+      // 在这里更新第一次下拉时不会显示本地字体，但没什么好办法
+      this.updateLocalFonts()
+    },
+
     updateRecentFonts() {
       this.recentFonts = this.getRecentFonts()
     },
-
+    async updateLocalFonts() {
+      this.localFonts = await fonts.getLocalFonts()
+    },
     getRecentFonts() {
       return common.fontsStrToArr(window.localStorage.recentFonts || '')
     },

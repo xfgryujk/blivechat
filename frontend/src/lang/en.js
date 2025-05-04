@@ -117,6 +117,7 @@ export default {
     recentFonts: 'Recent fonts',
     presetFonts: 'Preset fonts',
     networkFonts: 'Network fonts',
+    localFonts: 'Local fonts',
     fontSize: 'Font size',
     lineHeight: 'Line height (0 for default)',
     normalColor: 'Normal color',

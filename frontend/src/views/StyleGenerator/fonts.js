@@ -46,3 +46,24 @@ export const NETWORK_FONTS = [
   'ZCOOL XiaoWei',
   'Zhi Mang Xing',
 ]
+
+let localFontsPromise = null
+
+export async function getLocalFonts() {
+  if (!localFontsPromise) {
+    localFontsPromise = doGetLocalFonts()
+  }
+  return localFontsPromise
+}
+
+async function doGetLocalFonts() {
+  try {
+    return (await window.queryLocalFonts()).map(fontData => {
+      // 理论上应该用family，但fullName可读性更好
+      return fontData.fullName
+    })
+  } catch (e) {
+    console.error(e)
+    return []
+  }
+}

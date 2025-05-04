@@ -115,6 +115,7 @@ export default {
     recentFonts: '最近使用的字体',
     presetFonts: '预设字体',
     networkFonts: '网络字体',
+    localFonts: '本地字体',
     fontSize: '字体尺寸',
     lineHeight: '行高（0为默认）',
     normalColor: '普通颜色',
