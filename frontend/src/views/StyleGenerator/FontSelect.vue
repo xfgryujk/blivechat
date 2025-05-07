@@ -118,6 +118,12 @@ export default {
 }
 </script>
 
+<style>
+.font-select-popper .el-select-dropdown__wrap {
+  max-height: 500px;
+}
+</style>
+
 <style scoped>
 .el-select {
   width: 100%;
