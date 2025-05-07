@@ -216,6 +216,8 @@ export default {
       customStyleElement, // 仅用于样式生成器中预览样式和使用自定义模板时
       presetCssLinkElement: null,
 
+      pendingMsgIdToPromise: new Map(), // 正在异步处理，渲染器还没收到的消息，用于一些有时序依赖的消息
+
       renderer: null,
     }
   },
@@ -450,7 +452,23 @@ export default {
     },
 
     /** @param {chatModels.AddTextMsg} data */
-    async onAddText(data) {
+    onAddText(data) {
+      let promise = this.doOnAddText(data).catch(() => {})
+      let id = data.id
+      this.pendingMsgIdToPromise.set(id, promise)
+      promise.finally(() => {
+        this.pendingMsgIdToPromise.delete(id)
+      })
+    },
+    // 保证渲染器收到消息了
+    async ensureMessageSent(id) {
+      let promise = this.pendingMsgIdToPromise.get(id)
+      if (promise !== undefined) {
+        return promise
+      }
+    },
+    /** @param {chatModels.AddTextMsg} data */
+    async doOnAddText(data) {
       if (!this.config.showDanmaku || !this.filterTextMessage(data)) {
         return
       }
@@ -566,14 +584,16 @@ export default {
       this.renderer.addMessage(message)
     },
     /** @param {chatModels.DelSuperChatMsg} data */
-    onDelSuperChat(data) {
+    async onDelSuperChat(data) {
+      await Promise.all(data.ids.map(this.ensureMessageSent))
       this.renderer.delMessages(data.ids)
     },
     /** @param {chatModels.UpdateTranslationMsg} data */
-    onUpdateTranslation(data) {
+    async onUpdateTranslation(data) {
       if (!this.config.autoTranslate) {
         return
       }
+      await this.ensureMessageSent(data.id)
       this.renderer.updateMessage(data.id, { translation: data.translation })
     },
     /** @param {chatModels.ChatClientFatalError} error */
