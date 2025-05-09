@@ -132,6 +132,7 @@ export default {
     messages: 'Messages',
     color: 'Color',
     onNewLine: 'On new line',
+    messageReverseScroll: 'Reverse scrolling',
 
     time: 'Timestamps',
     showTime: 'Show timestamps',

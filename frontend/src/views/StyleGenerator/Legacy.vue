@@ -135,9 +135,18 @@
               </el-form-item>
             </el-col>
           </el-row>
-          <el-form-item :label="$t('stylegen.onNewLine')">
-            <el-switch v-model="form.messageOnNewLine"></el-switch>
-          </el-form-item>
+          <el-row :gutter="20">
+            <el-col :xs="24" :sm="12">
+              <el-form-item :label="$t('stylegen.onNewLine')">
+                <el-switch v-model="form.messageOnNewLine"></el-switch>
+              </el-form-item>
+            </el-col>
+            <el-col :xs="24" :sm="12">
+              <el-form-item :label="$t('stylegen.messageReverseScroll')">
+                <el-switch v-model="form.messageReverseScroll"></el-switch>
+              </el-form-item>
+            </el-col>
+          </el-row>
           <el-row :gutter="20">
             <el-col :xs="24" :sm="12">
               <el-form-item :label="$t('stylegen.emoticonSize')">
@@ -406,6 +415,7 @@ export const DEFAULT_CONFIG = {
   messageLineHeight: 0,
   messageColor: '#ffffff',
   messageOnNewLine: false,
+  messageReverseScroll: false,
   emoticonSize: 18,
   largeEmoticonSize: 36,
 
@@ -582,7 +592,13 @@ yt-live-chat-text-message-renderer #message .emoji {
 
 yt-live-chat-text-message-renderer #message .emoji.blc-large-emoji {
   height: ${this.form.largeEmoticonSize}px !important;
-}`
+}
+
+${!this.form.messageReverseScroll ? '' : `yt-live-chat-item-list-renderer,
+yt-live-chat-item-list-renderer #items > * {
+  rotate: 180deg;
+  backface-visibility: hidden;
+}`}`
     },
     timeStyle() {
       return common.getTimeStyle(this.form)

@@ -130,6 +130,7 @@ export default {
     messages: '消息',
     color: '颜色',
     onNewLine: '在新行显示',
+    messageReverseScroll: '反向滚动',
 
     time: '时间',
     showTime: '显示时间',

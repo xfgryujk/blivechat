@@ -118,17 +118,17 @@ export function getAnimationStyle(config) {
   let curTime = 0
   if (config.animateIn) {
     keyframes.push(`  0% { opacity: 0;${!config.slide ? ''
-      : ` transform: translateX(${config.reverseSlide ? 16 : -16}px);`
+      : ` translate: ${config.reverseSlide ? 16 : -16}px;`
     } }`)
     curTime += config.fadeInTime
-    keyframes.push(`  ${curTime / totalTime * 100}% { opacity: 1; transform: none; }`)
+    keyframes.push(`  ${curTime / totalTime * 100}% { opacity: 1; translate: none; }`)
   }
   if (config.animateOut) {
     curTime += config.animateOutWaitTime * 1000
-    keyframes.push(`  ${curTime / totalTime * 100}% { opacity: 1; transform: none; }`)
+    keyframes.push(`  ${curTime / totalTime * 100}% { opacity: 1; translate: none; }`)
     curTime += config.fadeOutTime
     keyframes.push(`  ${curTime / totalTime * 100}% { opacity: 0;${!config.slide ? ''
-      : ` transform: translateX(${config.reverseSlide ? -16 : 16}px);`
+      : ` translate: ${config.reverseSlide ? -16 : 16}px;`
     } }`)
   }
   return `/* Animation */
@@ -136,9 +136,7 @@ export function getAnimationStyle(config) {
 ${keyframes.join('\n')}
 }
 
-yt-live-chat-text-message-renderer,
-yt-live-chat-membership-item-renderer,
-yt-live-chat-paid-message-renderer {
+yt-live-chat-item-list-renderer #items > * {
   animation: anim ${totalTime}ms;
   animation-fill-mode: both;
 }`

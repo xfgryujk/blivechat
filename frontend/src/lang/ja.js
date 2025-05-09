@@ -132,6 +132,7 @@ export default {
     messages: 'コメント',
     color: '色',
     onNewLine: '新しい行に表示する',
+    messageReverseScroll: '逆方向にスクロールする',
 
     time: '時間',
     showTime: '時間を表示する',
