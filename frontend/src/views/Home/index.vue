@@ -130,7 +130,7 @@
               </el-col>
               <el-col :xs="24" :sm="12">
                 <el-form-item :label="$t('home.blockMedalLevel')">
-                  <el-slider v-model="form.blockMedalLevel" show-input :min="0" :max="40"></el-slider>
+                  <el-slider v-model="form.blockMedalLevel" show-input :min="0" :max="120"></el-slider>
                 </el-form-item>
               </el-col>
             </el-row>
