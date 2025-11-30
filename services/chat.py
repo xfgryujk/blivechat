@@ -612,6 +612,9 @@ class LiveMsgHandler(blivedm.BaseHandler):
         )
 
     def _on_user_toast_v2(self, client: WebLiveClient, message: dm_web_models.UserToastV2Message):
+        # 官方的评论栏不会显示2的消息
+        if message.source == 2:
+            return
         utils.async_io.create_task_with_ref(self.__on_buy_guard(client, message))
 
     @staticmethod

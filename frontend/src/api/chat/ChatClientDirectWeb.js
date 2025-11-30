@@ -173,6 +173,11 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
 
   async userToastV2Callback(command) {
     let data = command.data
+    // 官方的评论栏不会显示2的消息
+    if (data.option.source == 2) {
+      return
+    }
+
     let {
       sender_uinfo: {
         uid,
