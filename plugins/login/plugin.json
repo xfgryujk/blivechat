@@ -1,0 +1,8 @@
+{
+  "name": "登录B站账号",
+  "version": "1.0.0",
+  "author": "xfgryujk",
+  "description": "启动后会弹出登录账号的窗口，登录后重启blivechat即是登录状态。登录后即使通过房间ID连接，也可以获取昵称。主要用于连不上公共服务器时的应急措施，平时还是尽量通过身份码连接。需要 1. blivechat版本1.10以上；2. 开启“通过服务器转发消息”选项。**建议用小号登录，因为如果连接太多房间，有被B站封号的风险。**cookie完全存储在本地，不会上传到任何服务器。发布地址：https://github.com/xfgryujk/blivechat/discussions/276",
+  "run": "login.exe",
+  "enabled": true
+}
