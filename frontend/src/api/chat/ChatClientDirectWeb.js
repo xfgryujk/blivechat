@@ -252,6 +252,7 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
 
 const CMD_CALLBACK_MAP = {
   DANMU_MSG: ChatClientDirectWeb.prototype.danmuMsgCallback,
+  DANMU_MSG_MIRROR: ChatClientDirectWeb.prototype.danmuMsgCallback,
   SEND_GIFT: ChatClientDirectWeb.prototype.sendGiftCallback,
   USER_TOAST_MSG_V2: ChatClientDirectWeb.prototype.userToastV2Callback,
   SUPER_CHAT_MESSAGE: ChatClientDirectWeb.prototype.superChatMessageCallback,

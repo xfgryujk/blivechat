@@ -342,6 +342,7 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
 const CMD_CALLBACK_MAP = {
   LIVE_OPEN_PLATFORM_INTERACTION_END: ChatClientDirectOpenLive.prototype.interactionEndCallback,
   LIVE_OPEN_PLATFORM_DM: ChatClientDirectOpenLive.prototype.dmCallback,
+  LIVE_OPEN_PLATFORM_DM_MIRROR: ChatClientDirectOpenLive.prototype.dmCallback,
   LIVE_OPEN_PLATFORM_SEND_GIFT: ChatClientDirectOpenLive.prototype.sendGiftCallback,
   LIVE_OPEN_PLATFORM_GUARD: ChatClientDirectOpenLive.prototype.guardCallback,
   LIVE_OPEN_PLATFORM_SUPER_CHAT: ChatClientDirectOpenLive.prototype.superChatCallback,
