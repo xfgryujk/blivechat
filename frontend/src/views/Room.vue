@@ -268,12 +268,7 @@ export default {
     }
 
     if (document.visibilityState === 'visible') {
-      if (this.roomKeyValue === null) {
-        this.init()
-      } else {
-        // 正式房间要随机延迟加载，防止同时请求导致雪崩
-        window.setTimeout(this.init, Math.random() * 3000)
-      }
+      this.init()
     } else {
       // 当前窗口不可见，延迟到可见时加载，防止OBS中一次并发太多请求（OBS中浏览器不可见时也会加载网页，除非显式设置）
       document.addEventListener('visibilitychange', this.onVisibilityChange)
