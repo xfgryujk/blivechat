@@ -9,9 +9,10 @@ export const apiClient = axios.create({
 })
 
 export let init
+export let ensureBaseUrlInited
 export let getBaseUrl
 if (!process.env.BACKEND_DISCOVERY) {
-  init = async function() {}
+  init = function() {}
 
   const onRequest = config => {
     config.baseURL = getBaseUrl()
@@ -24,16 +25,19 @@ if (!process.env.BACKEND_DISCOVERY) {
 
   apiClient.interceptors.request.use(onRequest, onRequestError, { synchronous: true })
 
+  ensureBaseUrlInited = async function() {}
+
   getBaseUrl = function() {
     return window.location.origin
   }
 
 } else {
-  init = async function() {
-    return updateBaseUrls()
+  init = function() {
+    updateBaseUrls()
   }
 
-  const onRequest = config => {
+  const onRequest = async config => {
+    await firstInitPromise
     let baseUrl = getBaseUrl()
     if (baseUrl === null) {
       throw new Error('No available endpoint')
@@ -64,7 +68,7 @@ if (!process.env.BACKEND_DISCOVERY) {
     return promise
   }
 
-  apiClient.interceptors.request.use(onRequest, onRequestError, { synchronous: true })
+  apiClient.interceptors.request.use(onRequest, onRequestError)
   apiClient.interceptors.response.use(onResponse, onResponseError)
 
   const DISCOVERY_URLS = process.env.NODE_ENV === 'production' ? [
@@ -84,6 +88,13 @@ if (!process.env.BACKEND_DISCOVERY) {
   ]
   let curBaseUrl = null
   let baseUrlToCircuitBreaker = new Map()
+
+  let firstInitResolve = null
+  let firstInitPromise = new Promise(resolve => {
+    firstInitResolve = resolve
+  }).then(() => {
+    firstInitResolve = null
+  })
 
   const doUpdateBaseUrls = async() => {
     async function requestGetUrls(discoveryUrl) {
@@ -115,6 +126,14 @@ if (!process.env.BACKEND_DISCOVERY) {
         let url = `${baseUrl}/api/ping`
         await axios.get(url, { timeout: 3 * 1000 })
         sortedBaseUrls.push(baseUrl)
+
+        if (firstInitResolve) {
+          if (curBaseUrl === null) {
+            curBaseUrl = baseUrl
+            console.log('Switch server endpoint to', curBaseUrl)
+          }
+          firstInitResolve()
+        }
       } catch {
         errorBaseUrls.push(baseUrl)
       }
@@ -124,13 +143,22 @@ if (!process.env.BACKEND_DISCOVERY) {
     sortedBaseUrls = sortedBaseUrls.concat(errorBaseUrls)
 
     baseUrls = sortedBaseUrls
-    if (baseUrls.indexOf(curBaseUrl) === -1) {
+    if (curBaseUrl !== null && baseUrls.indexOf(curBaseUrl) === -1) {
       curBaseUrl = null
+    }
+
+    if (firstInitResolve) {
+      // 全失败了则在这里resolve
+      firstInitResolve()
     }
 
     console.log('Found server endpoints:', baseUrls)
   }
   const updateBaseUrls = _.throttle(doUpdateBaseUrls, 3 * 60 * 1000)
+
+  ensureBaseUrlInited = async function() {
+    return firstInitPromise
+  }
 
   getBaseUrl = function() {
     updateBaseUrls()

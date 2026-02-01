@@ -1,4 +1,4 @@
-import { getBaseUrl } from '@/api/base'
+import { ensureBaseUrlInited, getBaseUrl } from '@/api/base'
 import * as chat from '.'
 import * as chatModels from './models'
 
@@ -46,13 +46,14 @@ export default class ChatClientRelay {
     this.msgHandler.onDebugMsg(new chatModels.DebugMsg({ content }))
   }
 
-  wsConnect() {
+  async wsConnect() {
     if (this.isDestroying) {
       return
     }
 
     this.addDebugMsg('Connecting')
 
+    await ensureBaseUrlInited()
     let baseUrl = getBaseUrl()
     if (baseUrl === null) {
       this.addDebugMsg('No available endpoint')

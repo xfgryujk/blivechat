@@ -10,6 +10,8 @@ import * as i18n from './i18n'
 import App from './App'
 import NotFound from './views/NotFound'
 
+apiBase.init()
+
 if (!process.env.LIB_USE_CDN) {
   Vue.use(VueRouter)
   Vue.use(ElementUI)
@@ -60,8 +62,6 @@ const router = new VueRouter({
     { path: '*', component: NotFound }
   ]
 })
-
-await apiBase.init()
 
 new Vue({
   render: h => h(App),
