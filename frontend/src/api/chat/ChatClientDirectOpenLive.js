@@ -227,6 +227,11 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
     this.discardWebsocket()
   }
 
+  dmMirrorCallback(command) {
+    command._isMirror = true
+    this.dmCallback(command)
+  }
+
   dmCallback(command) {
     let data = command.data
 
@@ -262,6 +267,7 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
       medalLevel: data.fans_medal_wearing_status ? data.fans_medal_level : 0,
       id: data.msg_id,
       emoticon: emoticon,
+      isMirror: Boolean(command._isMirror),
       // 给模板用的字段
       uid: data.open_id,
       medalName: data.fans_medal_wearing_status ? data.fans_medal_name : '',
@@ -342,7 +348,7 @@ export default class ChatClientDirectOpenLive extends ChatClientOfficialBase {
 const CMD_CALLBACK_MAP = {
   LIVE_OPEN_PLATFORM_INTERACTION_END: ChatClientDirectOpenLive.prototype.interactionEndCallback,
   LIVE_OPEN_PLATFORM_DM: ChatClientDirectOpenLive.prototype.dmCallback,
-  LIVE_OPEN_PLATFORM_DM_MIRROR: ChatClientDirectOpenLive.prototype.dmCallback,
+  LIVE_OPEN_PLATFORM_DM_MIRROR: ChatClientDirectOpenLive.prototype.dmMirrorCallback,
   LIVE_OPEN_PLATFORM_SEND_GIFT: ChatClientDirectOpenLive.prototype.sendGiftCallback,
   LIVE_OPEN_PLATFORM_GUARD: ChatClientDirectOpenLive.prototype.guardCallback,
   LIVE_OPEN_PLATFORM_SUPER_CHAT: ChatClientDirectOpenLive.prototype.superChatCallback,

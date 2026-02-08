@@ -18,6 +18,7 @@ export class AddTextMsg {
     id = getUuid4Hex(),
     translation = '',
     emoticon = null,
+    isMirror = false,
     // 给模板用的字段
     uid = '',
     medalName = '',
@@ -36,6 +37,7 @@ export class AddTextMsg {
     this.id = id
     this.translation = translation
     this.emoticon = emoticon
+    this.isMirror = isMirror
     // 给模板用的字段
     this.uid = uid
     this.medalName = medalName

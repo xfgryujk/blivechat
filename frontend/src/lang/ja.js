@@ -36,6 +36,7 @@ export default {
 
     block: 'ブロック',
     giftDanmaku: 'ブロックシステムコメント（プレゼント効果）',
+    mirrorMessage: 'ブロック転送コメント',
     blockLevel: 'ブロックユーザーレベルがx未満',
     informalUser: 'ブロック非公式ユーザー',
     unverifiedUser: 'ブロック認証されていないユーザー',
@@ -195,6 +196,7 @@ export default {
     guardLevel1: '総督',
     guardLevel2: '提督',
     guardLevel3: '艦長',
+    mirrorMsg: '[転送] ',
     sendGift: '{giftName}x{num} を贈りました',
     membershipTitle: '新規メンバー',
     tickerMembership: 'メンバー'

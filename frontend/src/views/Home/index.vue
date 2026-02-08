@@ -100,19 +100,24 @@
 
           <el-tab-pane :label="$t('home.block')">
             <el-row :gutter="20">
-              <el-col :xs="24" :sm="8">
+              <el-col :xs="24" :sm="6">
                 <el-form-item :label="$t('home.giftDanmaku')">
                   <el-switch v-model="form.blockGiftDanmaku"></el-switch>
                 </el-form-item>
               </el-col>
-              <el-col :xs="24" :sm="8">
+              <el-col :xs="24" :sm="6">
+                <el-form-item :label="$t('home.mirrorMessage')">
+                  <el-switch v-model="form.blockMirrorMessages"></el-switch>
+                </el-form-item>
+              </el-col>
+              <el-col :xs="24" :sm="6">
                 <el-tooltip :content="$t('home.unavailableWhenUsingAuthCode')">
                   <el-form-item :label="$t('home.informalUser')">
                     <el-switch v-model="form.blockNewbie"></el-switch>
                   </el-form-item>
                 </el-tooltip>
               </el-col>
-              <el-col :xs="24" :sm="8">
+              <el-col :xs="24" :sm="6">
                 <el-tooltip :content="$t('home.unavailableWhenUsingAuthCode')">
                   <el-form-item :label="$t('home.unverifiedUser')">
                     <el-switch v-model="form.blockNotMobileVerified"></el-switch>

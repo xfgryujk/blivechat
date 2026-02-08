@@ -174,14 +174,21 @@ export function getShowContent(message) {
 }
 
 export function getShowContentParts(message) {
-  let contentParts = [...message.contentParts]
+  let frontParts = []
+  if (message.isMirror) {
+    frontParts.push({
+      type: CONTENT_PART_TYPE_TEXT,
+      text: i18n.i18n.t('chat.mirrorMsg')
+    })
+  }
+  let backParts = []
   if (message.translation) {
-    contentParts.push({
+    backParts.push({
       type: CONTENT_PART_TYPE_TEXT,
       text: `（${message.translation}）`
     })
   }
-  return contentParts
+  return frontParts.concat(message.contentParts, backParts)
 }
 
 export function getGiftShowContent(message, showGiftName) {

@@ -12,6 +12,7 @@ export const DEFAULT_CONFIG = {
   maxNumber: 60,
 
   blockGiftDanmaku: true,
+  blockMirrorMessages: false,
   blockLevel: 0,
   blockNewbie: false,
   blockNotMobileVerified: false,

@@ -36,6 +36,7 @@ export default {
 
     block: 'Block',
     giftDanmaku: 'Block system messages (gift effect)',
+    mirrorMessage: 'Block mirror messages',
     blockLevel: 'Block user level lower than',
     informalUser: 'Block informal users',
     unverifiedUser: 'Block unverified users',
@@ -195,6 +196,7 @@ export default {
     guardLevel1: 'governor',
     guardLevel2: 'admiral',
     guardLevel3: 'captain',
+    mirrorMsg: '[Mirror] ',
     sendGift: 'Sent {giftName}x{num}',
     membershipTitle: 'New member',
     tickerMembership: 'Member'

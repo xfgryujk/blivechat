@@ -358,6 +358,7 @@ export default {
       cfg.maxNumber = toInt(cfg.maxNumber, chatConfig.DEFAULT_CONFIG.maxNumber)
 
       cfg.blockGiftDanmaku = toBool(cfg.blockGiftDanmaku)
+      cfg.blockMirrorMessages = toBool(cfg.blockMirrorMessages)
       cfg.blockLevel = toInt(cfg.blockLevel, chatConfig.DEFAULT_CONFIG.blockLevel)
       cfg.blockNewbie = toBool(cfg.blockNewbie)
       cfg.blockNotMobileVerified = toBool(cfg.blockNotMobileVerified)
@@ -485,6 +486,7 @@ export default {
         privilegeType: data.privilegeType,
         repeated: 1,
         translation: this.config.autoTranslate ? data.translation : '',
+        isMirror: data.isMirror,
         // 给模板用的字段
         uid: data.uid,
         medalLevel: data.medalLevel,
@@ -624,6 +626,8 @@ export default {
 
     filterTextMessage(data) {
       if (this.config.blockGiftDanmaku && data.isGiftDanmaku) {
+        return false
+      } else if (this.config.blockMirrorMessages && data.isMirror) {
         return false
       } else if (this.config.blockLevel > 0 && data.authorLevel < this.config.blockLevel) {
         return false

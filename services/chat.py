@@ -568,6 +568,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             translation=translation,
             content_type=content_type,
             content_type_params=content_type_params,
+            is_mirror=message.is_mirror,
             # 给插件用的字段
             uid=str(message.uid) if message.uid != 0 else message.uname,
             medal_name='' if message.medal_room_id != client.room_id else message.medal_name,
@@ -787,6 +788,7 @@ class LiveMsgHandler(blivedm.BaseHandler):
             translation=translation,
             content_type=content_type,
             content_type_params=content_type_params,
+            is_mirror=message.is_mirror,
             # 给插件用的字段
             uid=message.open_id,
             medal_name='' if not message.fans_medal_wearing_status else message.fans_medal_name,

@@ -35,7 +35,8 @@ export default {
     maxNumber: '最大弹幕数',
 
     block: '屏蔽',
-    giftDanmaku: '屏蔽礼物弹幕',
+    giftDanmaku: '屏蔽抽奖弹幕',
+    mirrorMessage: '屏蔽跨房弹幕',
     blockLevel: '屏蔽用户等级低于',
     informalUser: '屏蔽非正式会员',
     unverifiedUser: '屏蔽未绑定手机用户',
@@ -193,6 +194,7 @@ export default {
     guardLevel1: '总督',
     guardLevel2: '提督',
     guardLevel3: '舰长',
+    mirrorMsg: '[跨房] ',
     sendGift: '赠送 {giftName}x{num}',
     membershipTitle: '新会员',
     tickerMembership: '会员'

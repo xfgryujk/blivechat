@@ -182,6 +182,7 @@ export default class ChatClientRelay {
         id: data[11],
         translation: data[12],
         emoticon: emoticon,
+        isMirror: data[18],
         uid: data[16],
         medalName: data[17],
       })

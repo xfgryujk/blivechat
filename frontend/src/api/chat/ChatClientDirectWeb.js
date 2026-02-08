@@ -67,6 +67,11 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
     this.websocket.send(this.makePacket(authParams, base.OP_AUTH))
   }
 
+  async danmuMsgMirrorCallback(command) {
+    command._isMirror = true
+    this.danmuMsgCallback(command)
+  }
+
   async danmuMsgCallback(command) {
     let info = command.info
 
@@ -131,6 +136,7 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
       isMobileVerified: Boolean(info[2][6]),
       medalLevel: medalRoomId === this.roomId ? medalLevel : 0,
       emoticon: info[0][13].url || null,
+      isMirror: Boolean(command._isMirror),
       // 给模板用的字段
       uid: info[2][0] ? info[2][0].toString() : authorName,
       medalName: medalRoomId === this.roomId ? medalName : '',
@@ -252,7 +258,7 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
 
 const CMD_CALLBACK_MAP = {
   DANMU_MSG: ChatClientDirectWeb.prototype.danmuMsgCallback,
-  DANMU_MSG_MIRROR: ChatClientDirectWeb.prototype.danmuMsgCallback,
+  DANMU_MSG_MIRROR: ChatClientDirectWeb.prototype.danmuMsgMirrorCallback,
   SEND_GIFT: ChatClientDirectWeb.prototype.sendGiftCallback,
   USER_TOAST_MSG_V2: ChatClientDirectWeb.prototype.userToastV2Callback,
   SUPER_CHAT_MESSAGE: ChatClientDirectWeb.prototype.superChatMessageCallback,
