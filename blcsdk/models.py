@@ -221,6 +221,8 @@ class AddTextMsg:
     """用户Open ID或ID"""
     medal_name: str = ''
     """勋章名"""
+    is_mirror: bool = False
+    """是否跨房弹幕，v1.10.2添加"""
 
     @classmethod
     def from_command(cls, data: list):
@@ -229,6 +231,7 @@ class AddTextMsg:
         if content_type == ContentType.EMOTICON:
             content_type_params = {'url': content_type_params[0]}
 
+        data_len = len(data)
         return cls(
             avatar_url=data[0],
             timestamp=data[1],
@@ -247,6 +250,7 @@ class AddTextMsg:
             content_type_params=content_type_params,
             uid=data[16],
             medal_name=data[17],
+            is_mirror=bool(data[18]) if data_len > 18 else False,
         )
 
 

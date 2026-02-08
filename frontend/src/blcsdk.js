@@ -9,7 +9,7 @@
 }(typeof self !== 'undefined' ? self : this, function() {
   const exports = {}
 
-  const VERSION = '1.0.1'
+  const VERSION = '1.0.2'
   /**
    * 取SDK版本
    * @returns {string} "1.0.0"
@@ -424,6 +424,7 @@
    * @property {string} uid 用户Open ID或ID，使用房间ID连接时不保证是唯一的
    * @property {number} medalLevel 勋章等级，如果没戴当前房间勋章则为0
    * @property {string} medalName 勋章名，如果没戴当前房间勋章则为空字符串
+   * @property {?boolean} isMirror 是否跨房弹幕，v1.10.2添加
    */
   exports.TextMsg = /** @type {TextMsg} */ (undefined)
 
