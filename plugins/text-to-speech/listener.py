@@ -49,7 +49,7 @@ class MsgHandler(blcsdk.BaseHandler):
             logger.info('Config path is "%s"', config_path)
 
     def _on_add_text(self, client: blcsdk.BlcPluginClient, message: sdk_models.AddTextMsg, extra: sdk_models.ExtraData):
-        if extra.is_from_plugin:
+        if extra.is_from_plugin or message.is_mirror:
             return
         cfg = config.get_config()
         if cfg.template_text == '':

@@ -66,7 +66,7 @@ class MsgHandler(blcsdk.BaseHandler):
             _del_room(extra.room_id)
 
     def _on_add_text(self, client: blcsdk.BlcPluginClient, message: sdk_models.AddTextMsg, extra: sdk_models.ExtraData):
-        if extra.is_from_plugin:
+        if extra.is_from_plugin or message.is_mirror:
             return
         room = _get_or_add_room(extra.room_id)
         room.log(f'[dm] {message.author_name}：{message.content}')

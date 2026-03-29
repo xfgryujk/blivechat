@@ -64,7 +64,7 @@ class MsgHandler(blcsdk.BaseHandler):
             _del_room(extra.room_key)
 
     def _on_add_text(self, client: blcsdk.BlcPluginClient, message: sdk_models.AddTextMsg, extra: sdk_models.ExtraData):
-        if extra.is_from_plugin:
+        if extra.is_from_plugin or message.is_mirror:
             return
         room = _get_or_add_room(extra.room_key, extra.room_id)
         room.add_danmaku(message.uid)
