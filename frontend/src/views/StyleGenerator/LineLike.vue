@@ -413,26 +413,21 @@ export default {
   },
   computed: {
     result() {
-      return `${this.importStyle}
-
-${common.COMMON_STYLE}
-
-${this.paddingStyle}
-
-${this.avatarStyle}
-
-${this.userNameStyle}
-
-${this.messageStyle}
-
-${this.timeStyle}
-
-${this.backgroundStyle}
-
-${this.scAndNewMemberStyle}
-
-${this.animationStyle}
-`
+      let styles = [
+        this.importStyle,
+        this.variableStyle,
+        common.COMMON_STYLE,
+        this.paddingStyle,
+        this.avatarStyle,
+        this.userNameStyle,
+        this.messageStyle,
+        this.timeStyle,
+        this.backgroundStyle,
+        this.scAndNewMemberStyle,
+        this.animationStyle,
+      ]
+      let result = styles.filter(style => style).join('\n\n')
+      return `${result}\n`
     },
     importStyle() {
       let allFonts = []
@@ -441,84 +436,69 @@ ${this.animationStyle}
       }
       return common.getImportStyle(allFonts)
     },
+    variableStyle() {
+      return `yt-live-chat-renderer {
+  ${common.getVariableStyle(this.form)}
+
+  /* 背景色 Background colors
+    普通、舰长、房管、主播 */
+  --text-msg-bg-color: ${this.form.messageBgColor ?? '#ffffff'};
+  --text-msg-bg-color-member: ${this.form.memberMessageBgColor ?? '#ffffff'};
+  --text-msg-bg-color-moderator: ${this.form.moderatorMessageBgColor ?? '#ffffff'};
+  --text-msg-bg-color-owner: ${this.form.ownerMessageBgColor ?? '#ffffff'};
+
+  /* 付费、上舰消息 Super Chats / Membership messages */
+  --paid-msg-line-1-size: calc(${this.form.firstLineFontSize} * var(--font-base-size));
+  --paid-msg-line-2-size: calc(${this.form.secondLineFontSize} * var(--font-base-size));
+  --paid-msg-content-size: calc(${this.form.scContentFontSize} * var(--font-base-size));
+  --membership-msg-bg-color: var(--username-color-member);
+}`
+    },
     paddingStyle() {
-      return `/* Reduce side padding */
+      return `/* 减少两侧间距 Reduce side padding */
 yt-live-chat-text-message-renderer {
-  padding-left: 4px !important;
-  padding-right: 4px !important;
+  padding-inline: 4px;
 }`
     },
     avatarStyle() {
       return common.getAvatarStyle(this.form)
     },
     userNameStyle() {
-      return `/* Channel names */
+      return `/* 用户名 Channel names */
 yt-live-chat-text-message-renderer yt-live-chat-author-chip {
   margin-bottom: 5px;
 }
 
-yt-live-chat-text-message-renderer #author-name[type="owner"],
-yt-live-chat-text-message-renderer yt-live-chat-author-badge-renderer[type="owner"] {
-  ${this.form.ownerUserNameColor ? `color: ${this.form.ownerUserNameColor} !important;` : ''}
-}
-
-yt-live-chat-text-message-renderer #author-name[type="moderator"],
-yt-live-chat-text-message-renderer yt-live-chat-author-badge-renderer[type="moderator"] {
-  ${this.form.moderatorUserNameColor ? `color: ${this.form.moderatorUserNameColor} !important;` : ''}
-}
-
-yt-live-chat-text-message-renderer #author-name[type="member"],
-yt-live-chat-text-message-renderer yt-live-chat-author-badge-renderer[type="member"] {
-  ${this.form.memberUserNameColor ? `color: ${this.form.memberUserNameColor} !important;` : ''}
-}
-
 yt-live-chat-text-message-renderer #author-name {
-  ${this.form.showUserNames ? '' : 'display: none !important;'}
-  ${this.form.userNameColor ? `color: ${this.form.userNameColor} !important;` : ''}
+  ${this.form.showUserNames ? '' : 'display: none;'}
+  color: var(--username-color);
   font-family: ${common.fontsStrToCss(this.form.userNameFont)};
-  font-size: ${this.form.userNameFontSize}px !important;
-  line-height: ${this.form.userNameLineHeight || (this.form.userNameFontSize + 2)}px !important;
+  font-size: var(--username-size);
+  line-height: calc(${this.form.userNameLineHeight || (this.form.userNameFontSize + 2)} *  var(--font-base-size));
 }
 
-/* Hide badges */
-yt-live-chat-text-message-renderer #chat-badges {
-  ${this.form.showBadges ? '' : 'display: none !important;'}
-  vertical-align: text-top !important;
-}`
+${common.getUserNameStyle(this.form)}`
     },
     messageStyle() {
-      return `/* Messages */
-yt-live-chat-text-message-renderer #message,
-yt-live-chat-text-message-renderer #message * {
-  ${this.form.messageColor ? `color: ${this.form.messageColor} !important;` : ''}
+      return `/* 文本消息 Text messages */
+yt-live-chat-text-message-renderer :is(#message, #message *) {
+  color: var(--text-content-color);
   font-family: ${common.fontsStrToCss(this.form.messageFont)};
-  font-size: ${this.form.messageFontSize}px !important;
-  line-height: ${this.form.messageLineHeight || (this.form.messageFontSize + 2)}px !important;
+  font-size: var(--text-content-size);
+  line-height: calc(${this.form.messageLineHeight || (this.form.messageFontSize + 2)} *  var(--font-base-size));
 }
 
+/* 气泡背景 Bubble background */
 yt-live-chat-text-message-renderer #message {
-  display: block !important;
+  display: block;
   position: relative;
   width: fit-content;
-  overflow: visible !important;
+  overflow: visible;
   padding: 15px;
   border-radius: 24px;
 }
 
-yt-live-chat-text-message-renderer #message:has(.emoji.blc-large-emoji) {
-  ${this.form.showLargeEmoticonBg ? '' : 'padding: 0;'}
-}
-
-yt-live-chat-text-message-renderer #message .emoji {
-  width: auto !important;
-  height: ${this.form.emoticonSize}px !important;
-}
-
-yt-live-chat-text-message-renderer #message .emoji.blc-large-emoji {
-  height: ${this.form.largeEmoticonSize}px !important;
-}
-
-/* The triangle beside dialog */
+/* 气泡旁边的三角形箭头 The triangle beside the bubble */
 yt-live-chat-text-message-renderer #message::before {
   content: "";
   display: inline-block;
@@ -530,99 +510,95 @@ yt-live-chat-text-message-renderer #message::before {
   transform: rotate(35deg);
 }
 
+${this.form.showLargeEmoticonBg ? '' : `/* 适配隐藏大表情背景 For Hiding background of large emotes */
 yt-live-chat-text-message-renderer #message:has(.emoji.blc-large-emoji)::before {
-  ${this.form.showLargeEmoticonBg ? '' : 'content: none;'}
+  content: none;
 }
 
-${!this.form.messageReverseScroll ? '' : `yt-live-chat-item-list-renderer,
-yt-live-chat-item-list-renderer #items > * {
-  rotate: 180deg;
-  backface-visibility: hidden;
-}`}`
+yt-live-chat-text-message-renderer #message:has(.emoji.blc-large-emoji) {
+  padding: 0;
+}`}
+
+${common.EMOTICON_STYLE}
+
+${common.getReverseScrollStyle(this.form)}`
     },
     timeStyle() {
       return common.getTimeStyle(this.form)
     },
     backgroundStyle() {
-      return `/* Background colors */
+      return `/* 背景色 Background colors */
 body {
-  overflow: hidden;
-  ${this.form.bgColor ? `background-color: ${this.form.bgColor};` : ''}
+  background-color: ${this.form.bgColor ?? 'transparent'};
 }
 
-${this.getBgStyleForAuthorType('', this.form.messageBgColor)}
+${this.getBgStyleForAuthorType('')}
 
-${this.getBgStyleForAuthorType('owner', this.form.ownerMessageBgColor)}
+${this.getBgStyleForAuthorType('owner')}
 
-${this.getBgStyleForAuthorType('moderator', this.form.moderatorMessageBgColor)}
+${this.getBgStyleForAuthorType('moderator')}
 
-${this.getBgStyleForAuthorType('member', this.form.memberMessageBgColor)}
+${this.getBgStyleForAuthorType('member')}
 
+${this.form.showLargeEmoticonBg ? '' : `/* 隐藏大表情背景 Hide background of large emotes */
 yt-live-chat-text-message-renderer #message:has(.emoji.blc-large-emoji) {
-  ${this.form.showLargeEmoticonBg ? '' : 'background-color: transparent !important;'}
-}`
+  background-color: transparent;
+}`}`
     },
     scAndNewMemberStyle() {
-      return `/* SuperChat/Fan Funding Messages */
+      return `/* 付费、上舰消息 Super Chats / Membership messages */
 yt-live-chat-paid-message-renderer {
-  margin: 4px 0 !important;
+  margin: 4px 0;
 }
 
 ${this.scAndNewMemberFontStyle}
 
-yt-live-chat-membership-item-renderer #card,
-yt-live-chat-membership-item-renderer #header {
-  ${this.showNewMemberBgStyle}
+yt-live-chat-membership-item-renderer :is(#card, #header) {
+  background-color: var(--membership-msg-bg-color);
+  margin: 4px 0;
 }
 
 ${this.scTickerStyle}
 
 ${this.form.showOtherThings ? '' : `yt-live-chat-item-list-renderer {
-  display: none !important;
+  display: none;
 }`}`
     },
     scAndNewMemberFontStyle() {
-      return `yt-live-chat-paid-message-renderer #author-name,
-yt-live-chat-paid-message-renderer #author-name *,
-yt-live-chat-membership-item-renderer #header-content-inner-column,
-yt-live-chat-membership-item-renderer #header-content-inner-column * {
+      return `yt-live-chat-paid-message-renderer :is(#author-name, #author-name *),
+yt-live-chat-membership-item-renderer :is(#header-content-inner-column, #header-content-inner-column *) {
   font-family: ${common.fontsStrToCss(this.form.firstLineFont)};
-  font-size: ${this.form.firstLineFontSize}px !important;
-  line-height: ${this.form.firstLineLineHeight || (this.form.firstLineFontSize + 2)}px !important;
+  font-size: var(--paid-msg-line-1-size);
+  line-height: calc(${this.form.firstLineLineHeight || (this.form.firstLineFontSize + 2)} *  var(--font-base-size));
 }
 
-yt-live-chat-paid-message-renderer #purchase-amount,
-yt-live-chat-paid-message-renderer #purchase-amount *,
-yt-live-chat-membership-item-renderer #header-subtext,
-yt-live-chat-membership-item-renderer #header-subtext * {
+yt-live-chat-paid-message-renderer :is(#purchase-amount, #purchase-amount *),
+yt-live-chat-membership-item-renderer :is(#header-subtext, #header-subtext *) {
   font-family: ${common.fontsStrToCss(this.form.secondLineFont)};
-  font-size: ${this.form.secondLineFontSize}px !important;
-  line-height: ${this.form.secondLineLineHeight || (this.form.secondLineFontSize + 2)}px !important;
+  font-size: var(--paid-msg-line-2-size);
+  line-height: calc(${this.form.secondLineLineHeight || (this.form.secondLineFontSize + 2)} *  var(--font-base-size));
 }
 
-yt-live-chat-paid-message-renderer #content,
-yt-live-chat-paid-message-renderer #content * {
+yt-live-chat-paid-message-renderer :is(#content, #content *) {
   font-family: ${common.fontsStrToCss(this.form.scContentFont)};
-  font-size: ${this.form.scContentFontSize}px !important;
-  line-height: ${this.form.scContentLineHeight || (this.form.scContentFontSize + 2)}px !important;
+  font-size: var(--paid-msg-content-size);
+  line-height: calc(${this.form.scContentLineHeight || (this.form.scContentFontSize + 2)} *  var(--font-base-size));
 }`
-    },
-    showNewMemberBgStyle() {
-      return `background-color: ${this.form.memberUserNameColor} !important;
-  margin: 4px 0 !important;`
     },
     scTickerStyle() {
-      return `${this.form.showScTicker ? '' : `yt-live-chat-ticker-renderer {
-  display: none !important;
-}`}
-
-/* SuperChat Ticker */
-yt-live-chat-ticker-paid-message-item-renderer,
-yt-live-chat-ticker-paid-message-item-renderer *,
-yt-live-chat-ticker-sponsor-item-renderer,
-yt-live-chat-ticker-sponsor-item-renderer * {
-  font-family: ${common.fontsStrToCss(this.form.secondLineFont)};
+      if (!this.form.showScTicker) {
+        return `yt-live-chat-ticker-renderer {
+  display: none;
 }`
+      } else {
+        return `/* SC固定栏 Super Chat ticker */
+yt-live-chat-ticker-paid-message-item-renderer,
+yt-live-chat-ticker-paid-message-item-renderer * {
+  font-family: ${common.fontsStrToCss(this.form.secondLineFont)};
+  font-size: var(--paid-msg-line-2-size);
+  line-height: calc(${this.form.secondLineLineHeight || (this.form.secondLineFontSize + 2)} *  var(--font-base-size));
+}`
+      }
     },
     animationStyle() {
       return common.getAnimationStyle(this.form)
@@ -653,17 +629,15 @@ yt-live-chat-ticker-sponsor-item-renderer * {
       this.form = { ...DEFAULT_CONFIG }
     },
 
-    getBgStyleForAuthorType(authorType, color) {
-      if (!color) {
-        color = '#ffffff'
-      }
+    getBgStyleForAuthorType(authorType) {
       let typeSelector = authorType ? `[author-type="${authorType}"]` : ''
+      let varName = authorType ? `--text-msg-bg-color-${authorType}` : '--text-msg-bg-color'
       return `yt-live-chat-text-message-renderer${typeSelector} #message {
-  background-color: ${color} !important;
+  background-color: var(${varName});
 }
 
 yt-live-chat-text-message-renderer${typeSelector} #message::before {
-  border-right-color: ${color};
+  border-right-color: var(${varName});
 }`
     }
   }
