@@ -70,24 +70,34 @@ export function getVariableStyle(config) {
 }
 
 export function getAvatarStyle(config) {
+  if (!config.showAvatars) {
+    return `/* 头像 Avatars */
+yt-live-chat-item-list-renderer #author-photo {
+    display: none;
+}`
+  }
   return `/* 头像 Avatars */
 yt-live-chat-item-list-renderer :is(#author-photo, #author-photo img) {
-  ${config.showAvatars ? '' : 'display: none;'}
   width: var(--avatar-size);
   height: var(--avatar-size);
-  border-radius: var(--avatar-size);
-  margin-right: calc(var(--avatar-size) / 4);
+  margin-right: 10px;
 }`
 }
 
 export function getTimeStyle(config) {
+  if (!config.showTime) {
+    return `/* 时间 Timestamps */
+yt-live-chat-text-message-renderer #timestamp {
+  display: none;
+}`
+  }
   return `/* 时间 Timestamps */
 yt-live-chat-text-message-renderer #timestamp {
-  display: ${config.showTime ? 'inline' : 'none'};
+  display: inline;
   color: var(--time-color);
   font-family: ${fontsStrToCss(config.timeFont)};
   font-size: var(--time-size);
-  line-height: ${config.timeLineHeight || config.timeFontSize}px;
+  line-height: calc(${config.timeLineHeight || (config.timeFontSize * 1.2)} * var(--font-base-size));
 }`
 }
 
@@ -104,7 +114,10 @@ yt-live-chat-text-message-renderer :is(#author-name, yt-live-chat-author-badge-r
   color: var(--username-color-member);
 }
 
-${config.showBadges ? '' : `/* 隐藏勋章 Hide badges */
+${config.showBadges ? `yt-live-chat-text-message-renderer yt-live-chat-author-badge-renderer :is(img, yt-icon) {
+  width: calc(${config.userNameLineHeight || (config.userNameFontSize * 1.2)} * var(--font-base-size));
+  height: calc(${config.userNameLineHeight || (config.userNameFontSize * 1.2)} * var(--font-base-size));
+}` : `/* 隐藏勋章 Hide badges */
 yt-live-chat-text-message-renderer #chat-badges {
   display: none;
 }`}`
@@ -147,7 +160,7 @@ export function getAnimationStyle(config) {
   let curTime = 0
   if (config.animateIn) {
     keyframes.push(`  0% { opacity: 0;${!config.slide ? ''
-      : ` translate: ${config.reverseSlide ? 16 : -16}px;`
+      : ` translate: calc(${config.reverseSlide ? 16 : -16} * var(--base-size));`
     } }`)
     curTime += config.fadeInTime
     keyframes.push(`  ${curTime / totalTime * 100}% { opacity: 1; translate: none; }`)
@@ -157,7 +170,7 @@ export function getAnimationStyle(config) {
     keyframes.push(`  ${curTime / totalTime * 100}% { opacity: 1; translate: none; }`)
     curTime += config.fadeOutTime
     keyframes.push(`  ${curTime / totalTime * 100}% { opacity: 0;${!config.slide ? ''
-      : ` translate: ${config.reverseSlide ? -16 : 16}px;`
+      : ` translate: calc(${config.reverseSlide ? -16 : 16} * var(--base-size);`
     } }`)
   }
   return `/* 动画 Animation */

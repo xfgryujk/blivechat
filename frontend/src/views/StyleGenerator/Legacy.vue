@@ -400,7 +400,7 @@ export const DEFAULT_CONFIG = {
   avatarSize: 24,
 
   showUserNames: true,
-  userNameFont: 'Changa One',
+  userNameFont: 'Imprima,Noto Sans SC',
   userNameFontSize: 20,
   userNameLineHeight: 0,
   userNameColor: '#cccccc',
@@ -410,18 +410,18 @@ export const DEFAULT_CONFIG = {
   showBadges: true,
   showColon: true,
 
-  messageFont: 'Imprima',
-  messageFontSize: 18,
+  messageFont: 'Imprima,Noto Sans SC',
+  messageFontSize: 20,
   messageLineHeight: 0,
   messageColor: '#ffffff',
   messageOnNewLine: false,
   messageReverseScroll: false,
-  emoticonSize: 18,
-  largeEmoticonSize: 36,
+  emoticonSize: 24,
+  largeEmoticonSize: 40,
 
   showTime: false,
-  timeFont: 'Imprima',
-  timeFontSize: 16,
+  timeFont: 'Imprima,Noto Sans SC',
+  timeFontSize: 20,
   timeLineHeight: 0,
   timeColor: '#999999',
 
@@ -432,16 +432,16 @@ export const DEFAULT_CONFIG = {
   moderatorMessageBgColor: 'rgba(94, 132, 241, 0)',
   memberMessageBgColor: 'rgba(15, 157, 88, 0)',
 
-  firstLineFont: 'Changa One',
-  firstLineFontSize: 20,
+  firstLineFont: 'Imprima,Noto Sans SC',
+  firstLineFontSize: 22,
   firstLineLineHeight: 0,
   firstLineColor: '#ffffff',
-  secondLineFont: 'Imprima',
-  secondLineFontSize: 18,
+  secondLineFont: 'Imprima,Noto Sans SC',
+  secondLineFontSize: 20,
   secondLineLineHeight: 0,
   secondLineColor: '#ffffff',
-  scContentFont: 'Imprima',
-  scContentFontSize: 18,
+  scContentFont: 'Imprima,Noto Sans SC',
+  scContentFontSize: 20,
   scContentLineHeight: 0,
   scContentColor: '#ffffff',
   showNewMemberBg: true,
@@ -551,7 +551,7 @@ yt-live-chat-text-message-renderer #author-name {
   color: var(--username-color);
   font-family: ${common.fontsStrToCss(this.form.userNameFont)};
   font-size: var(--username-size);
-  line-height: calc(${this.form.userNameLineHeight || this.form.userNameFontSize} *  var(--font-base-size));
+  line-height: calc(${this.form.userNameLineHeight || (this.form.userNameFontSize * 1.2)} * var(--font-base-size));
 }
 
 ${common.getUserNameStyle(this.form)}
@@ -559,7 +559,7 @@ ${common.getUserNameStyle(this.form)}
 ${!this.form.showColon ? '' : `/* 显示冒号 Show colon */
 yt-live-chat-text-message-renderer #author-name::after {
   content: ":";
-  margin-left: ${this.form.outlineSize}px;
+  margin-left: 2px;
 }`}`
     },
     messageStyle() {
@@ -568,13 +568,17 @@ yt-live-chat-text-message-renderer :is(#message, #message *) {
   color: var(--text-content-color);
   font-family: ${common.fontsStrToCss(this.form.messageFont)};
   font-size: var(--text-content-size);
-  line-height: calc(${this.form.messageLineHeight || this.form.messageFontSize} *  var(--font-base-size));
+  line-height: calc(${this.form.messageLineHeight || (this.form.messageFontSize * 1.2)} * var(--font-base-size));
 }
 
 ${!this.form.messageOnNewLine ? '' : `yt-live-chat-text-message-renderer #message {
   display: block;
   overflow: visible;
 }`}
+
+yt-live-chat-text-message-renderer #message:has(.emoji.blc-large-emoji) {
+  vertical-align: top;
+}
 
 ${common.EMOTICON_STYLE}
 
@@ -630,12 +634,18 @@ ${this.form.showOtherThings ? '' : `yt-live-chat-item-list-renderer {
 }`}`
     },
     scAndNewMemberFontStyle() {
+      let firstLineLineHeight = this.form.firstLineLineHeight || (this.form.firstLineFontSize * 1.2)
       return `yt-live-chat-paid-message-renderer :is(#author-name, #author-name *),
 yt-live-chat-membership-item-renderer :is(#header-content-inner-column, #header-content-inner-column *) {
   color: var(--paid-msg-line-1-color);
   font-family: ${common.fontsStrToCss(this.form.firstLineFont)};
   font-size: var(--paid-msg-line-1-size);
-  line-height: calc(${this.form.firstLineLineHeight || this.form.firstLineFontSize} *  var(--font-base-size));
+  line-height: calc(${firstLineLineHeight} * var(--font-base-size));
+}
+
+yt-live-chat-membership-item-renderer yt-live-chat-author-badge-renderer :is(img, yt-icon) {
+  width: calc(${firstLineLineHeight} * var(--font-base-size));
+  height: calc(${firstLineLineHeight} * var(--font-base-size));
 }
 
 yt-live-chat-paid-message-renderer :is(#purchase-amount, #purchase-amount *),
@@ -643,14 +653,14 @@ yt-live-chat-membership-item-renderer :is(#header-subtext, #header-subtext *) {
   color: var(--paid-msg-line-2-color);
   font-family: ${common.fontsStrToCss(this.form.secondLineFont)};
   font-size: var(--paid-msg-line-2-size);
-  line-height: calc(${this.form.secondLineLineHeight || this.form.secondLineFontSize} *  var(--font-base-size));
+  line-height: calc(${this.form.secondLineLineHeight || (this.form.secondLineFontSize * 1.2)} * var(--font-base-size));
 }
 
 yt-live-chat-paid-message-renderer :is(#content, #content *) {
   color: var(--paid-msg-content-color);
   font-family: ${common.fontsStrToCss(this.form.scContentFont)};
   font-size: var(--paid-msg-content-size);
-  line-height: calc(${this.form.scContentLineHeight || this.form.scContentFontSize} *  var(--font-base-size));
+  line-height: calc(${this.form.scContentLineHeight || (this.form.scContentFontSize * 1.2)} * var(--font-base-size));
 }`
     },
     scTickerStyle() {
@@ -659,13 +669,23 @@ yt-live-chat-paid-message-renderer :is(#content, #content *) {
   display: none;
 }`
       } else {
+        let secondLineLineHeight = this.form.secondLineLineHeight || (this.form.secondLineFontSize * 1.2)
         return `/* SC固定栏 Super Chat ticker */
-yt-live-chat-ticker-paid-message-item-renderer,
-yt-live-chat-ticker-paid-message-item-renderer * {
-  color: var(--paid-msg-line-2-color);
+yt-live-chat-ticker-renderer #items {
+  height: unset;
+}
+
+yt-live-chat-ticker-paid-message-item-renderer #author-photo img {
+  width: calc(${secondLineLineHeight} * var(--font-base-size));
+  height: calc(${secondLineLineHeight} * var(--font-base-size));
+}
+
+yt-live-chat-ticker-paid-message-item-renderer #content {
+  height: unset;
+  color: var(--paid-msg-line-2-color) !important;
   font-family: ${common.fontsStrToCss(this.form.secondLineFont)};
   font-size: var(--paid-msg-line-2-size);
-  line-height: calc(${this.form.secondLineLineHeight || this.form.secondLineFontSize} *  var(--font-base-size));
+  line-height: calc(${secondLineLineHeight} * var(--font-base-size));
 }`
       }
     },
