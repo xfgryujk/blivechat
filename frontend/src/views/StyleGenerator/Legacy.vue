@@ -4,6 +4,27 @@
       <el-collapse>
         <el-collapse-item>
           <template slot="title">
+            <h3>{{ $t('stylegen.global') }}</h3>
+          </template>
+          <p>
+            <el-alert :title="$t('stylegen.scalingNotice')" type="info" show-icon :closable="false"></el-alert>
+          </p>
+          <el-row :gutter="20">
+            <el-col :xs="24" :sm="12">
+              <el-form-item :label="$t('stylegen.globalScale')">
+                <el-input v-model.number="form.globalScale" type="number" min="0" step="0.1"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :xs="24" :sm="12">
+              <el-form-item :label="$t('stylegen.fontScale')">
+                <el-input v-model.number="form.fontScale" type="number" min="0" step="0.1"></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-collapse-item>
+
+        <el-collapse-item>
+          <template slot="title">
             <h3>{{ $t('stylegen.outlines') }}</h3>
           </template>
           <el-row :gutter="20">
@@ -22,6 +43,11 @@
             <el-col :xs="24" :sm="12">
               <el-form-item :label="$t('stylegen.outlineSize')">
                 <el-input v-model.number="form.outlineSize" type="number" min="0"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :xs="24" :sm="12">
+              <el-form-item :label="$t('stylegen.blurryOutline')">
+                <el-switch v-model="form.blurryOutline"></el-switch>
               </el-form-item>
             </el-col>
           </el-row>
@@ -398,9 +424,13 @@ import * as common from './common'
 import { mergeConfig } from '@/utils'
 
 export const DEFAULT_CONFIG = {
+  globalScale: 1,
+  fontScale: 1,
+
   showOutlines: true,
   outlineSize: 2,
   outlineColor: '#000000',
+  blurryOutline: false,
 
   showAvatars: true,
   avatarSize: 24,
@@ -539,9 +569,13 @@ yt-live-chat-text-message-renderer {
         return ''
       }
       let shadow = []
-      for (let x = -this.form.outlineSize; x <= this.form.outlineSize; x += Math.ceil(this.form.outlineSize / 4)) {
-        for (let y = -this.form.outlineSize; y <= this.form.outlineSize; y += Math.ceil(this.form.outlineSize / 4)) {
-          shadow.push(`${x}px ${y}px var(--outline-color)`)
+      if (this.form.blurryOutline) {
+        shadow.push(`0 0 ${this.form.outlineSize}px var(--outline-color)`)
+      } else {
+        for (let x = -this.form.outlineSize; x <= this.form.outlineSize; x += Math.ceil(this.form.outlineSize / 4)) {
+          for (let y = -this.form.outlineSize; y <= this.form.outlineSize; y += Math.ceil(this.form.outlineSize / 4)) {
+            shadow.push(`${x}px ${y}px var(--outline-color)`)
+          }
         }
       }
       return `/* 描边 Outlines */

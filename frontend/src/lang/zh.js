@@ -97,13 +97,19 @@ export default {
     legacy: '经典',
     lineLike: '仿微信',
 
-    light: '亮色',
-    dark: '暗色',
+    light: '浅色',
+    dark: '深色',
+
+    global: '全局',
+    scalingNotice: '如果觉得字体太小，优先修改这里的比例而不是在OBS里拉伸浏览器源。求求你们不要拉伸然后问为什么看不清了😭',
+    globalScale: '全局比例',
+    fontScale: '字体比例',
 
     outlines: '描边',
     showOutlines: '显示描边',
     outlineSize: '描边尺寸',
     outlineColor: '描边颜色',
+    blurryOutline: '模糊',
 
     avatars: '头像',
     showAvatars: '显示头像',

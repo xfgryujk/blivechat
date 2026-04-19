@@ -102,10 +102,16 @@ export default {
     light: 'light',
     dark: 'dark',
 
+    global: 'Global',
+    scalingNotice: 'You should modify these options rather than scaling in OBS',
+    globalScale: 'Global scale',
+    fontScale: 'Font scale',
+
     outlines: 'Outlines',
     showOutlines: 'Show outlines',
     outlineSize: 'Outline size',
     outlineColor: 'Outline color',
+    blurryOutline: 'Blurry',
 
     avatars: 'Avatars',
     showAvatars: 'Show avatars',

@@ -46,8 +46,8 @@ export function getImportStyle(allFontsStrs) {
 
 export function getVariableStyle(config) {
   return `/* 基准尺寸，用于整体缩放 Base size for scaling */
-  --base-size: 1px;
-  --font-base-size: calc(1 * var(--base-size));
+  --base-size: ${config.globalScale}px;
+  --font-base-size: calc(${config.fontScale} * var(--base-size));
 
   /* 没有首选字体时的备用字体 Fallback font families */
   --fallback-fonts: ${FALLBACK_FONTS_CSS};

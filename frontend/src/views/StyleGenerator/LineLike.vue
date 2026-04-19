@@ -4,6 +4,27 @@
       <el-collapse>
         <el-collapse-item>
           <template slot="title">
+            <h3>{{ $t('stylegen.global') }}</h3>
+          </template>
+          <p>
+            <el-alert :title="$t('stylegen.scalingNotice')" type="info" show-icon :closable="false"></el-alert>
+          </p>
+          <el-row :gutter="20">
+            <el-col :xs="24" :sm="12">
+              <el-form-item :label="$t('stylegen.globalScale')">
+                <el-input v-model.number="form.globalScale" type="number" min="0" step="0.1"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :xs="24" :sm="12">
+              <el-form-item :label="$t('stylegen.fontScale')">
+                <el-input v-model.number="form.fontScale" type="number" min="0" step="0.1"></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-collapse-item>
+
+        <el-collapse-item>
+          <template slot="title">
             <h3>{{ $t('stylegen.avatars') }}</h3>
           </template>
           <el-row :gutter="20">
@@ -348,6 +369,9 @@ import * as common from './common'
 import { mergeConfig } from '@/utils'
 
 export const DEFAULT_CONFIG = {
+  globalScale: 1,
+  fontScale: 1,
+
   showAvatars: true,
   avatarSize: 40,
 

@@ -99,13 +99,19 @@ export default {
     legacy: '古典',
     lineLike: 'LINE風',
 
-    light: '明るい',
-    dark: '暗い',
+    light: 'ライト',
+    dark: 'ダーク',
+
+    global: 'グローバル',
+    scalingNotice: 'OBSでスケーリングするのではなく、まずこちらを調整してください',
+    globalScale: '全体のスケール',
+    fontScale: 'フォントスケール',
 
     outlines: 'アウトライン',
     showOutlines: 'アウトラインを表示する',
     outlineSize: 'アウトラインのサイズ',
     outlineColor: 'アウトラインの色',
+    blurryOutline: 'ぼやけている',
 
     avatars: 'アイコン',
     showAvatars: 'アイコンを表示する',
