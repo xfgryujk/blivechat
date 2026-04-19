@@ -172,7 +172,7 @@ export default {
     reverseSlide: '反向滑动',
     playAnimation: '生成消息',
 
-    result: '结果',
+    result: '结果CSS',
     copy: '复制',
     editor: '编辑器',
     resetConfig: '恢复默认设置'

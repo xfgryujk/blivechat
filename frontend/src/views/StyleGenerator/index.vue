@@ -10,18 +10,18 @@
         </el-tab-pane>
       </el-tabs>
 
-      <el-form label-width="150px" size="mini">
+      <el-form label-width="150px" label-position="top">
         <h3>{{ $t('stylegen.result') }}</h3>
         <el-card shadow="never">
-          <el-form-item label="CSS">
-            <el-input v-model="inputResult" ref="result" type="textarea" :rows="20"></el-input>
-          </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="copyResult">{{ $t('stylegen.copy') }}</el-button>
             <a target="_blank" href="https://vscode.dev/">
               <el-button style="margin: 0 10px">{{ $t('stylegen.editor') }}</el-button>
             </a>
-            <el-button @click="resetConfig">{{ $t('stylegen.resetConfig') }}</el-button>
+            <el-button type="danger" @click="resetConfig" style="float: right">{{ $t('stylegen.resetConfig') }}</el-button>
+          </el-form-item>
+          <el-form-item>
+            <el-input v-model="inputResult" ref="result" type="textarea" :rows="30"></el-input>
           </el-form-item>
         </el-card>
       </el-form>

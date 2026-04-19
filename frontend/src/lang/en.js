@@ -174,7 +174,7 @@ export default {
     reverseSlide: 'Reverse slide',
     playAnimation: 'Play animation',
 
-    result: 'Result',
+    result: 'Result CSS',
     copy: 'Copy',
     editor: 'Editor',
     resetConfig: 'Reset config'

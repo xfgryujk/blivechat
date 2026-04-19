@@ -102,7 +102,16 @@ yt-live-chat-text-message-renderer #timestamp {
 }
 
 export function getUserNameStyle(config) {
-  return `yt-live-chat-text-message-renderer :is(#author-name, yt-live-chat-author-badge-renderer)[type="owner"] {
+  return `/* 用户名 Channel names */
+yt-live-chat-text-message-renderer #author-name {
+  ${config.showUserNames ? '' : 'display: none;'}
+  color: var(--username-color);
+  font-family: ${fontsStrToCss(config.userNameFont)};
+  font-size: var(--username-size);
+  line-height: calc(${config.userNameLineHeight || (config.userNameFontSize * 1.2)} * var(--font-base-size));
+}
+
+yt-live-chat-text-message-renderer :is(#author-name, yt-live-chat-author-badge-renderer)[type="owner"] {
   color: var(--username-color-owner);
 }
 
@@ -123,7 +132,21 @@ yt-live-chat-text-message-renderer #chat-badges {
 }`}`
 }
 
-export const EMOTICON_STYLE = `yt-live-chat-text-message-renderer #message .emoji {
+export function getMessageStyle(config) {
+  return `/* 文本消息 Text messages */
+yt-live-chat-text-message-renderer :is(#message, #message *) {
+  color: var(--text-content-color);
+  font-family: ${fontsStrToCss(config.messageFont)};
+  font-size: var(--text-content-size);
+  line-height: calc(${config.messageLineHeight || (config.messageFontSize * 1.2)} * var(--font-base-size));
+}
+
+${EMOTICON_STYLE}
+
+${getReverseScrollStyle(config)}`
+}
+
+const EMOTICON_STYLE = `yt-live-chat-text-message-renderer #message .emoji {
   width: auto;
   height: var(--emote-size);
 }
@@ -132,7 +155,7 @@ yt-live-chat-text-message-renderer #message .emoji.blc-large-emoji {
   height: var(--large-emote-size);
 }`
 
-export function getReverseScrollStyle(config) {
+function getReverseScrollStyle(config) {
   if (!config.messageReverseScroll) {
     return ''
   }
@@ -141,6 +164,79 @@ yt-live-chat-item-list-renderer,
 yt-live-chat-item-list-renderer #items > * {
   rotate: 180deg;
   backface-visibility: hidden;
+}`
+}
+
+export function getScAndNewMemberStyle(config) {
+  return `/* 付费、上舰消息 Super Chats / Membership messages */
+yt-live-chat-paid-message-renderer {
+  margin: 4px 0;
+}
+
+${getScAndNewMemberFontStyle(config)}
+
+yt-live-chat-membership-item-renderer :is(#card, #header) {
+  background-color: var(--membership-msg-bg-color);
+  margin: 4px 0;
+}
+
+${getScTickerStyle(config)}
+
+${config.showOtherThings ? '' : `yt-live-chat-item-list-renderer {
+  display: none;
+}`}`
+}
+
+function getScAndNewMemberFontStyle(config) {
+  let firstLineLineHeight = config.firstLineLineHeight || (config.firstLineFontSize * 1.2)
+  return `yt-live-chat-paid-message-renderer :is(#author-name, #author-name *),
+yt-live-chat-membership-item-renderer :is(#header-content-inner-column, #header-content-inner-column *) {
+  font-family: ${fontsStrToCss(config.firstLineFont)};
+  font-size: var(--paid-msg-line-1-size);
+  line-height: calc(${firstLineLineHeight} * var(--font-base-size));
+}
+
+yt-live-chat-membership-item-renderer yt-live-chat-author-badge-renderer :is(img, yt-icon) {
+  width: calc(${firstLineLineHeight} * var(--font-base-size));
+  height: calc(${firstLineLineHeight} * var(--font-base-size));
+}
+
+yt-live-chat-paid-message-renderer :is(#purchase-amount, #purchase-amount *),
+yt-live-chat-membership-item-renderer :is(#header-subtext, #header-subtext *) {
+  font-family: ${fontsStrToCss(config.secondLineFont)};
+  font-size: var(--paid-msg-line-2-size);
+  line-height: calc(${config.secondLineLineHeight || (config.secondLineFontSize * 1.2)} * var(--font-base-size));
+}
+
+yt-live-chat-paid-message-renderer :is(#content, #content *) {
+  font-family: ${fontsStrToCss(config.scContentFont)};
+  font-size: var(--paid-msg-content-size);
+  line-height: calc(${config.scContentLineHeight || (config.scContentFontSize * 1.2)} * var(--font-base-size));
+}`
+}
+
+function getScTickerStyle(config) {
+  if (!config.showScTicker) {
+    return `yt-live-chat-ticker-renderer {
+  display: none;
+}`
+  }
+  let secondLineLineHeight = config.secondLineLineHeight || (config.secondLineFontSize * 1.2)
+  return `/* SC固定栏 Super Chat ticker */
+yt-live-chat-ticker-renderer #items {
+  height: unset;
+}
+
+yt-live-chat-ticker-paid-message-item-renderer #author-photo img {
+  width: calc(${secondLineLineHeight} * var(--font-base-size));
+  height: calc(${secondLineLineHeight} * var(--font-base-size));
+}
+
+yt-live-chat-ticker-paid-message-item-renderer #content {
+  height: unset;
+  font-family: ${fontsStrToCss(config.secondLineFont)};
+  font-size: var(--paid-msg-line-2-size);
+  line-height: calc(${secondLineLineHeight} * var(--font-base-size));
 }`
 }
 

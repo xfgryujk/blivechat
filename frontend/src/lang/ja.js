@@ -174,7 +174,7 @@ export default {
     reverseSlide: '逆の滑る',
     playAnimation: 'アニメーションを再生する',
 
-    result: '結果',
+    result: '結果CSS',
     copy: 'コピー',
     editor: 'エディタ',
     resetConfig: 'デフォルトに戻す'
