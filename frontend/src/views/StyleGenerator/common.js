@@ -14,6 +14,13 @@ yt-live-chat-author-chip #author-name {
 body,
 yt-live-chat-item-list-renderer #item-scroller {
   overflow: hidden;
+}
+
+/* 通用规则 Common rules */
+yt-live-chat-renderer * {
+  font-size: var(--font-size);
+  --line-height: calc(var(--font-size) * 1.2);
+  line-height: var(--line-height);
 }`
 
 export function getImportStyle(allFontsStrs) {
@@ -96,8 +103,7 @@ yt-live-chat-text-message-renderer #timestamp {
   display: inline;
   color: var(--time-color);
   font-family: ${fontsStrToCss(config.timeFont)};
-  font-size: var(--time-size);
-  line-height: calc(${config.timeLineHeight || (config.timeFontSize * 1.2)} * var(--font-base-size));
+  --font-size: var(--time-size);
 }`
 }
 
@@ -107,8 +113,7 @@ yt-live-chat-text-message-renderer #author-name {
   ${config.showUserNames ? '' : 'display: none;'}
   color: var(--username-color);
   font-family: ${fontsStrToCss(config.userNameFont)};
-  font-size: var(--username-size);
-  line-height: calc(${config.userNameLineHeight || (config.userNameFontSize * 1.2)} * var(--font-base-size));
+  --font-size: var(--username-size);
 }
 
 yt-live-chat-text-message-renderer :is(#author-name, yt-live-chat-author-badge-renderer)[type="owner"] {
@@ -124,8 +129,9 @@ yt-live-chat-text-message-renderer :is(#author-name, yt-live-chat-author-badge-r
 }
 
 ${config.showBadges ? `yt-live-chat-text-message-renderer yt-live-chat-author-badge-renderer :is(img, yt-icon) {
-  width: calc(${config.userNameLineHeight || (config.userNameFontSize * 1.2)} * var(--font-base-size));
-  height: calc(${config.userNameLineHeight || (config.userNameFontSize * 1.2)} * var(--font-base-size));
+  --font-size: var(--username-size);
+  width: var(--line-height);
+  height: var(--line-height);
 }` : `/* 隐藏勋章 Hide badges */
 yt-live-chat-text-message-renderer #chat-badges {
   display: none;
@@ -137,8 +143,7 @@ export function getMessageStyle(config) {
 yt-live-chat-text-message-renderer :is(#message, #message *) {
   color: var(--text-content-color);
   font-family: ${fontsStrToCss(config.messageFont)};
-  font-size: var(--text-content-size);
-  line-height: calc(${config.messageLineHeight || (config.messageFontSize * 1.2)} * var(--font-base-size));
+  --font-size: var(--text-content-size);
 }
 
 ${EMOTICON_STYLE}
@@ -188,30 +193,26 @@ ${config.showOtherThings ? '' : `yt-live-chat-item-list-renderer {
 }
 
 function getScAndNewMemberFontStyle(config) {
-  let firstLineLineHeight = config.firstLineLineHeight || (config.firstLineFontSize * 1.2)
   return `yt-live-chat-paid-message-renderer :is(#author-name, #author-name *),
 yt-live-chat-membership-item-renderer :is(#header-content-inner-column, #header-content-inner-column *) {
   font-family: ${fontsStrToCss(config.firstLineFont)};
-  font-size: var(--paid-msg-line-1-size);
-  line-height: calc(${firstLineLineHeight} * var(--font-base-size));
+  --font-size: var(--paid-msg-line-1-size);
 }
 
 yt-live-chat-membership-item-renderer yt-live-chat-author-badge-renderer :is(img, yt-icon) {
-  width: calc(${firstLineLineHeight} * var(--font-base-size));
-  height: calc(${firstLineLineHeight} * var(--font-base-size));
+  width: var(--line-height);
+  height: var(--line-height);
 }
 
 yt-live-chat-paid-message-renderer :is(#purchase-amount, #purchase-amount *),
 yt-live-chat-membership-item-renderer :is(#header-subtext, #header-subtext *) {
   font-family: ${fontsStrToCss(config.secondLineFont)};
-  font-size: var(--paid-msg-line-2-size);
-  line-height: calc(${config.secondLineLineHeight || (config.secondLineFontSize * 1.2)} * var(--font-base-size));
+  --font-size: var(--paid-msg-line-2-size);
 }
 
 yt-live-chat-paid-message-renderer :is(#content, #content *) {
   font-family: ${fontsStrToCss(config.scContentFont)};
-  font-size: var(--paid-msg-content-size);
-  line-height: calc(${config.scContentLineHeight || (config.scContentFontSize * 1.2)} * var(--font-base-size));
+  --font-size: var(--paid-msg-content-size);
 }`
 }
 
@@ -221,22 +222,20 @@ function getScTickerStyle(config) {
   display: none;
 }`
   }
-  let secondLineLineHeight = config.secondLineLineHeight || (config.secondLineFontSize * 1.2)
   return `/* SC固定栏 Super Chat ticker */
 yt-live-chat-ticker-renderer #items {
   height: unset;
 }
 
 yt-live-chat-ticker-paid-message-item-renderer #author-photo img {
-  width: calc(${secondLineLineHeight} * var(--font-base-size));
-  height: calc(${secondLineLineHeight} * var(--font-base-size));
+  width: var(--line-height);
+  height: var(--line-height);
 }
 
 yt-live-chat-ticker-paid-message-item-renderer #content {
   height: unset;
   font-family: ${fontsStrToCss(config.secondLineFont)};
-  font-size: var(--paid-msg-line-2-size);
-  line-height: calc(${secondLineLineHeight} * var(--font-base-size));
+  --font-size: var(--paid-msg-line-2-size);
 }`
 }
 

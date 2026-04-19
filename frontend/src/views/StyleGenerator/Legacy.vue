@@ -18,9 +18,13 @@
               </el-form-item>
             </el-col>
           </el-row>
-          <el-form-item :label="$t('stylegen.outlineSize')">
-            <el-input v-model.number="form.outlineSize" type="number" min="0"></el-input>
-          </el-form-item>
+          <el-row :gutter="20">
+            <el-col :xs="24" :sm="12">
+              <el-form-item :label="$t('stylegen.outlineSize')">
+                <el-input v-model.number="form.outlineSize" type="number" min="0"></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
         </el-collapse-item>
 
         <el-collapse-item>
@@ -61,11 +65,6 @@
             <el-col :xs="24" :sm="12">
               <el-form-item :label="$t('stylegen.fontSize')">
                 <el-input v-model.number="form.userNameFontSize" type="number" min="0"></el-input>
-              </el-form-item>
-            </el-col>
-            <el-col :xs="24" :sm="12">
-              <el-form-item :label="$t('stylegen.lineHeight')">
-                <el-input v-model.number="form.userNameLineHeight" type="number" min="0"></el-input>
               </el-form-item>
             </el-col>
           </el-row>
@@ -129,11 +128,6 @@
                 <el-input v-model.number="form.messageFontSize" type="number" min="0"></el-input>
               </el-form-item>
             </el-col>
-            <el-col :xs="24" :sm="12">
-              <el-form-item :label="$t('stylegen.lineHeight')">
-                <el-input v-model.number="form.messageLineHeight" type="number" min="0"></el-input>
-              </el-form-item>
-            </el-col>
           </el-row>
           <el-row :gutter="20">
             <el-col :xs="24" :sm="12">
@@ -184,11 +178,6 @@
             <el-col :xs="24" :sm="12">
               <el-form-item :label="$t('stylegen.fontSize')">
                 <el-input v-model.number="form.timeFontSize" type="number" min="0"></el-input>
-              </el-form-item>
-            </el-col>
-            <el-col :xs="24" :sm="12">
-              <el-form-item :label="$t('stylegen.lineHeight')">
-                <el-input v-model.number="form.timeLineHeight" type="number" min="0"></el-input>
               </el-form-item>
             </el-col>
           </el-row>
@@ -258,11 +247,6 @@
                 <el-input v-model.number="form.firstLineFontSize" type="number" min="0"></el-input>
               </el-form-item>
             </el-col>
-            <el-col :xs="24" :sm="12">
-              <el-form-item :label="$t('stylegen.firstLineLineHeight')">
-                <el-input v-model.number="form.firstLineLineHeight" type="number" min="0"></el-input>
-              </el-form-item>
-            </el-col>
           </el-row>
           <el-divider></el-divider>
 
@@ -284,11 +268,6 @@
                 <el-input v-model.number="form.secondLineFontSize" type="number" min="0"></el-input>
               </el-form-item>
             </el-col>
-            <el-col :xs="24" :sm="12">
-              <el-form-item :label="$t('stylegen.secondLineLineHeight')">
-                <el-input v-model.number="form.secondLineLineHeight" type="number" min="0"></el-input>
-              </el-form-item>
-            </el-col>
           </el-row>
           <el-divider></el-divider>
 
@@ -308,11 +287,6 @@
             <el-col :xs="24" :sm="12">
               <el-form-item :label="$t('stylegen.scContentLineFontSize')">
                 <el-input v-model.number="form.scContentFontSize" type="number" min="0"></el-input>
-              </el-form-item>
-            </el-col>
-            <el-col :xs="24" :sm="12">
-              <el-form-item :label="$t('stylegen.scContentLineLineHeight')">
-                <el-input v-model.number="form.scContentLineHeight" type="number" min="0"></el-input>
               </el-form-item>
             </el-col>
           </el-row>
@@ -360,9 +334,13 @@
               </el-form-item>
             </el-col>
           </el-row>
-          <el-form-item :label="$t('stylegen.animateOutWaitTime')">
-            <el-input v-model.number="form.animateOutWaitTime" type="number" min="0"></el-input>
-          </el-form-item>
+          <el-row :gutter="20">
+            <el-col :xs="24" :sm="12">
+              <el-form-item :label="$t('stylegen.animateOutWaitTime')">
+                <el-input v-model.number="form.animateOutWaitTime" type="number" min="0"></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
           <el-row :gutter="20">
             <el-col :xs="24" :sm="12">
               <el-form-item :label="$t('stylegen.slide')">
@@ -399,7 +377,6 @@ export const DEFAULT_CONFIG = {
   showUserNames: true,
   userNameFont: 'Imprima,Noto Sans SC',
   userNameFontSize: 20,
-  userNameLineHeight: 0,
   userNameColor: '#cccccc',
   ownerUserNameColor: '#ffd600',
   moderatorUserNameColor: '#5e84f1',
@@ -409,7 +386,6 @@ export const DEFAULT_CONFIG = {
 
   messageFont: 'Imprima,Noto Sans SC',
   messageFontSize: 20,
-  messageLineHeight: 0,
   messageColor: '#ffffff',
   messageOnNewLine: false,
   messageReverseScroll: false,
@@ -419,7 +395,6 @@ export const DEFAULT_CONFIG = {
   showTime: false,
   timeFont: 'Imprima,Noto Sans SC',
   timeFontSize: 20,
-  timeLineHeight: 0,
   timeColor: '#999999',
 
   bgColor: 'rgba(0, 0, 0, 0)',
@@ -431,15 +406,12 @@ export const DEFAULT_CONFIG = {
 
   firstLineFont: 'Imprima,Noto Sans SC',
   firstLineFontSize: 22,
-  firstLineLineHeight: 0,
   firstLineColor: '#ffffff',
   secondLineFont: 'Imprima,Noto Sans SC',
   secondLineFontSize: 20,
-  secondLineLineHeight: 0,
   secondLineColor: '#ffffff',
   scContentFont: 'Imprima,Noto Sans SC',
   scContentFontSize: 20,
-  scContentLineHeight: 0,
   scContentColor: '#ffffff',
   showScTicker: false,
   showOtherThings: true,
