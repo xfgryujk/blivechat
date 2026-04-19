@@ -42,6 +42,11 @@
                 <el-input v-model.number="form.userNameFontSize" type="number" min="0"></el-input>
               </el-form-item>
             </el-col>
+            <el-col :xs="24" :sm="12">
+              <el-form-item :label="$t('stylegen.fontWeight')">
+                <font-weight-select v-model="form.userNameWeight"></font-weight-select>
+              </el-form-item>
+            </el-col>
           </el-row>
           <el-row :gutter="20">
             <el-col :xs="24" :sm="12">
@@ -98,6 +103,11 @@
                 <el-input v-model.number="form.messageFontSize" type="number" min="0"></el-input>
               </el-form-item>
             </el-col>
+            <el-col :xs="24" :sm="12">
+              <el-form-item :label="$t('stylegen.fontWeight')">
+                <font-weight-select v-model="form.messageWeight"></font-weight-select>
+              </el-form-item>
+            </el-col>
           </el-row>
           <el-row :gutter="20">
             <el-col :xs="24" :sm="12">
@@ -143,6 +153,11 @@
             <el-col :xs="24" :sm="12">
               <el-form-item :label="$t('stylegen.fontSize')">
                 <el-input v-model.number="form.timeFontSize" type="number" min="0"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :xs="24" :sm="12">
+              <el-form-item :label="$t('stylegen.fontWeight')">
+                <font-weight-select v-model="form.timeWeight"></font-weight-select>
               </el-form-item>
             </el-col>
           </el-row>
@@ -207,6 +222,11 @@
                 <el-input v-model.number="form.firstLineFontSize" type="number" min="0"></el-input>
               </el-form-item>
             </el-col>
+            <el-col :xs="24" :sm="12">
+              <el-form-item :label="$t('stylegen.firstLineWeight')">
+                <font-weight-select v-model="form.firstLineWeight"></font-weight-select>
+              </el-form-item>
+            </el-col>
           </el-row>
           <el-divider></el-divider>
 
@@ -223,6 +243,11 @@
                 <el-input v-model.number="form.secondLineFontSize" type="number" min="0"></el-input>
               </el-form-item>
             </el-col>
+            <el-col :xs="24" :sm="12">
+              <el-form-item :label="$t('stylegen.secondLineWeight')">
+                <font-weight-select v-model="form.secondLineWeight"></font-weight-select>
+              </el-form-item>
+            </el-col>
           </el-row>
           <el-divider></el-divider>
 
@@ -237,6 +262,11 @@
             <el-col :xs="24" :sm="12">
               <el-form-item :label="$t('stylegen.scContentLineFontSize')">
                 <el-input v-model.number="form.scContentFontSize" type="number" min="0"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :xs="24" :sm="12">
+              <el-form-item :label="$t('stylegen.scContentWeight')">
+                <font-weight-select v-model="form.scContentWeight"></font-weight-select>
               </el-form-item>
             </el-col>
           </el-row>
@@ -313,6 +343,7 @@
 import _ from 'lodash'
 
 import FontSelect from './FontSelect'
+import FontWeightSelect from './FontWeightSelect'
 import * as common from './common'
 import { mergeConfig } from '@/utils'
 
@@ -323,6 +354,7 @@ export const DEFAULT_CONFIG = {
   showUserNames: true,
   userNameFont: 'Noto Sans SC',
   userNameFontSize: 18,
+  userNameWeight: 700,
   userNameColor: '#cccccc',
   ownerUserNameColor: '#ffd600',
   moderatorUserNameColor: '#5e84f1',
@@ -331,6 +363,7 @@ export const DEFAULT_CONFIG = {
 
   messageFont: 'Noto Sans SC',
   messageFontSize: 20,
+  messageWeight: 700,
   messageColor: '#000000',
   emoticonSize: 24,
   largeEmoticonSize: 60,
@@ -339,6 +372,7 @@ export const DEFAULT_CONFIG = {
   showTime: false,
   timeFont: 'Noto Sans SC',
   timeFontSize: 18,
+  timeWeight: 400,
   timeColor: '#999999',
 
   bgColor: 'rgba(0, 0, 0, 0)',
@@ -350,10 +384,13 @@ export const DEFAULT_CONFIG = {
 
   firstLineFont: 'Noto Sans SC',
   firstLineFontSize: 22,
+  firstLineWeight: 700,
   secondLineFont: 'Noto Sans SC',
   secondLineFontSize: 20,
+  secondLineWeight: 700,
   scContentFont: 'Noto Sans SC',
   scContentFontSize: 20,
+  scContentWeight: 700,
   showScTicker: false,
   showOtherThings: true,
 
@@ -369,7 +406,7 @@ export const DEFAULT_CONFIG = {
 export default {
   name: 'LineLike',
   components: {
-    FontSelect
+    FontSelect, FontWeightSelect
   },
   props: {
     value: String
@@ -417,8 +454,11 @@ export default {
 
   /* 付费、上舰消息 Super Chats / Membership messages */
   --paid-msg-line-1-size: calc(${this.form.firstLineFontSize} * var(--font-base-size));
+  --paid-msg-line-1-weight: ${this.form.firstLineWeight};
   --paid-msg-line-2-size: calc(${this.form.secondLineFontSize} * var(--font-base-size));
+  --paid-msg-line-2-weight: ${this.form.secondLineWeight};
   --paid-msg-content-size: calc(${this.form.scContentFontSize} * var(--font-base-size));
+  --paid-msg-content-weight: ${this.form.scContentWeight};
   --membership-msg-bg-color: var(--username-color-member);
 }`
     },

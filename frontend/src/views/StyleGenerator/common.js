@@ -58,6 +58,7 @@ export function getVariableStyle(config) {
   /* 时间 Timestamps */
   --time-color: ${config.timeColor ?? '#999999'};
   --time-size: calc(${config.timeFontSize} * var(--font-base-size));
+  --time-weight: ${config.timeWeight};
 
   /* 用户名 Channel names
     普通、舰长、房管、主播 */
@@ -66,10 +67,12 @@ export function getVariableStyle(config) {
   --username-color-moderator: ${config.moderatorUserNameColor ?? 'var(--username-color)'};
   --username-color-owner: ${config.ownerUserNameColor ?? 'var(--username-color)'};
   --username-size: calc(${config.userNameFontSize} * var(--font-base-size));
+  --username-weight: ${config.userNameWeight};
 
   /* 文本消息 Text messages */
   --text-content-color: ${config.messageColor ?? '#111111'};
   --text-content-size: calc(${config.messageFontSize} * var(--font-base-size));
+  --text-content-weight: ${config.messageWeight};
 
   /* 表情 Emotes */
   --emote-size: calc(${config.emoticonSize} * var(--font-base-size));
@@ -104,6 +107,7 @@ yt-live-chat-text-message-renderer #timestamp {
   color: var(--time-color);
   font-family: ${fontsStrToCss(config.timeFont)};
   --font-size: var(--time-size);
+  font-weight: var(--time-weight);
 }`
 }
 
@@ -114,6 +118,7 @@ yt-live-chat-text-message-renderer #author-name {
   color: var(--username-color);
   font-family: ${fontsStrToCss(config.userNameFont)};
   --font-size: var(--username-size);
+  font-weight: var(--username-weight);
 }
 
 yt-live-chat-text-message-renderer :is(#author-name, yt-live-chat-author-badge-renderer)[type="owner"] {
@@ -144,6 +149,7 @@ yt-live-chat-text-message-renderer :is(#message, #message *) {
   color: var(--text-content-color);
   font-family: ${fontsStrToCss(config.messageFont)};
   --font-size: var(--text-content-size);
+  font-weight: var(--text-content-weight);
 }
 
 ${EMOTICON_STYLE}
@@ -197,6 +203,7 @@ function getScAndNewMemberFontStyle(config) {
 yt-live-chat-membership-item-renderer :is(#header-content-inner-column, #header-content-inner-column *) {
   font-family: ${fontsStrToCss(config.firstLineFont)};
   --font-size: var(--paid-msg-line-1-size);
+  font-weight: var(--paid-msg-line-1-weight);
 }
 
 yt-live-chat-membership-item-renderer yt-live-chat-author-badge-renderer :is(img, yt-icon) {
@@ -208,11 +215,13 @@ yt-live-chat-paid-message-renderer :is(#purchase-amount, #purchase-amount *),
 yt-live-chat-membership-item-renderer :is(#header-subtext, #header-subtext *) {
   font-family: ${fontsStrToCss(config.secondLineFont)};
   --font-size: var(--paid-msg-line-2-size);
+  font-weight: var(--paid-msg-line-2-weight);
 }
 
 yt-live-chat-paid-message-renderer :is(#content, #content *) {
   font-family: ${fontsStrToCss(config.scContentFont)};
   --font-size: var(--paid-msg-content-size);
+  font-weight: var(--paid-msg-content-weight);
 }`
 }
 
@@ -223,19 +232,20 @@ function getScTickerStyle(config) {
 }`
   }
   return `/* SC固定栏 Super Chat ticker */
-yt-live-chat-ticker-renderer #items {
+yt-live-chat-ticker-renderer :is(#items, #content) {
   height: unset;
 }
 
 yt-live-chat-ticker-paid-message-item-renderer #author-photo img {
+  --font-size: var(--paid-msg-line-2-size);
   width: var(--line-height);
   height: var(--line-height);
 }
 
-yt-live-chat-ticker-paid-message-item-renderer #content {
-  height: unset;
+yt-live-chat-ticker-paid-message-item-renderer #text {
   font-family: ${fontsStrToCss(config.secondLineFont)};
   --font-size: var(--paid-msg-line-2-size);
+  font-weight: var(--paid-msg-line-2-weight);
 }`
 }
 
