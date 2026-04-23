@@ -58,10 +58,17 @@ export async function getLocalFonts() {
 
 async function doGetLocalFonts() {
   try {
-    return (await window.queryLocalFonts()).map(fontData => {
-      // 理论上应该用family，但fullName可读性更好
-      return fontData.fullName
-    })
+    let familyToFullName = new Map()
+    for (let fontData of await window.queryLocalFonts()) {
+      let oldFullName = familyToFullName.get(fontData.family)
+      if (!oldFullName || fontData.fullName.length < oldFullName.length) {
+        familyToFullName.set(fontData.family, fontData.fullName)
+      }
+    }
+    // 理论上应该用family，但fullName可读性更好
+    let fullNames = [...familyToFullName.values()]
+    fullNames.sort()
+    return fullNames
   } catch (e) {
     console.error(e)
     return []

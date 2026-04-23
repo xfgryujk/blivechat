@@ -102,8 +102,8 @@ export default {
 
     global: '全局',
     scalingNotice: '如果觉得字体太小，优先修改这里的比例而不是在OBS里拉伸浏览器源。求求你们不要拉伸然后问为什么看不清了😭',
-    globalScale: '全局比例',
-    fontScale: '字体比例',
+    globalScale: '全局缩放比例',
+    fontScale: '字体缩放比例',
 
     outlines: '描边',
     showOutlines: '显示描边',

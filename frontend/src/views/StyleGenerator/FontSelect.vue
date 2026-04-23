@@ -5,39 +5,50 @@
     >
       <el-option-group
         v-for="(groupCfg, index) in [
-          { fonts: recentFonts, label: $t('stylegen.recentFonts'), isRecent: true },
-          { fonts: PRESET_FONTS, label: $t('stylegen.presetFonts') },
+          { fonts: recentFonts, label: $t('stylegen.recentFonts'), showSample: true, isRecent: true },
+          { fonts: PRESET_FONTS, label: $t('stylegen.presetFonts'), showSample: true },
+          { fonts: NETWORK_FONTS, label: $t('stylegen.networkFonts') },
+          { fonts: localFonts, label: $t('stylegen.localFonts') },
         ]"
         :key="index"
         :label="groupCfg.label"
       >
-        <el-option v-for="font in groupCfg.fonts" :key="font" :value="font">
-          <span class="fonts-select-name-line">
-            <span>{{ font }}</span>
-            <el-button v-if="groupCfg.isRecent" type="text" class="fonts-select-btn" style="color: #f56c6c;"
-              @click="() => deleteRecentFont(font)"
-            >
-              <i class="el-icon-delete"></i>
-            </el-button>
-          </span>
-          <span class="fonts-select-sample" :style="{'font-family': font}">Sample 样例 サンプル</span>
-        </el-option>
-      </el-option-group>
+        <!-- 留一个占位，不然model更新时显示的列表不会更新... -->
+        <el-option v-if="groupCfg.fonts.length === 0" value="-" disabled></el-option>
 
-      <el-option-group :label="$t('stylegen.networkFonts')">
-        <el-option v-for="font in NETWORK_FONTS" :key="font" :value="font"></el-option>
-      </el-option-group>
+        <template v-else>
+          <template v-if="groupCfg.showSample">
+            <el-option v-for="font in groupCfg.fonts" :key="font" :value="font">
+              <span class="fonts-select-name-line">
+                <span>{{ font }}</span>
 
-      <el-option-group :label="$t('stylegen.localFonts')">
-        <el-option v-for="font in localFonts" :key="font" :value="font"></el-option>
+                <el-button v-if="groupCfg.isRecent" type="text" class="fonts-select-btn" style="color: #f56c6c;"
+                  @click="() => deleteRecentFont(font)"
+                >
+                  <i class="el-icon-delete"></i>
+                </el-button>
+              </span>
+              <span class="fonts-select-sample" :style="{'font-family': font}">Sample 样例 サンプル</span>
+            </el-option>
+          </template>
+
+          <template v-else>
+            <el-option v-for="font in groupCfg.fonts" :key="font" :value="font"></el-option>
+          </template>
+        </template>
       </el-option-group>
     </el-select>
   </el-tooltip>
 </template>
 
 <script>
+import { ref } from 'vue'
+
 import * as common from './common'
 import * as fonts from './fonts'
+
+let sharedRecentFonts = ref([]) // 这里只作为缓存，以localStorage为准
+let sharedLocalFonts = ref([])
 
 export default {
   name: 'FontSelect',
@@ -46,12 +57,18 @@ export default {
   },
   data() {
     return {
-      recentFonts: this.getRecentFonts(), // 这里只作为缓存，以localStorage为准
       PRESET_FONTS: fonts.PRESET_FONTS,
       NETWORK_FONTS: fonts.NETWORK_FONTS,
-      localFonts: [],
 
       innerValue: [],
+    }
+  },
+  computed: {
+    recentFonts() {
+      return sharedRecentFonts.value
+    },
+    localFonts() {
+      return sharedLocalFonts.value
     }
   },
   watch: {
@@ -78,15 +95,14 @@ export default {
         return
       }
       this.updateRecentFonts()
-      // 在这里更新第一次下拉时不会显示本地字体，但没什么好办法
       this.updateLocalFonts()
     },
 
     updateRecentFonts() {
-      this.recentFonts = this.getRecentFonts()
+      sharedRecentFonts.value = this.getRecentFonts()
     },
     async updateLocalFonts() {
-      this.localFonts = await fonts.getLocalFonts()
+      sharedLocalFonts.value = await fonts.getLocalFonts()
     },
     getRecentFonts() {
       return common.fontsStrToArr(window.localStorage.recentFonts || '')
