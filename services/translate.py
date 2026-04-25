@@ -487,13 +487,15 @@ class OpenAiApi(TranslateProvider):
             'Authorization': 'Bearer ' + api_key
         }
         self._body = {
-            'model': model,
             'messages': [
                 {'role': 'system', 'content': prompt},
                 {'role': 'user', 'content': ''},
             ],
-            'stream': False,
+            'model': model,
+            'thinking': {'type': 'disabled'},
+            # 'reasoning_effort': 'none',  # 很多模型不支持none值
             'max_tokens': max_tokens,
+            'stream': False,
             'temperature': temperature,
             'top_p': top_p,
         }
