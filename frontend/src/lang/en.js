@@ -21,7 +21,7 @@ export default {
     disabledByServer: 'Disabled by the server',
 
     general: 'General',
-    useAuthCodeWarning: 'Please prioritize the identity code, otherwise the avatars and usernames will not display',
+    useAuthCodeWarning: 'Please prioritize the identity code, otherwise usernames will not display and you may not be able to receive messages at any time',
     room: 'Room',
     roomId: 'Room ID (not recommended)',
     authCode: 'Identity code',

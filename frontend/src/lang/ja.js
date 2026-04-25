@@ -21,7 +21,7 @@ export default {
     disabledByServer: 'サーバーによって無効にされました',
 
     general: '常規',
-    useAuthCodeWarning: 'アイデンティティコードを優先的に使用してください。そうしないと、アイコンやユーザー名が表示されません',
+    useAuthCodeWarning: 'アイデンティティコードを優先的に使用してください。そうしないと、ユーザー名が表示されず、コメントを受信できなくなる可能性があります',
     room: 'ルーム',
     roomId: 'ルームID（推奨されません）',
     authCode: 'アイデンティティコード',

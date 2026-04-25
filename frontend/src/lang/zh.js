@@ -21,7 +21,7 @@ export default {
     disabledByServer: '已被服务器禁用',
 
     general: '常规',
-    useAuthCodeWarning: '请优先使用身份码，否则无法显示头像和昵称',
+    useAuthCodeWarning: '请优先使用身份码，否则无法显示昵称，并且随时可能无法获取弹幕',
     room: '房间',
     roomId: '房间ID（不推荐）',
     authCode: '身份码',
