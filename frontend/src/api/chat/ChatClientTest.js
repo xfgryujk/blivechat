@@ -130,6 +130,7 @@ const SC_PRICES = [
 const MESSAGE_GENERATORS = [
   // 文字
   {
+    filterType: 'text',  // 取值和样式生成器中的消息类型设置相同
     weight: 20,
     value() {
       return {
@@ -150,6 +151,7 @@ const MESSAGE_GENERATORS = [
   },
   // 表情
   {
+    filterType: 'emoticon',
     weight: 5,
     value() {
       return {
@@ -168,6 +170,7 @@ const MESSAGE_GENERATORS = [
   },
   // 礼物
   {
+    filterType: 'gift',
     weight: 1,
     value() {
       return {
@@ -183,6 +186,7 @@ const MESSAGE_GENERATORS = [
   },
   // SC
   {
+    filterType: 'superChat',
     weight: 3,
     value() {
       return {
@@ -200,6 +204,7 @@ const MESSAGE_GENERATORS = [
   },
   // 新舰长
   {
+    filterType: 'member',
     weight: 1,
     value() {
       let privilegeType = randInt(1, 3)
@@ -252,6 +257,12 @@ export default class ChatClientTest {
   constructor() {
     this.msgHandler = chat.getDefaultMsgHandler()
 
+    this.msgConfig = {
+      speed: null,
+      types: {},
+    }
+    this.msgRandomNodes = MESSAGE_GENERATORS
+
     this.timerId = null
   }
 
@@ -266,13 +277,36 @@ export default class ChatClientTest {
     }
   }
 
+  setMsgConfig(msgConfig) {
+    if (this.msgConfig === msgConfig) {
+      return
+    }
+    let oldMsgConfig = this.msgConfig
+
+    if (msgConfig.speed < 0.1) {
+      msgConfig.speed = 0.1
+    }
+    this.msgConfig = msgConfig
+
+    if (msgConfig.speed !== oldMsgConfig.speed && this.timerId) {
+      this.refreshTimer()
+    }
+    this.msgRandomNodes = MESSAGE_GENERATORS.filter(node => msgConfig.types[node.filterType])
+  }
+
   refreshTimer() {
-    // 模仿B站的消息间隔模式
     let sleepTime
-    if (randInt(0, 4) == 0) {
-      sleepTime = randInt(1000, 2000)
+    if (this.msgConfig.speed !== null) {
+      let avgTime = 1000 / this.msgConfig.speed
+      sleepTime = randInt(avgTime - 100, avgTime + 100)
+      sleepTime = Math.max(sleepTime, 0)
     } else {
-      sleepTime = randInt(0, 400)
+      // 模仿B站的消息间隔模式
+      if (randInt(0, 4) == 0) {
+        sleepTime = randInt(1000, 2000)
+      } else {
+        sleepTime = randInt(0, 400)
+      }
     }
     if (this.timerId) {
       window.clearTimeout(this.timerId)
@@ -283,7 +317,10 @@ export default class ChatClientTest {
   onTimeout() {
     this.refreshTimer()
 
-    let { type, message } = randomChoose(MESSAGE_GENERATORS)()
+    if (this.msgRandomNodes.length === 0) {
+      return
+    }
+    let { type, message } = randomChoose(this.msgRandomNodes)()
     switch (type) {
     case constants.MESSAGE_TYPE_TEXT:
       this.msgHandler.onAddText(message)

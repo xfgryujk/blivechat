@@ -97,6 +97,15 @@ export default {
     legacy: '经典',
     lineLike: '仿微信',
 
+    playAnimation: '生成消息',
+    messageSpeed: '每秒消息数',
+    messageTypes: '消息类型',
+    typeText: '文字',
+    typeEmoticon: '表情',
+    typeGift: '礼物',
+    typeSuperChat: '醒目留言',
+    typeMember: '新舰长',
+
     light: '浅色',
     dark: '深色',
 
@@ -164,7 +173,6 @@ export default {
     scContentLineFontSize: 'Super Chat内容字体尺寸',
     scContentWeight: 'Super Chat内容字体粗细',
     scContentLineColor: 'Super Chat内容颜色',
-    showNewMemberBg: '显示新舰长背景',
     showScTicker: '显示Super Chat固定栏',
     showOtherThings: '显示Super Chat固定栏之外的内容',
 
@@ -176,7 +184,6 @@ export default {
     fadeOutTime: '淡出时间（毫秒）',
     slide: '滑动',
     reverseSlide: '反向滑动',
-    playAnimation: '生成消息',
 
     result: '结果CSS',
     copy: '复制',

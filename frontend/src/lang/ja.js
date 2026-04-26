@@ -27,7 +27,7 @@ export default {
     authCode: 'アイデンティティコード',
     howToGetAuthCode: 'アイデンティティコードの取得方法',
     showDanmaku: 'コメントを表示する',
-    showGift: 'スーパーチャットと新メンバーを表示する',
+    showGift: 'スーパーチャットと新規メンバーを表示する',
     showGiftName: 'ギフト名を表示する',
     mergeSimilarDanmaku: '同じコメントを合併する',
     mergeGift: 'ギフトを合併する',
@@ -99,6 +99,15 @@ export default {
     legacy: '古典',
     lineLike: 'LINE風',
 
+    playAnimation: 'メッセージを生成する',
+    messageSpeed: 'メッセージ/秒',
+    messageTypes: 'メッセージタイプ',
+    typeText: 'テキスト',
+    typeEmoticon: 'スタンプ',
+    typeGift: 'ギフト',
+    typeSuperChat: 'スーパーチャット',
+    typeMember: '新規メンバー',
+
     light: 'ライト',
     dark: 'ダーク',
 
@@ -153,7 +162,7 @@ export default {
     moderatorMessageBgColor: '管理者コメント背景色',
     memberMessageBgColor: 'メンバーコメント背景色',
 
-    scAndNewMember: 'スーパーチャット、新メンバー',
+    scAndNewMember: 'スーパーチャット、新規メンバー',
     firstLineFont: '1行目のフォント',
     firstLineFontSize: '1行目のフォントサイズ',
     firstLineWeight: '1行目のフォントの太さ',
@@ -166,7 +175,6 @@ export default {
     scContentLineFontSize: 'スーパーチャットコンテンツフォントサイズ',
     scContentWeight: 'スーパーチャットコンテンツフォントの太さ',
     scContentLineColor: 'スーパーチャットコンテンツライン色',
-    showNewMemberBg: '新メンバーの背景を表示する',
     showScTicker: 'スーパーチャットチカーの表示',
     showOtherThings: 'スーパーチャットチカー以外のコンテンツを表示します',
 
@@ -178,7 +186,6 @@ export default {
     fadeOutTime: 'フェードアウト時間（ミリ秒）',
     slide: '滑る',
     reverseSlide: '逆の滑る',
-    playAnimation: 'アニメーションを再生する',
 
     result: '結果CSS',
     copy: 'コピー',

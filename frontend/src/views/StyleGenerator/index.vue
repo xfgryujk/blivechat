@@ -30,10 +30,32 @@
     <el-col :sm="24" :md="8">
       <div id="example-panel">
         <el-form inline style="line-height: 40px">
-          <el-form-item :label="$t('stylegen.playAnimation')" style="margin: 0">
+          <el-form-item :label="$t('stylegen.playAnimation')" class="example-form-item">
             <el-switch v-model="playAnimation" @change="setExampleRoomClientStart"></el-switch>
           </el-form-item>
-          <el-form-item :label="$t('stylegen.backgrounds')" style="margin: 0 0 0 30px">
+
+          <el-form-item class="example-form-item">
+            <el-popover trigger="click" width="300">
+              <el-button slot="reference" type="text" icon="el-icon-setting"></el-button>
+
+              <el-form label-position="top" size="small">
+                <el-form-item :label="$t('stylegen.messageSpeed')">
+                  <el-slider v-model="messageConfig.speed" :min="0.2" :max="11" :step="0.1"
+                    :marks="{1: '1', 3: '3', 5: '5', 10: '10'}"
+                  ></el-slider>
+                </el-form-item>
+                <el-form-item :label="$t('stylegen.messageTypes')">
+                  <el-checkbox v-model="messageConfig.types.text">{{ $t('stylegen.typeText') }}</el-checkbox>
+                  <el-checkbox v-model="messageConfig.types.emoticon">{{ $t('stylegen.typeEmoticon') }}</el-checkbox>
+                  <el-checkbox v-model="messageConfig.types.gift">{{ $t('stylegen.typeGift') }}</el-checkbox>
+                  <el-checkbox v-model="messageConfig.types.superChat">{{ $t('stylegen.typeSuperChat') }}</el-checkbox>
+                  <el-checkbox v-model="messageConfig.types.member">{{ $t('stylegen.typeMember') }}</el-checkbox>
+                </el-form-item>
+              </el-form>
+            </el-popover>
+          </el-form-item>
+
+          <el-form-item class="example-form-item">
             <el-switch v-model="exampleBgLight" :active-text="$t('stylegen.light')" :inactive-text="$t('stylegen.dark')"></el-switch>
           </el-form-item>
         </el-form>
@@ -71,6 +93,18 @@ export default {
       debounceResult: '',
 
       playAnimation: true,
+      messageConfig: {
+        // 平均每秒消息数
+        speed: 1,
+        types: {
+          // 类型见ChatClientTest MESSAGE_GENERATORS
+          text: true,
+          emoticon: true,
+          gift: true,
+          superChat: true,
+          member: true,
+        },
+      },
       exampleBgLight: true,
     }
   },
@@ -90,7 +124,13 @@ export default {
     inputResult: _.debounce(function(val) {
       this.debounceResult = val
     }, 500),
-    debounceResult: 'setExampleRoomCustomCss'
+    debounceResult: 'setExampleRoomCustomCss',
+    messageConfig: {
+      deep: true,
+      handler: _.debounce(function(val) {
+        this.setExampleRoomMessageConfig(val)
+      }, 500)
+    },
   },
   mounted() {
     this.debounceResult = this.inputResult = this.subComponentResult
@@ -119,6 +159,7 @@ export default {
       switch (type) {
       case 'stylegenExampleRoomLoad':
         this.setExampleRoomCustomCss(this.debounceResult)
+        this.setExampleRoomMessageConfig(this.messageConfig)
         this.setExampleRoomClientStart(this.playAnimation)
         break
       }
@@ -126,6 +167,9 @@ export default {
 
     setExampleRoomCustomCss(css) {
       this.sendMessageToExampleRoom('roomSetCustomStyle', { css })
+    },
+    setExampleRoomMessageConfig(messageConfig) {
+      this.sendMessageToExampleRoom('roomSetMessageConfig', messageConfig)
     },
     setExampleRoomClientStart(isStart) {
       this.sendMessageToExampleRoom(isStart ? 'roomStartClient' : 'roomStopClient')
@@ -149,6 +193,11 @@ export default {
     position: fixed;
     width: calc((100vw - 230px - 40px) / 3 - 20px);
   }
+}
+
+.example-form-item {
+  margin-bottom: 0;
+  vertical-align: middle;
 }
 
 #example-container {

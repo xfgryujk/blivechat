@@ -434,6 +434,11 @@ export default {
       case 'roomSetCustomStyle':
         this.customStyleElement.textContent = data.css
         break
+      case 'roomSetMessageConfig':
+        if (this.chatClient && this.chatClient.setMsgConfig) {
+          this.chatClient.setMsgConfig(data)
+        }
+        break
       case 'roomStartClient':
         if (this.chatClient) {
           this.chatClient.start()

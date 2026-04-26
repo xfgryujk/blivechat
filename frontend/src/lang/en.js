@@ -27,7 +27,7 @@ export default {
     authCode: 'Identity code',
     howToGetAuthCode: 'How to get identity code',
     showDanmaku: 'Show messages',
-    showGift: 'Show Super Chats',
+    showGift: 'Show Super Chats and memberships',
     showGiftName: 'Show gift name',
     mergeSimilarDanmaku: 'Merge similar messages',
     mergeGift: 'Merge gifts',
@@ -99,6 +99,15 @@ export default {
     legacy: 'Classic',
     lineLike: 'LINE-like',
 
+    playAnimation: 'Generate messages',
+    messageSpeed: 'Messages per second',
+    messageTypes: 'Message types',
+    typeText: 'Text',
+    typeEmoticon: 'Emote',
+    typeGift: 'Gift',
+    typeSuperChat: 'Super Chat',
+    typeMember: 'Membership',
+
     light: 'light',
     dark: 'dark',
 
@@ -166,7 +175,6 @@ export default {
     scContentLineFontSize: 'Super Chat content font size',
     scContentWeight: 'Super Chat content font weight',
     scContentLineColor: 'Super Chat content color',
-    showNewMemberBg: 'Show new member background',
     showScTicker: 'Show Super Chat ticker',
     showOtherThings: 'Show everything other than Super Chat ticker',
 
@@ -178,7 +186,6 @@ export default {
     fadeOutTime: 'Fade out time (miliseconds)',
     slide: 'Slide',
     reverseSlide: 'Reverse slide',
-    playAnimation: 'Play animation',
 
     result: 'Result CSS',
     copy: 'Copy',
