@@ -9,7 +9,7 @@
 }(typeof self !== 'undefined' ? self : this, function() {
   const exports = {}
 
-  const VERSION = '1.0.2'
+  const VERSION = '1.0.3'
   /**
    * 取SDK版本
    * @returns {string} "1.0.0"
@@ -232,6 +232,9 @@
     }
   }
 
+  // 用来统计进队列时间间隔
+  const ENQUEUE_INTERVALS_MAX_TIME_RANGE = 3000
+  const ENQUEUE_INTERVALS_MAX_LENGTH = 10
   // 发送消息时间间隔范围
   const MSG_MIN_INTERVAL = 80
   const MSG_MAX_INTERVAL = 1000
@@ -265,18 +268,31 @@
       } else {
         let curTime = new Date()
         let interval = curTime - this._lastEnqueueTime
-        // 真实的进队列时间间隔模式大概是这样：2500, 300, 300, 300, 2500, 300, ...
-        // B站消息有缓冲，会一次发多条消息。这里把波峰视为发送了一次真实的WS消息，所以要过滤掉间隔太小的
-        if (interval > 1000 || this._enqueueIntervals.length < 5) {
-          this._enqueueIntervals.push(interval)
-          if (this._enqueueIntervals.length > 5) {
-            this._enqueueIntervals.splice(0, this._enqueueIntervals.length - 5)
+        this._enqueueIntervals.push(interval)
+
+        // 统计最近ENQUEUE_INTERVALS_MAX_TIME_RANGE内的间隔，最多ENQUEUE_INTERVALS_MAX_LENGTH个
+        let keepFrom = this._enqueueIntervals.length - 1
+        let minKeepFrom = Math.max(this._enqueueIntervals.length - ENQUEUE_INTERVALS_MAX_LENGTH, 0)
+        let prevIdxPassedTime = 0
+        for (; keepFrom > minKeepFrom; keepFrom--) {
+          let itInterval = this._enqueueIntervals[keepFrom]
+          prevIdxPassedTime += itInterval
+          if (prevIdxPassedTime > ENQUEUE_INTERVALS_MAX_TIME_RANGE) {
+            break
           }
-          // 这边估计得尽量大，只要不太早把消息缓冲发完就是平滑的。有MESSAGE_MAX_INTERVAL保底，不会让消息延迟太大
-          // 其实可以用单调队列求最大值，偷懒不写了
-          this._estimatedEnqueueInterval = Math.max(...this._enqueueIntervals)
         }
-        // 上次入队时间还是要设置，否则会太早把消息缓冲发完，然后较长时间没有新消息
+        if (keepFrom > 0) {
+          this._enqueueIntervals.splice(0, keepFrom)
+        }
+
+        // 这边估计得尽量大，只要不太早把消息缓冲发完就是平滑的。有MSG_MAX_INTERVAL保底，不会让消息延迟太大
+        let maxEnqueueInterval = this._enqueueIntervals[0]
+        for (let interval_ of this._enqueueIntervals) {
+          if (interval_ > maxEnqueueInterval) {
+            maxEnqueueInterval = interval_
+          }
+        }
+        this._estimatedEnqueueInterval = maxEnqueueInterval
         this._lastEnqueueTime = curTime
       }
 
@@ -325,7 +341,7 @@
       // 消息没发完，计算下次发消息时间
       let sleepTime
       if (numToEmit === 1) {
-        // 队列中消息数很少，随便定个[MESSAGE_MIN_INTERVAL, MESSAGE_MAX_INTERVAL]的时间
+        // 队列中消息数很少，随便定个[MSG_MIN_INTERVAL, MSG_MAX_INTERVAL]的时间
         sleepTime = estimatedNextEnqueueRemainTime / this._queue.length
         sleepTime *= 0.5 + Math.random()
         if (sleepTime > MSG_MAX_INTERVAL) {

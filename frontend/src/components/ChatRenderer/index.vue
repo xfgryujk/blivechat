@@ -62,6 +62,9 @@ import MembershipItem from './MembershipItem'
 import PaidMessage from './PaidMessage'
 import * as constants from './constants'
 
+// 用来统计进队列时间间隔
+const ENQUEUE_INTERVALS_MAX_TIME_RANGE = 3000
+const ENQUEUE_INTERVALS_MAX_LENGTH = 10
 // 要添加的消息类型
 const ADD_MESSAGE_TYPES = [
   constants.MESSAGE_TYPE_TEXT,
@@ -278,18 +281,31 @@ export default {
       } else {
         let curTime = new Date()
         let interval = curTime - this.lastEnqueueTime
-        // 真实的进队列时间间隔模式大概是这样：2500, 300, 300, 300, 2500, 300, ...
-        // B站消息有缓冲，会一次发多条消息。这里把波峰视为发送了一次真实的WS消息，所以要过滤掉间隔太小的
-        if (interval > 1000 || this.enqueueIntervals.length < 5) {
-          this.enqueueIntervals.push(interval)
-          if (this.enqueueIntervals.length > 5) {
-            this.enqueueIntervals.splice(0, this.enqueueIntervals.length - 5)
+        this.enqueueIntervals.push(interval)
+
+        // 统计最近ENQUEUE_INTERVALS_MAX_TIME_RANGE内的间隔，最多ENQUEUE_INTERVALS_MAX_LENGTH个
+        let keepFrom = this.enqueueIntervals.length - 1
+        let minKeepFrom = Math.max(this.enqueueIntervals.length - ENQUEUE_INTERVALS_MAX_LENGTH, 0)
+        let prevIdxPassedTime = 0
+        for (; keepFrom > minKeepFrom; keepFrom--) {
+          let itInterval = this.enqueueIntervals[keepFrom]
+          prevIdxPassedTime += itInterval
+          if (prevIdxPassedTime > ENQUEUE_INTERVALS_MAX_TIME_RANGE) {
+            break
           }
-          // 这边估计得尽量大，只要不太早把消息缓冲发完就是平滑的。有MESSAGE_MAX_INTERVAL保底，不会让消息延迟太大
-          // 其实可以用单调队列求最大值，偷懒不写了
-          this.estimatedEnqueueInterval = Math.max(...this.enqueueIntervals)
         }
-        // 上次入队时间还是要设置，否则会太早把消息缓冲发完，然后较长时间没有新消息
+        if (keepFrom > 0) {
+          this.enqueueIntervals.splice(0, keepFrom)
+        }
+
+        // 这边估计得尽量大，只要不太早把消息缓冲发完就是平滑的。有MESSAGE_MAX_INTERVAL保底，不会让消息延迟太大
+        let maxEnqueueInterval = this.enqueueIntervals[0]
+        for (let interval_ of this.enqueueIntervals) {
+          if (interval_ > maxEnqueueInterval) {
+            maxEnqueueInterval = interval_
+          }
+        }
+        this.estimatedEnqueueInterval = maxEnqueueInterval
         this.lastEnqueueTime = curTime
       }
 
