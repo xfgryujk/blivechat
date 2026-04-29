@@ -9,7 +9,7 @@ export default {
     discussion: '反馈 / 交流',
     documentation: '文档',
     mall: 'B站商店',
-    giftRecordOfficial: '打赏记录',
+    giftRecordOfficial: '付费记录',
   },
   home: {
     roomIdEmpty: '房间ID不能为空',
@@ -17,22 +17,22 @@ export default {
     authCodeEmpty: '身份码不能为空',
     authCodeFormatError: '身份码格式错误',
 
-    unavailableWhenUsingAuthCode: '已过时，使用身份码时不可用',
+    unavailableWhenUsingAuthCode: '已废弃，使用身份码时不可用',
     disabledByServer: '已被服务器禁用',
 
     general: '常规',
-    useAuthCodeWarning: '请优先使用身份码，否则无法显示昵称，并且随时可能无法获取弹幕',
+    useAuthCodeWarning: '请优先使用身份码，否则无法显示昵称，且随时可能无法获取弹幕',
     room: '房间',
     roomId: '房间ID（不推荐）',
     authCode: '身份码',
     howToGetAuthCode: '如何获取身份码',
     showDanmaku: '显示弹幕',
-    showGift: '显示打赏和新舰长',
+    showGift: '显示付费消息',
     showGiftName: '显示礼物名',
     mergeSimilarDanmaku: '合并相似弹幕',
     mergeGift: '合并礼物',
-    minGiftPrice: '最低显示打赏价格（元）',
-    maxNumber: '最大弹幕数',
+    minGiftPrice: '最低显示付费消息价格（元）',
+    maxNumber: '最多显示消息数',
 
     block: '屏蔽',
     giftDanmaku: '屏蔽抽奖弹幕',
@@ -47,17 +47,17 @@ export default {
 
     advanced: '高级',
     showDebugMessages: '显示调试消息',
-    showDebugMessagesTip: '如果消息不能显示，可以开启这个用来调试，否则没必要开启',
+    showDebugMessagesTip: '消息无法显示时可开启排查，正常使用时无需开启',
     relayMessagesByServer: '通过服务器转发消息',
-    relayMessagesByServerTip: '开启时的消息路径：B站服务器 -> blivechat服务器 -> 你的浏览器。部分高级功能需要开启这个。推荐只在本地使用blivechat时开启，而通过远程服务器使用时不开启',
-    autoTranslate: '自动翻译弹幕到日语',
+    relayMessagesByServerTip: '开启后消息路径：B站服务器 → blivechat服务器 → 你的浏览器。部分高级功能依赖此选项。建议仅在本地使用时开启，通过远程服务器使用时不开启',
+    autoTranslate: '自动翻译消息为日语',
     requiresRelayMessagesByServer: '需要通过服务器转发消息',
-    giftUsernamePronunciation: '标注打赏用户名读音',
+    giftUsernamePronunciation: '标注付费用户名读音',
     dontShow: '不显示',
     pinyin: '拼音',
     kana: '日文假名',
     importPresetCss: '导入服务器预设CSS',
-    importPresetCssTip: '自动导入服务器的CSS文件：data/custom_public/preset.css',
+    importPresetCssTip: '自动使用服务器预设的CSS文件“data/custom_public/preset.css”，而无需修改OBS中的自定义CSS',
 
     emoticon: '自定义表情',
     emoticonKeyword: '替换关键词',
@@ -69,21 +69,21 @@ export default {
     template: '自定义HTML模板',
     templateHelp: '帮助',
     templateHelpContent: `\
-<p>自定义HTML模板可以完全自定义房间页面，包括DOM结构、CSS样式。模板可能由第三方作者开发，其安全性和质量由模板作者负责。
+<p>自定义HTML模板可以完全自定义房间页面，包括DOM结构和CSS样式。模板可能由第三方作者开发，其安全性和质量由模板作者负责。
   你可以在<a target="_blank" href="https://github.com/xfgryujk/blivechat/discussions/categories/%E8%87%AA%E5%AE%9A%E4%B9%89html%E6%A8%A1%E6%9D%BF"
-  >GitHub Discussions</a>获取一些已发布的模板</p>
-<p>模板安装方法：把解压后的模板目录放到“data/custom_public/templates”目录，然后等待约10秒后刷新网页。
-  另外你也可以直接输入模板URL来使用在线模板</p>
-<p>注意：修改自定义模板设置后，OBS中的自定义CSS将不会生效</p>
+  >GitHub Discussions</a>获取已发布的模板</p>
+<p>模板安装方法：将解压后的模板目录放入“data/custom_public/templates”目录，等待约10秒后刷新页面。
+  另外你也可以直接输入模板URL使用在线模板</p>
+<p>注意：修改自定义模板设置后，OBS中的自定义CSS将默认不再生效，除非特殊设置</p>
 <p><a target="_blank" href="https://github.com/xfgryujk/blivechat/wiki/%E8%87%AA%E5%AE%9A%E4%B9%89HTML%E6%A8%A1%E6%9D%BF">模板开发文档</a></p>
 `,
     templateDefaultTitle: '默认',
-    templateDefaultDescription: '仿YouTube风格的模板，可以用自定义CSS修改样式。如果你不了解自定义HTML模板的功能，就选择这个，否则OBS中的自定义CSS不会生效',
+    templateDefaultDescription: '仿YouTube风格的模板，可通过自定义CSS修改样式。如不了解自定义HTML模板功能，请选择此项，否则OBS中的自定义CSS不会生效',
     templateCustomUrlTitle: '输入模板URL',
-    templateCustomUrlDescription: '没有列出的模板，也可以在这里手动输入作者提供的URL',
+    templateCustomUrlDescription: '未列出的模板也可在此手动输入作者提供的URL',
     author: '作者：',
 
-    urlTooLong: '房间URL太长了，会被直播姬截断（OBS不会）',
+    urlTooLong: '房间URL过长，直播姬可能会截断（OBS无此问题）',
     roomUrlUpdated: '房间URL已更新，记得重新复制',
     roomUrl: '房间URL',
     enterRoom: '进入房间',
@@ -110,7 +110,7 @@ export default {
     dark: '深色',
 
     global: '全局',
-    scalingNotice: '如果觉得字体太小，优先修改这里的比例而不是在OBS里拉伸浏览器源。求求你们不要拉伸然后问为什么看不清了😭',
+    scalingNotice: '如果觉得字体太小，请优先调整此比例，而不要在OBS中拉伸浏览器源。求求你们不要拉伸然后问为什么看不清了😭',
     globalScale: '全局缩放比例',
     fontScale: '字体缩放比例',
 
@@ -127,7 +127,7 @@ export default {
     userNames: '用户名',
     showUserNames: '显示用户名',
     font: '字体',
-    fontSelectTip: '你也可以输入本地字体名。前面的字体会被优先使用',
+    fontSelectTip: '你也可以输入本地字体名。排在前面的字体会被优先使用',
     recentFonts: '最近使用的字体',
     presetFonts: '预设字体',
     networkFonts: '网络字体',
@@ -153,14 +153,14 @@ export default {
 
     backgrounds: '背景',
     bgColor: '背景色',
-    useBarsInsteadOfBg: '用条代替消息背景',
+    useBarsInsteadOfBg: '用装饰条而非背景',
     showLargeEmoticonBg: '显示大表情背景',
     messageBgColor: '消息背景色',
     ownerMessageBgColor: '主播消息背景色',
     moderatorMessageBgColor: '房管消息背景色',
     memberMessageBgColor: '舰长消息背景色',
 
-    scAndNewMember: '打赏、舰长',
+    scAndNewMember: '付费消息',
     firstLineFont: '第一行字体',
     firstLineFontSize: '第一行字体尺寸',
     firstLineWeight: '第一行字体粗细',
@@ -179,8 +179,8 @@ export default {
     animation: '动画',
     animateIn: '进入动画',
     fadeInTime: '淡入时间（毫秒）',
-    animateOut: '移除旧消息',
-    animateOutWaitTime: '移除前等待时间（秒）',
+    animateOut: '旧消息退场',
+    animateOutWaitTime: '退场前等待时间（秒）',
     fadeOutTime: '淡出时间（毫秒）',
     slide: '滑动',
     reverseSlide: '反向滑动',
@@ -193,14 +193,14 @@ export default {
   help: {
     help: '帮助',
     p1_1: '1. 从这个页面复制身份码：',
-    p1_2: '。注意：不要刷新身份码，除非你的身份码泄露了，因为刷新身份码会使旧的身份码失效',
+    p1_2: '。注意：请勿随意刷新身份码，除非已泄露，因为刷新会使旧身份码失效',
     p2: '2. 把身份码输入到首页的房间配置，复制房间URL',
     p3: '3. 使用样式生成器生成样式，复制CSS',
     p4: '4. 在OBS中添加浏览器源',
     p5: '5. URL处输入之前复制的房间URL，自定义CSS处输入之前复制的CSS'
   },
   room: {
-    fatalErrorOccurred: '发生了一个致命错误，请手动刷新页面以重新连接'
+    fatalErrorOccurred: '发生了致命错误，请刷新页面以重新连接'
   },
   chat: {
     moderator: '管理员',
@@ -216,11 +216,11 @@ export default {
     plugins: '插件',
     help: '帮助',
     helpContent: `\
-<p>插件可以给blivechat添加更多功能，比如消息日志、语音播报、点歌等。插件可能由第三方作者开发，其安全性和质量由插件作者负责。
+<p>插件可以为blivechat添加更多功能，如消息日志、语音播报、点歌等。插件可能由第三方作者开发，其安全性和质量由插件作者负责。
   你可以在<a target="_blank" href="https://github.com/xfgryujk/blivechat/discussions/categories/%E6%8F%92%E4%BB%B6"
-  >GitHub Discussions</a>获取一些已发布的插件</p>
-<p>插件安装方法：把解压后的插件目录放到“data/plugins”目录，然后重启blivechat</p>
-<p>注意：大部分插件需要开启“通过服务器转发消息”，并且连接到房间，才能接收消息</p>
+  >GitHub Discussions</a>获取已发布的插件</p>
+<p>插件安装方法：将解压后的插件目录放入“data/plugins”目录，然后重启blivechat</p>
+<p>注意：大部分插件需要开启“通过服务器转发消息”，并连接到房间，才能接收消息</p>
 <p><a target="_blank" href="https://www.bilibili.com/video/BV1nZ42187TX/">介绍视频</a></p>
 <p><a target="_blank" href="https://github.com/xfgryujk/blivechat/wiki/%E6%8F%92%E4%BB%B6%E7%B3%BB%E7%BB%9F">插件开发文档</a></p>
 `,

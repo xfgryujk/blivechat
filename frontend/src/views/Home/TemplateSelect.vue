@@ -32,7 +32,7 @@
             </div>
           </div>
           <div>
-            <el-input v-model="customUrl" placeholder="https://example.com/path/to/you/template/index.html"></el-input>
+            <el-input v-model="customUrl" placeholder="https://example.com/path/to/your/template/index.html"></el-input>
           </div>
         </div>
       </el-radio>
