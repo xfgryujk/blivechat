@@ -47,15 +47,16 @@ def shut_down():
 
 
 def _discover_plugin_ids():
-    res = []
+    entries = []
     try:
         with os.scandir(PLUGINS_PATH) as it:
             for entry in it:
                 if entry.is_dir() and os.path.isfile(os.path.join(entry.path, 'plugin.json')):
-                    res.append(entry.name)
+                    entries.append((-entry.stat().st_mtime, entry.name))
     except OSError:
         logger.exception('Failed to discover plugins:')
-    return res
+    entries.sort()
+    return [entry[1] for entry in entries]
 
 
 def _create_plugin(plugin_id):

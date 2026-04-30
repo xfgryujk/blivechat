@@ -168,6 +168,7 @@ export default {
   margin-block-end: 1em;
   flex: auto;
   overflow-y: auto;
+  white-space: pre-wrap;
 }
 
 .operations {

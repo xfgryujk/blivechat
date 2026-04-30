@@ -118,17 +118,19 @@ class TemplatesHandler(api.base.ApiHandler):
         self.write({'templates': templates})
 
     def _get_templates(self):
-        template_ids = []
+        entries = []
         try:
             with os.scandir(TEMPLATE_PATH) as it:
                 for entry in it:
                     if entry.is_dir() and os.path.isfile(os.path.join(entry.path, 'template.json')):
-                        template_ids.append(entry.name)
+                        entries.append((-entry.stat().st_mtime, entry.name))
         except OSError:
             logger.exception('Failed to discover templates:')
             return []
-        if not template_ids:
+        if not entries:
             return []
+        entries.sort()
+        template_ids = [entry[1] for entry in entries]
 
         templates = []
         for template_id in template_ids:
