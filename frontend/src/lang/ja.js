@@ -189,7 +189,7 @@ export default {
 
     result: '結果CSS',
     copy: 'コピー',
-    editor: 'エディタ',
+    editor: 'オンラインIDE',
     resetConfig: '設定をデフォルトに戻す'
   },
   help: {

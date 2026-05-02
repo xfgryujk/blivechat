@@ -15,7 +15,7 @@
         <el-card shadow="never">
           <el-form-item>
             <el-button type="primary" @click="copyResult">{{ $t('stylegen.copy') }}</el-button>
-            <a target="_blank" href="https://vscode.dev/">
+            <a target="_blank" href="https://stackblitz.com/github/xfgryujk/blivechat-templates/tree/master/stackblitz?file=src%2Fmain.js,src%2Fassets%2Fcustom.css">
               <el-button style="margin: 0 10px">{{ $t('stylegen.editor') }}</el-button>
             </a>
             <el-button type="danger" @click="resetConfig" style="float: right">{{ $t('stylegen.resetConfig') }}</el-button>

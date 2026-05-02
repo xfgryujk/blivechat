@@ -187,7 +187,7 @@ export default {
 
     result: '结果CSS',
     copy: '复制',
-    editor: '编辑器',
+    editor: '在线开发环境',
     resetConfig: '恢复默认设置'
   },
   help: {

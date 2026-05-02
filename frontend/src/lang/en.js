@@ -189,7 +189,7 @@ export default {
 
     result: 'Result CSS',
     copy: 'Copy',
-    editor: 'Editor',
+    editor: 'Online IDE',
     resetConfig: 'Reset config to default'
   },
   help: {
