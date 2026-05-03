@@ -1,0 +1,269 @@
+@import url("https://fonts.googleapis.com/css?family=Noto%20Sans%20SC");
+
+yt-live-chat-renderer {
+  /* 基准尺寸，用于整体缩放 */
+  --base-size: 1px;
+  --font-base-size: calc(1 * var(--base-size));
+
+  /* 没有首选字体时的备用字体 */
+  --fallback-fonts: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "\5FAE \8F6F \96C5 \9ED1 ", SimHei, Arial, sans-serif;
+
+  /* 头像 */
+  --avatar-size: calc(40 * var(--base-size));
+
+  /* 时间 */
+  --time-color: #999999;
+  --time-size: calc(18 * var(--font-base-size));
+  --time-weight: 400;
+
+  /* 用户名 - 普通、舰长、房管、主播 */
+  --username-color: #cccccc;
+  --username-color-member: #0f9d58;
+  --username-color-moderator: #5e84f1;
+  --username-color-owner: #ffd600;
+  --username-size: calc(18 * var(--font-base-size));
+  --username-weight: 700;
+
+  /* 文本消息 */
+  --text-content-color: #000000;
+  --text-content-size: calc(20 * var(--font-base-size));
+  --text-content-weight: 700;
+
+  /* 表情 */
+  --emote-size: calc(24 * var(--font-base-size));
+  --large-emote-size: calc(60 * var(--font-base-size));
+
+  /* 背景色 - 普通、舰长、房管、主播 */
+  --text-msg-bg-color: #ffffff;
+  --text-msg-bg-color-member: #3ACD2E;
+  --text-msg-bg-color-moderator: #3CA0FB;
+  --text-msg-bg-color-owner: #F5D401;
+
+  /* 付费、上舰消息 */
+  --paid-msg-line-1-size: calc(22 * var(--font-base-size));
+  --paid-msg-line-1-weight: 700;
+  --paid-msg-line-2-size: calc(20 * var(--font-base-size));
+  --paid-msg-line-2-weight: 700;
+  --paid-msg-content-size: calc(20 * var(--font-base-size));
+  --paid-msg-content-weight: 700;
+  --membership-msg-bg-color: var(--username-color-member);
+}
+
+/* （必需）透明背景 */
+body,
+yt-live-chat-renderer,
+yt-live-chat-ticker-renderer,
+yt-live-chat-author-chip #author-name {
+  background-color: transparent;
+}
+
+/* （必需）隐藏滚动条 */
+body,
+yt-live-chat-item-list-renderer #item-scroller {
+  overflow: hidden;
+}
+
+/* 通用规则 */
+yt-live-chat-renderer * {
+  font-size: var(--font-size);
+  --line-height: calc(var(--font-size) * 1.2);
+  line-height: var(--line-height);
+}
+
+/* 减少两侧边距 */
+yt-live-chat-text-message-renderer {
+  padding-inline: 4px;
+}
+
+/* 头像 */
+yt-live-chat-item-list-renderer :is(#author-photo, #author-photo img) {
+  width: var(--avatar-size);
+  height: var(--avatar-size);
+  margin-right: 10px;
+}
+
+/* 时间 */
+yt-live-chat-text-message-renderer #timestamp {
+  display: none;
+}
+
+/* 用户名 */
+yt-live-chat-text-message-renderer #author-name {
+  
+  color: var(--username-color);
+  font-family: "Noto Sans SC", var(--fallback-fonts);
+  --font-size: var(--username-size);
+  font-weight: var(--username-weight);
+}
+
+yt-live-chat-text-message-renderer :is(#author-name, yt-live-chat-author-badge-renderer)[type="owner"] {
+  color: var(--username-color-owner);
+}
+
+yt-live-chat-text-message-renderer :is(#author-name, yt-live-chat-author-badge-renderer)[type="moderator"] {
+  color: var(--username-color-moderator);
+}
+
+yt-live-chat-text-message-renderer :is(#author-name, yt-live-chat-author-badge-renderer)[type="member"] {
+  color: var(--username-color-member);
+}
+
+yt-live-chat-text-message-renderer yt-live-chat-author-badge-renderer :is(img, yt-icon) {
+  --font-size: var(--username-size);
+  width: var(--line-height);
+  height: var(--line-height);
+}
+
+yt-live-chat-text-message-renderer yt-live-chat-author-chip {
+  margin-bottom: 5px;
+}
+
+/* 文本消息 */
+yt-live-chat-text-message-renderer :is(#message, #message *) {
+  color: var(--text-content-color);
+  font-family: "Noto Sans SC", var(--fallback-fonts);
+  --font-size: var(--text-content-size);
+  font-weight: var(--text-content-weight);
+}
+
+yt-live-chat-text-message-renderer #message .emoji {
+  width: auto;
+  height: var(--emote-size);
+}
+
+yt-live-chat-text-message-renderer #message .emoji.blc-large-emoji {
+  height: var(--large-emote-size);
+}
+
+/* 气泡背景 */
+yt-live-chat-text-message-renderer #message {
+  display: block;
+  position: relative;
+  width: fit-content;
+  overflow: visible;
+  padding: calc(12 * var(--base-size)) calc(20 * var(--base-size));
+  border-radius: calc(24 * var(--base-size));
+}
+
+/* 气泡旁边的三角形箭头 */
+yt-live-chat-text-message-renderer #message::before {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: calc(8 * var(--base-size)) solid transparent;
+  border-left-width: calc(18 * var(--base-size));
+  border-right: calc(18 * var(--base-size)) solid green;
+  transform: translate(-50%, -50%) rotate(35deg);
+}
+
+/* 适配隐藏大表情背景 */
+yt-live-chat-text-message-renderer #message:has(.emoji.blc-large-emoji)::before {
+  content: none;
+}
+
+yt-live-chat-text-message-renderer #message:has(.emoji.blc-large-emoji) {
+  padding: 0;
+}
+
+/* 背景色 */
+yt-live-chat-text-message-renderer #message {
+  background-color: var(--text-msg-bg-color);
+}
+
+yt-live-chat-text-message-renderer #message::before {
+  border-right-color: var(--text-msg-bg-color);
+}
+
+yt-live-chat-text-message-renderer[author-type="owner"] #message {
+  background-color: var(--text-msg-bg-color-owner);
+}
+
+yt-live-chat-text-message-renderer[author-type="owner"] #message::before {
+  border-right-color: var(--text-msg-bg-color-owner);
+}
+
+yt-live-chat-text-message-renderer[author-type="moderator"] #message {
+  background-color: var(--text-msg-bg-color-moderator);
+}
+
+yt-live-chat-text-message-renderer[author-type="moderator"] #message::before {
+  border-right-color: var(--text-msg-bg-color-moderator);
+}
+
+yt-live-chat-text-message-renderer[author-type="member"] #message {
+  background-color: var(--text-msg-bg-color-member);
+}
+
+yt-live-chat-text-message-renderer[author-type="member"] #message::before {
+  border-right-color: var(--text-msg-bg-color-member);
+}
+
+/* 隐藏大表情背景 */
+yt-live-chat-text-message-renderer #message:has(.emoji.blc-large-emoji) {
+  background-color: transparent;
+}
+
+/* 付费、上舰消息 */
+yt-live-chat-paid-message-renderer {
+  margin: 4px 0;
+}
+
+yt-live-chat-paid-message-renderer :is(#author-name, #author-name *),
+yt-live-chat-membership-item-renderer :is(#header-content-inner-column, #header-content-inner-column *) {
+  font-family: "Noto Sans SC", var(--fallback-fonts);
+  --font-size: var(--paid-msg-line-1-size);
+  font-weight: var(--paid-msg-line-1-weight);
+}
+
+yt-live-chat-membership-item-renderer yt-live-chat-author-badge-renderer :is(img, yt-icon) {
+  width: var(--line-height);
+  height: var(--line-height);
+}
+
+yt-live-chat-paid-message-renderer :is(#purchase-amount, #purchase-amount *),
+yt-live-chat-membership-item-renderer :is(#header-subtext, #header-subtext *) {
+  font-family: "Noto Sans SC", var(--fallback-fonts);
+  --font-size: var(--paid-msg-line-2-size);
+  font-weight: var(--paid-msg-line-2-weight);
+}
+
+yt-live-chat-paid-message-renderer :is(#content, #content *) {
+  font-family: "Noto Sans SC", var(--fallback-fonts);
+  --font-size: var(--paid-msg-content-size);
+  font-weight: var(--paid-msg-content-weight);
+}
+
+yt-live-chat-membership-item-renderer :is(#card, #header) {
+  background-color: var(--membership-msg-bg-color);
+  margin: 4px 0;
+}
+
+/* SC固定栏 */
+yt-live-chat-ticker-renderer :is(#items, #content) {
+  height: unset;
+}
+
+yt-live-chat-ticker-paid-message-item-renderer #author-photo img {
+  --font-size: var(--paid-msg-line-2-size);
+  width: var(--line-height);
+  height: var(--line-height);
+}
+
+yt-live-chat-ticker-paid-message-item-renderer #text {
+  font-family: "Noto Sans SC", var(--fallback-fonts);
+  --font-size: var(--paid-msg-line-2-size);
+  font-weight: var(--paid-msg-line-2-weight);
+}
+
+/* 动画 */
+@keyframes anim {
+  0% { opacity: 0; translate: calc(-16 * var(--base-size)); }
+  100% { opacity: 1; translate: none; }
+}
+
+yt-live-chat-item-list-renderer #items > * {
+  animation: anim 200ms;
+  animation-fill-mode: both;
+}

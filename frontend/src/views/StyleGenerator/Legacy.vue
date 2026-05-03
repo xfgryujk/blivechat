@@ -603,7 +603,7 @@ ${!this.form.messageOnNewLine ? '' : `yt-live-chat-text-message-renderer #messag
   overflow: visible;
 }`}
 
-yt-live-chat-text-message-renderer #message:has(.emoji.blc-large-emoji) {
+yt-live-chat-text-message-renderer #content:has(.emoji.blc-large-emoji) > * {
   vertical-align: top;
 }`
     },
