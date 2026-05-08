@@ -9,12 +9,15 @@ frontend/package-lock.json
 
 # IDEs and editors
 **/.idea/
+**/.vscode/
 
 # misc
 **/.git*
 **/*.spec
-screenshots/
+# dotfiles
+.*
 
+screenshots/
 plugins/
 
 # runtime data

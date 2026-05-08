@@ -1,0 +1,46 @@
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[project]
+name = "blivechat"
+dynamic = ["version"]
+description = "用于OBS的仿YouTube风格的bilibili直播评论栏"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [{name = "xfgryujk", email = "xfgryujk@126.com"}]
+license = {file = "LICENSE"}
+classifiers = ["Private :: Do Not Upload"]
+dependencies = [
+    "aiohttp==3.9.5",
+    "blcsdk",
+    "blivedm",
+    "cachetools==5.3.1",
+    "circuitbreaker==2.0.0",
+    "pycryptodome==3.19.1",
+    "sqlalchemy==2.0.37",
+    "tornado==6.5.5",
+    "yarl==1.9.11",
+]
+
+[project.urls]
+Homepage = "https://github.com/xfgryujk/blivechat"
+Repository = "https://github.com/xfgryujk/blivechat"
+Issues = "https://github.com/xfgryujk/blivechat/issues"
+
+[dependency-groups]
+dev = [
+    "pyinstaller~=5.13.2",
+    "setuptools~=75.1.0",
+]
+
+[tool.pdm]
+version = {source = "file", path = "update.py"}
+distribution = false
+
+[tool.uv.sources]
+blivedm = {git = "https://github.com/xfgryujk/blivedm.git", rev = "8727ca9f8340e9c1e20e473eb1757bffb56c66f6"}
+blcsdk = {workspace = true, editable = true}
+
+[tool.uv.workspace]
+members = ["blcsdk"]

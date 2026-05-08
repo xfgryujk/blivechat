@@ -9,9 +9,9 @@ from typing import *
 import api.chat
 import api.open_live as api_open_live
 import blcsdk.models as sdk_models
-import blivedm.blivedm as blivedm
-import blivedm.blivedm.models.open_live as dm_open_models
-import blivedm.blivedm.models.web as dm_web_models
+import blivedm
+import blivedm.models.open_live as dm_open_models
+import blivedm.models.web as dm_web_models
 import config
 import services.avatar
 import services.plugin

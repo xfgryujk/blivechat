@@ -1,10 +1,9 @@
 # -*- mode: python ; coding: utf-8 -*-
+import shutil
 import typing
-import subprocess
-import sys
-if typing.TYPE_CHECKING:
-    import os
+from pathlib import Path
 
+if typing.TYPE_CHECKING:
     from PyInstaller.building.api import COLLECT, EXE, PYZ
     from PyInstaller.building.build_main import Analysis
 
@@ -14,10 +13,6 @@ if typing.TYPE_CHECKING:
 
 # exe文件名、打包目录名
 NAME = 'msg-logging'
-# 模块搜索路径
-PYTHONPATH = [
-    os.path.join(SPECPATH, '..', '..'),  # 为了找到blcsdk
-]
 # 数据
 DATAS = [
     ('plugin.json', '.'),
@@ -30,7 +25,7 @@ block_cipher = None
 
 a = Analysis(
     ['main.py'],
-    pathex=PYTHONPATH,
+    pathex=[],
     binaries=[],
     datas=DATAS,
     hiddenimports=[],
@@ -81,4 +76,4 @@ coll = COLLECT(
 
 # 打包
 print('Start to package')
-subprocess.run([sys.executable, '-m', 'zipfile', '-c', NAME + '.zip', NAME], cwd=DISTPATH)
+shutil.make_archive(str(Path(DISTPATH) / NAME), 'zip', DISTPATH, NAME)

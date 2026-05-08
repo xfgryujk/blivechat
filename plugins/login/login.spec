@@ -1,13 +1,11 @@
 # -*- mode: python ; coding: utf-8 -*-
+import shutil
 import typing
-import subprocess
-import sys
+from pathlib import Path
 
 import webview.__pyinstaller
 
 if typing.TYPE_CHECKING:
-    import os
-
     from PyInstaller.building.api import COLLECT, EXE, PYZ
     from PyInstaller.building.build_main import Analysis
 
@@ -17,10 +15,6 @@ if typing.TYPE_CHECKING:
 
 # exe文件名、打包目录名
 NAME = 'login'
-# 模块搜索路径
-PYTHONPATH = [
-    os.path.join(SPECPATH, '..', '..'),  # 为了找到blcsdk
-]
 # 数据
 DATAS = [
     ('plugin.json', '.'),
@@ -33,12 +27,12 @@ block_cipher = None
 
 a = Analysis(
     ['main.py'],
-    pathex=PYTHONPATH,
+    pathex=[],
     binaries=[],
     datas=DATAS,
     hiddenimports=[],
     hookspath=[
-        os.path.dirname(webview.__pyinstaller.__file__),  # pyinstaller-hooks-contrib的版本太老了，少打包了js文件...
+        str(Path(webview.__pyinstaller.__file__).parent),  # pyinstaller-hooks-contrib的版本太老了，少打包了js文件...
     ],
     hooksconfig={},
     runtime_hooks=[],
@@ -86,4 +80,4 @@ coll = COLLECT(
 
 # 打包
 print('Start to package')
-subprocess.run([sys.executable, '-m', 'zipfile', '-c', NAME + '.zip', NAME], cwd=DISTPATH)
+shutil.make_archive(str(Path(DISTPATH) / NAME), 'zip', DISTPATH, NAME)

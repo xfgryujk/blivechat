@@ -1,0 +1,28 @@
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[project]
+name = "blivechat-msg-logging"
+dynamic = ["version"]
+description = "blivechat消息日志插件"
+requires-python = ">=3.12"
+authors = [{name = "xfgryujk", email = "xfgryujk@126.com"}]
+license = {file = "LICENSE"}
+classifiers = ["Private :: Do Not Upload"]
+dependencies = [
+    "blcsdk",
+]
+
+[dependency-groups]
+dev = [
+    "pyinstaller~=5.13.2",
+    "setuptools~=75.1.0",
+]
+
+[tool.pdm]
+version = {source = "file", path = "plugin.json", pattern = '"version": "([^"]+)"'}
+distribution = false
+
+[tool.uv.sources]
+blcsdk = {path = "../../blcsdk/", editable = true}

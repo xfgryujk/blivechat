@@ -1,10 +1,10 @@
 # -*- mode: python ; coding: utf-8 -*-
-import typing
-import subprocess
+import shutil
 import sys
-if typing.TYPE_CHECKING:
-    import os
+import typing
+from pathlib import Path
 
+if typing.TYPE_CHECKING:
     from PyInstaller.building.api import COLLECT, EXE, PYZ
     from PyInstaller.building.build_main import Analysis
 
@@ -14,10 +14,6 @@ if typing.TYPE_CHECKING:
 
 # exe文件名、打包目录名
 NAME = 'native-ui'
-# 模块搜索路径
-PYTHONPATH = [
-    os.path.join(SPECPATH, '..', '..'),  # 为了找到blcsdk
-]
 # 数据
 DATAS = [
     ('plugin.json', '.'),
@@ -32,15 +28,15 @@ if sys.platform == 'win32':
     import wx
 
     # https://docs.wxpython.org/wx.html2.WebView.html#phoenix-title-webview-backend-edge-msw
-    bin_path = os.path.join(os.path.dirname(wx.__file__), 'WebView2Loader.dll')
-    BINARIES.append((bin_path, '.'))
+    bin_path = Path(wx.__file__).parent / 'WebView2Loader.dll'
+    BINARIES.append((str(bin_path), '.'))
 
 block_cipher = None
 
 
 a = Analysis(
     ['main.pyw'],
-    pathex=PYTHONPATH,
+    pathex=[],
     binaries=BINARIES,
     datas=DATAS,
     hiddenimports=[],
@@ -92,4 +88,4 @@ coll = COLLECT(
 
 # 打包
 print('Start to package')
-subprocess.run([sys.executable, '-m', 'zipfile', '-c', NAME + '.zip', NAME], cwd=DISTPATH)
+shutil.make_archive(str(Path(DISTPATH) / NAME), 'zip', DISTPATH, NAME)

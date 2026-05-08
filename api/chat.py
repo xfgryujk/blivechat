@@ -13,7 +13,7 @@ import tornado.websocket
 import yarl
 
 import api.base
-import blivedm.blivedm.clients.web as dm_web_cli
+import blivedm.clients.web as dm_web_cli
 import config
 import services.avatar
 import services.chat

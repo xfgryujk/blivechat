@@ -50,18 +50,6 @@
 
 此方式适用于自建服务器或者在Windows以外的平台运行
 
-0. 由于使用了git子模块，clone时需要加上`--recursive`参数：
-
-    ```sh
-    git clone --recursive https://github.com/xfgryujk/blivechat.git
-    ```
-
-    如果已经clone，拉子模块的方法：
-
-    ```sh
-    git submodule update --init --recursive
-    ```
-
 1. 编译前端（需要安装Node.js）：
 
     ```sh
@@ -70,25 +58,19 @@
     npm run build
     ```
 
-2. 安装服务器依赖（需要Python 3.12以上版本）：
+2. 运行服务器（需要安装uv）：
 
     ```sh
-    pip install -r requirements.txt
-    ```
-
-3. 运行服务器：
-
-    ```sh
-    python main.py
+    uv run main.py
     ```
 
     或者可以指定host和端口号：
 
     ```sh
-    python main.py --host 127.0.0.1 --port 12450
+    uv run main.py --host 127.0.0.1 --port 12450
     ```
 
-4. 用浏览器打开[http://localhost:12450](http://localhost:12450)，以下略
+3. 用浏览器打开[http://localhost:12450](http://localhost:12450)，以下略
 
 ### 四、Docker
 

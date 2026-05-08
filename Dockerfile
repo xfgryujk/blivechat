@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+
 #
 # 构建前端
 #
@@ -18,20 +20,22 @@ RUN npm run build
 # 准备后端
 #
 
-FROM python:3.12.10-bookworm
+FROM ghcr.io/astral-sh/uv:python3.12-trixie
 ARG BASE_PATH='/root/blivechat'
 ARG EXT_DATA_PATH='/mnt/data'
+ENV UV_NO_DEV=1
+ENV UV_NO_CACHE=1
 WORKDIR "${BASE_PATH}"
 
 # 后端依赖
-COPY blivedm/requirements.txt blivedm/
-COPY requirements.txt ./
-RUN pip3 install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple -r requirements.txt
+COPY pyproject.toml uv.lock ./
+RUN uv sync --locked --no-install-project
 
-# 数据目录
-COPY . ./
-RUN sed 's/^host =.*$/host = 0.0.0.0/; s/^loader_url =.*$/loader_url =/' data/config.example.ini >> data/config.ini
-RUN mkdir -p "${EXT_DATA_PATH}" \
+# 代码、数据目录
+COPY --exclude=frontend/ . ./
+RUN uv sync --locked \
+    && sed 's/^host =.*$/host = 0.0.0.0/; s/^loader_url =.*$/loader_url =/' data/config.example.ini >> data/config.ini \
+    && mkdir -p "${EXT_DATA_PATH}" \
     && mv data "${EXT_DATA_PATH}/data" \
     && ln -s "${EXT_DATA_PATH}/data" data \
     && mv log "${EXT_DATA_PATH}/log" \
@@ -43,4 +47,4 @@ COPY --from=builder "${BASE_PATH}/frontend/dist" frontend/dist
 # 运行
 VOLUME "${EXT_DATA_PATH}"
 EXPOSE 12450
-ENTRYPOINT ["python3", "main.py"]
+ENTRYPOINT ["uv", "run", "main.py"]

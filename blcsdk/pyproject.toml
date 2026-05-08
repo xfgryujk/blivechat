@@ -1,0 +1,24 @@
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[project]
+name = "blcsdk"
+dynamic = ["version"]
+description = "blivechat SDK"
+requires-python = ">=3.12"
+authors = [{name = "xfgryujk", email = "xfgryujk@126.com"}]
+license = {file = "../LICENSE"}
+classifiers = ["Private :: Do Not Upload"]
+dependencies = [
+    "aiohttp>=3.9.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/xfgryujk/blivechat"
+Repository = "https://github.com/xfgryujk/blivechat"
+Issues = "https://github.com/xfgryujk/blivechat/issues"
+
+[tool.pdm]
+version = {source = "file", path = "blcsdk/__init__.py"}
+distribution = true
