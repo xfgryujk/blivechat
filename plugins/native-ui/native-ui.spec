@@ -73,6 +73,7 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     icon='data/blivechat.ico',
+    contents_directory='.',
 )
 
 coll = COLLECT(

@@ -17,8 +17,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "pyinstaller~=5.13.2",
-    "setuptools~=75.1.0",
+    "pyinstaller~=6.20.0",
 ]
 
 [tool.pdm]

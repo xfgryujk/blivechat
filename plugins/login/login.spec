@@ -3,8 +3,6 @@ import shutil
 import typing
 from pathlib import Path
 
-import webview.__pyinstaller
-
 if typing.TYPE_CHECKING:
     from PyInstaller.building.api import COLLECT, EXE, PYZ
     from PyInstaller.building.build_main import Analysis
@@ -31,9 +29,7 @@ a = Analysis(
     binaries=[],
     datas=DATAS,
     hiddenimports=[],
-    hookspath=[
-        str(Path(webview.__pyinstaller.__file__).parent),  # pyinstaller-hooks-contrib的版本太老了，少打包了js文件...
-    ],
+    hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[],
@@ -65,6 +61,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    contents_directory='.',
 )
 
 coll = COLLECT(
