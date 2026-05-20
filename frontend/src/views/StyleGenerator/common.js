@@ -275,7 +275,7 @@ export function getAnimationStyle(config) {
     keyframes.push(`  ${curTime / totalTime * 100}% { opacity: 1; translate: none; }`)
     curTime += config.fadeOutTime
     keyframes.push(`  ${curTime / totalTime * 100}% { opacity: 0;${!config.slide ? ''
-      : ` translate: calc(${config.reverseSlide ? -16 : 16} * var(--base-size);`
+      : ` translate: calc(${config.reverseSlide ? -16 : 16} * var(--base-size));`
     } }`)
   }
   return `/* 动画 Animation */
