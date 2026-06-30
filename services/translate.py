@@ -493,6 +493,7 @@ class OpenAiApi(TranslateProvider):
             ],
             'model': model,
             'thinking': {'type': 'disabled'},
+            'chat_template_kwargs': {'enable_thinking': False},
             # 'reasoning_effort': 'none',  # 很多模型不支持none值
             'max_tokens': max_tokens,
             'stream': False,
