@@ -103,7 +103,7 @@ dev = [
 requires-dist = [
     { name = "aiohttp", specifier = "==3.9.5" },
     { name = "blcsdk", editable = "blcsdk" },
-    { name = "blivedm", git = "https://github.com/xfgryujk/blivedm.git?rev=8727ca9f8340e9c1e20e473eb1757bffb56c66f6" },
+    { name = "blivedm", git = "https://github.com/xfgryujk/blivedm.git?rev=3bf17fe862b8c2fc6bc04c81c3f0c5db95de93d6" },
     { name = "cachetools", specifier = "==5.3.1" },
     { name = "circuitbreaker", specifier = "==2.0.0" },
     { name = "pycryptodome", specifier = "==3.19.1" },
@@ -117,8 +117,8 @@ dev = [{ name = "pyinstaller", specifier = "~=6.20.0" }]
 
 [[package]]
 name = "blivedm"
-version = "1.1.6"
-source = { git = "https://github.com/xfgryujk/blivedm.git?rev=8727ca9f8340e9c1e20e473eb1757bffb56c66f6#8727ca9f8340e9c1e20e473eb1757bffb56c66f6" }
+version = "1.1.7"
+source = { git = "https://github.com/xfgryujk/blivedm.git?rev=3bf17fe862b8c2fc6bc04c81c3f0c5db95de93d6#3bf17fe862b8c2fc6bc04c81c3f0c5db95de93d6" }
 dependencies = [
     { name = "aiohttp" },
     { name = "brotli" },

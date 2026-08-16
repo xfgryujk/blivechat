@@ -3,6 +3,7 @@ import * as chat from '.'
 import * as chatModels from './models'
 import * as base from './ChatClientOfficialBase'
 import ChatClientOfficialBase from './ChatClientOfficialBase'
+import { longToNumber, SendGiftBroadcast } from './pb'
 
 export default class ChatClientDirectWeb extends ChatClientOfficialBase {
   constructor(roomId) {
@@ -177,6 +178,40 @@ export default class ChatClientDirectWeb extends ChatClientOfficialBase {
     this.msgHandler.onAddGift(data)
   }
 
+  sendGiftV2Callback(command) {
+    let data = command.data
+    // let bytes = Uint8Array.fromBase64(data.pb)
+    let bytes = Uint8Array.from(atob(data.pb), c => c.charCodeAt(0))
+    let proto = SendGiftBroadcast.decode(bytes)
+
+    let uid = longToNumber(proto.uid)
+    uid = uid ? uid.toString() : proto.uname
+    let medalRuid = longToNumber(proto.medal_info.target_id)
+    let medalLevel = medalRuid === this.roomOwnerUid ? longToNumber(proto.medal_info.medal_level) : 0
+    let medalName = medalRuid === this.roomOwnerUid ? proto.medal_info.medal_name : ''
+
+    for (let gift of proto.gift_list) {
+      let isPaidGift = gift.coin_type === 'gold'
+      let giftMsg = new chatModels.AddGiftMsg({
+        avatarUrl: chat.processAvatarUrl(proto.face),
+        timestamp: longToNumber(gift.timestamp),
+        authorName: proto.uname,
+        totalCoin: isPaidGift ? longToNumber(gift.total_coin) : 0,
+        totalFreeCoin: !isPaidGift ? longToNumber(gift.total_coin) : 0,
+        giftName: gift.gift_name,
+        num: longToNumber(gift.num),
+        // 给模板用的字段
+        giftId: longToNumber(gift.gift_id),
+        giftIconUrl: gift.gift_info.img_basic,
+        uid: uid,
+        privilegeType: longToNumber(proto.guard_level),
+        medalLevel: medalLevel,
+        medalName: medalName,
+      })
+      this.msgHandler.onAddGift(giftMsg)
+    }
+  }
+
   async userToastV2Callback(command) {
     let data = command.data
     // 官方的评论栏不会显示2的消息
@@ -260,6 +295,7 @@ const CMD_CALLBACK_MAP = {
   DANMU_MSG: ChatClientDirectWeb.prototype.danmuMsgCallback,
   DANMU_MSG_MIRROR: ChatClientDirectWeb.prototype.danmuMsgMirrorCallback,
   SEND_GIFT: ChatClientDirectWeb.prototype.sendGiftCallback,
+  SEND_GIFT_V2: ChatClientDirectWeb.prototype.sendGiftV2Callback,
   USER_TOAST_MSG_V2: ChatClientDirectWeb.prototype.userToastV2Callback,
   SUPER_CHAT_MESSAGE: ChatClientDirectWeb.prototype.superChatMessageCallback,
   SUPER_CHAT_MESSAGE_DELETE: ChatClientDirectWeb.prototype.superChatMessageDeleteCallback

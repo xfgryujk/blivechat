@@ -38,8 +38,8 @@ version = {source = "file", path = "update.py"}
 distribution = false
 
 [tool.uv.sources]
-blivedm = {git = "https://github.com/xfgryujk/blivedm.git", rev = "8727ca9f8340e9c1e20e473eb1757bffb56c66f6"}
 blcsdk = {workspace = true, editable = true}
+blivedm = { git = "https://github.com/xfgryujk/blivedm.git", rev = "3bf17fe862b8c2fc6bc04c81c3f0c5db95de93d6" }
 
 [tool.uv.workspace]
 members = ["blcsdk"]
