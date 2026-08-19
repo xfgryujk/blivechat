@@ -27,10 +27,6 @@ ENV UV_NO_DEV=1
 ENV UV_NO_CACHE=1
 WORKDIR "${BASE_PATH}"
 
-# 后端依赖
-COPY pyproject.toml uv.lock ./
-RUN uv sync --locked --no-install-project
-
 # 代码、数据目录
 COPY --exclude=frontend/ . ./
 RUN uv sync --locked \
