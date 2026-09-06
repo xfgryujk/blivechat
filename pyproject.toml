@@ -19,7 +19,7 @@ dependencies = [
     "circuitbreaker==2.0.0",
     "pycryptodome==3.19.1",
     "sqlalchemy==2.0.37",
-    "tornado==6.5.5",
+    "tornado==6.5.8",
     "yarl==1.9.11",
 ]
 
